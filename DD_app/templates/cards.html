@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}Card Tracker - MLB The Show 26 DD Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .card-tile {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        transition: all var(--transition-normal);
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+    }
+    
+    .card-tile:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--secondary-color);
+    }
+    
+    .card-header {
+        position: relative;
+        height: 200px;
+        background: linear-gradient(135deg, rgba(8, 63, 120, 0.8), rgba(10, 76, 143, 0.8));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+    }
+    
+    .card-rarity-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .card-ovr {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: rgba(0,0,0,0.9);
+        color: white;
+        padding: 8px 12px;
+        border-radius: var(--border-radius);
+        font-weight: var(--font-weight-bold);
+        font-size: 20px;
+    }
+    
+    .card-body {
+        padding: var(--spacing-md);
+    }
+    
+    .card-name {
+        font-size: 18px;
+        font-weight: var(--font-weight-bold);
+        margin-bottom: var(--spacing-xs);
+        color: var(--text-color);
+    }
+    
+    .card-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: var(--font-size-small);
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .card-series {
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 4px 8px;
+        border-radius: var(--border-radius-sm);
+        font-size: 12px;
+        display: inline-block;
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .card-stats {
+        display: flex;
+        justify-content: space-between;
+        padding-top: var(--spacing-sm);
+        border-top: 1px solid var(--border-color);
+        font-size: var(--font-size-small);
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 11px;
+        text-transform: uppercase;
+    }
+    
+    .stat-value {
+        color: var(--text-color);
+        font-weight: var(--font-weight-bold);
+    }
+    
+    .card-indicators {
+        display: flex;
+        gap: var(--spacing-xs);
+        margin-top: var(--spacing-sm);
+        flex-wrap: wrap;
+    }
+    
+    .indicator-badge {
+        padding: 4px 8px;
+        border-radius: var(--border-radius-sm);
+        font-size: 11px;
+        font-weight: var(--font-weight-bold);
+    }
+    
+    .badge-on-team {
+        background-color: var(--success-color);
+        color: white;
+    }
+    
+    .badge-grind {
+        background-color: var(--warning-color);
+        color: white;
+    }
+    
+    .badge-delisted {
+        background-color: var(--error-color);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>🃏 Card Tracker</h1>
+    <a href="{{ url_for('card_search') }}" class="btn btn-primary">+ Add Card</a>
+</div>
+
+<!-- Filters -->
+<div class="filters-container">
+    <div class="filters-grid">
+        <div class="filter-group">
+            <label>Rarity</label>
+            <select id="filterRarity" onchange="applyFilters()">
+                <option value="">All</option>
+                <option value="Diamond">Diamond</option>
+                <option value="Gold">Gold</option>
+                <option value="Silver">Silver</option>
+                <option value="Bronze">Bronze</option>
+                <option value="Common">Common</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Position</label>
+            <select id="filterPosition" onchange="applyFilters()">
+                <option value="">All</option>
+                <option value="SP">SP</option>
+                <option value="RP">RP</option>
+                <option value="CP">CP</option>
+                <option value="C">C</option>
+                <option value="1B">1B</option>
+                <option value="2B">2B</option>
+                <option value="3B">3B</option>
+                <option value="SS">SS</option>
+                <option value="LF">LF</option>
+                <option value="CF">CF</option>
+                <option value="RF">RF</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>On Team</label>
+            <select id="filterOnTeam" onchange="applyFilters()">
+                <option value="">All</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Grind Card</label>
+            <select id="filterGrind" onchange="applyFilters()">
+                <option value="">All</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Status</label>
+            <select id="filterStatus" onchange="applyFilters()">
+                <option value="">All</option>
+                <option value="Active">Active</option>
+                <option value="Delisted">Delisted</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Sort By</label>
+            <select id="sortBy" onchange="applySort()">
+                <option value="ovr-desc">Overall (High to Low)</option>
+                <option value="ovr-asc">Overall (Low to High)</option>
+                <option value="player_name-asc">Name (A-Z)</option>
+                <option value="player_name-desc">Name (Z-A)</option>
+                <option value="current_sell_price-desc">Price (High to Low)</option>
+                <option value="potential_profit-desc">Profit (High to Low)</option>
+            </select>
+        </div>
+    </div>
+    
+    <div style="margin-top: var(--spacing-md);">
+        <input type="text" id="searchInput" placeholder="Search by player name..." onkeyup="searchCards()">
+    </div>
+    
+    <div class="flex-between" style="margin-top: var(--spacing-md);">
+        <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Clear Filters</button>
+        <span id="cardCount" class="text-muted">{{ pagination.total }} cards</span>
+    </div>
+</div>
+
+<!-- Cards Grid -->
+<div class="content-section">
+    {% if cards_data %}
+    <div class="cards-grid" id="cardsGrid">
+        {% for card in cards_data %}
+        <div class="card-tile" onclick="window.location.href='{{ url_for('card_detail', uuid=card.uuid) }}'">
+            <div class="card-header">
+                {% if card.card_image_url %}
+                <img src="{{ card.card_image_url }}" alt="{{ card.player_name }}" class="card-img">
+                {% else %}
+                <div style="color: white; font-size: 48px;">🃏</div>
+                {% endif %}
+                
+                <div class="card-ovr">{{ card.ovr }}</div>
+                <div class="card-rarity-badge">
+                    <span class="badge badge-rarity badge-{{ card.rarity.lower() if card.rarity else 'common' }}">
+                        {{ card.rarity }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="card-name">{{ card.player_name }}</div>
+                <div class="card-info">
+                    <span>{{ card.display_position }}</span>
+                    <span>{{ card.team_short_name or card.team }}</span>
+                </div>
+                
+                <div class="card-series">{{ card.series }}</div>
+                
+                <div class="card-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Sell Price</div>
+                        <div class="stat-value">{{ card.current_sell_price or 0 }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Qty</div>
+                        <div class="stat-value">{{ card.quantity }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Profit</div>
+                        <div class="stat-value">{{ (card.potential_profit or 0) | int }}</div>
+                    </div>
+                </div>
+                
+                <div class="card-indicators">
+                    {% if card.on_team %}
+                    <span class="indicator-badge badge-on-team">ON TEAM</span>
+                    {% endif %}
+                    {% if card.grind_card %}
+                    <span class="indicator-badge badge-grind">GRIND</span>
+                    {% endif %}
+                    {% if card.card_status == 'Delisted' %}
+                    <span class="indicator-badge badge-delisted">DELISTED</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if pagination.page > 1 %}
+        <a href="?page={{ pagination.page - 1 }}&sort_by={{ request.args.get('sort_by', 'ovr') }}&sort_order={{ request.args.get('sort_order', 'desc') }}" 
+           class="pagination-btn">← Previous</a>
+        {% else %}
+        <button class="pagination-btn" disabled>← Previous</button>
+        {% endif %}
+        
+        <span class="pagination-info">
+            Page {{ pagination.page }} of {{ pagination.total_pages }}
+        </span>
+        
+        {% if pagination.page < pagination.total_pages %}
+        <a href="?page={{ pagination.page + 1 }}&sort_by={{ request.args.get('sort_by', 'ovr') }}&sort_order={{ request.args.get('sort_order', 'desc') }}" 
+           class="pagination-btn">Next →</a>
+        {% else %}
+        <button class="pagination-btn" disabled>Next →</button>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="text-center" style="padding: 80px 20px;">
+        <p style="font-size: 72px; margin-bottom: var(--spacing-md);">🃏</p>
+        <h3>No cards yet</h3>
+        <p class="text-muted">Click "Add Card" to search and add your first card!</p>
+        <a href="{{ url_for('card_search') }}" class="btn btn-primary" style="margin-top: var(--spacing-lg);">+ Add Your First Card</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function searchCards() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.card-tile');
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        const name = card.querySelector('.card-name').textContent.toLowerCase();
+        if (name.includes(query)) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function applyFilters() {
+    const params = new URLSearchParams(window.location.search);
+    
+    const rarity = document.getElementById('filterRarity').value;
+    const position = document.getElementById('filterPosition').value;
+    const onTeam = document.getElementById('filterOnTeam').value;
+    const grind = document.getElementById('filterGrind').value;
+    const status = document.getElementById('filterStatus').value;
+    
+    // Update URL parameters
+    if (rarity) params.set('rarity', rarity); else params.delete('rarity');
+    if (position) params.set('position', position); else params.delete('position');
+    if (onTeam) params.set('on_team', onTeam); else params.delete('on_team');
+    if (grind) params.set('grind_card', grind); else params.delete('grind_card');
+    if (status) params.set('card_status', status); else params.delete('card_status');
+    
+    params.set('page', '1'); // Reset to page 1
+    
+    window.location.search = params.toString();
+}
+
+function applySort() {
+    const sortValue = document.getElementById('sortBy').value;
+    const [sortBy, sortOrder] = sortValue.split('-');
+    
+    const params = new URLSearchParams(window.location.search);
+    params.set('sort_by', sortBy);
+    params.set('sort_order', sortOrder);
+    params.set('page', '1');
+    
+    window.location.search = params.toString();
+}
+
+function clearFilters() {
+    window.location.href = '{{ url_for('card_tracker') }}';
+}
+
+// Restore filter values from URL
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    
+    if (params.get('rarity')) document.getElementById('filterRarity').value = params.get('rarity');
+    if (params.get('position')) document.getElementById('filterPosition').value = params.get('position');
+    if (params.get('on_team')) document.getElementById('filterOnTeam').value = params.get('on_team');
+    if (params.get('grind_card')) document.getElementById('filterGrind').value = params.get('grind_card');
+    if (params.get('card_status')) document.getElementById('filterStatus').value = params.get('card_status');
+    
+    const sortBy = params.get('sort_by') || 'ovr';
+    const sortOrder = params.get('sort_order') || 'desc';
+    document.getElementById('sortBy').value = `${sortBy}-${sortOrder}`;
+});
+</script>
+{% endblock %}

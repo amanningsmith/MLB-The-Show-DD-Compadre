@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}Actual Card Tracker - MLB The Show 26 DD Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sync-panel {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .sync-note {
+        color: var(--text-secondary);
+        font-size: var(--font-size-small);
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+    }
+
+    .inventory-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: var(--surface-color);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+    }
+
+    .inventory-table th,
+    .inventory-table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--border-color);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .inventory-table th {
+        color: var(--text-secondary);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .inventory-table tr:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .badge-on-team {
+        background-color: var(--success-color);
+        color: white;
+        padding: 4px 8px;
+        border-radius: var(--border-radius-sm);
+        font-size: 11px;
+        font-weight: var(--font-weight-bold);
+    }
+
+    .badge-bench {
+        background-color: var(--warning-color);
+        color: white;
+        padding: 4px 8px;
+        border-radius: var(--border-radius-sm);
+        font-size: 11px;
+        font-weight: var(--font-weight-bold);
+    }
+
+    .quick-link {
+        color: var(--secondary-color);
+        text-decoration: none;
+        font-weight: var(--font-weight-semibold);
+        cursor: pointer;
+    }
+
+    .quick-link:hover {
+        text-decoration: underline;
+    }
+
+    .modal {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+    }
+
+    .modal-content {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        width: min(640px, 100%);
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: var(--spacing-lg);
+    }
+
+    .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-md);
+    }
+
+    .quick-card {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .quick-card img {
+        width: 100%;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        object-fit: cover;
+    }
+
+    .audit-list {
+        margin-top: var(--spacing-lg);
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: var(--spacing-md);
+    }
+
+    .audit-row {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-color);
+        font-size: var(--font-size-small);
+    }
+
+    .audit-row:last-child {
+        border-bottom: none;
+    }
+
+    @media (max-width: 768px) {
+        .quick-card {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>📦 Actual Card Tracker</h1>
+</div>
+
+<div class="filters-container">
+    <div class="sync-panel">
+        <button id="syncButton" class="btn btn-primary" onclick="syncRoster()">Sync My Roster</button>
+        <button class="btn btn-secondary" onclick="openSettingsModal()">API Settings</button>
+        <span class="sync-note">Manual sync is auth-ready and will fall back to local tracked inventory if auth is unavailable.</span>
+    </div>
+
+    <div id="syncResult" class="text-muted" style="margin-bottom: var(--spacing-md);"></div>
+
+    <div class="filters-grid">
+        <div class="filter-group">
+            <label>Team</label>
+            <select id="filterTeam" onchange="applyFilters()">
+                <option value="">All</option>
+                {% for team in filter_options.teams %}
+                <option value="{{ team }}">{{ team }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Series</label>
+            <select id="filterSeries" onchange="applyFilters()">
+                <option value="">All</option>
+                {% for series in filter_options.series %}
+                <option value="{{ series }}">{{ series }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Position</label>
+            <select id="filterPosition" onchange="applyFilters()">
+                <option value="">All</option>
+                {% for position in filter_options.positions %}
+                <option value="{{ position }}">{{ position }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Min OVR</label>
+            <input id="filterMinOVR" type="number" min="0" max="99" onchange="applyFilters()">
+        </div>
+
+        <div class="filter-group">
+            <label>Max OVR</label>
+            <input id="filterMaxOVR" type="number" min="0" max="99" onchange="applyFilters()">
+        </div>
+
+        <div class="filter-group">
+            <label>Sort By</label>
+            <select id="sortBy" onchange="applySort()">
+                <option value="ovr-desc">OVR (High to Low)</option>
+                <option value="ovr-asc">OVR (Low to High)</option>
+                <option value="team-asc">Team (A-Z)</option>
+                <option value="series-asc">Series (A-Z)</option>
+                <option value="position-asc">Position (A-Z)</option>
+                <option value="player_name-asc">Name (A-Z)</option>
+                <option value="player_name-desc">Name (Z-A)</option>
+            </select>
+        </div>
+    </div>
+
+    <div style="margin-top: var(--spacing-md); display: flex; gap: var(--spacing-sm);">
+        <input type="text" id="searchInput" placeholder="Search player name..." onkeyup="searchCards()">
+        <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Clear</button>
+    </div>
+</div>
+
+<div class="content-section">
+    {% if cards_data %}
+    <div class="table-wrap">
+        <table class="inventory-table" id="inventoryTable">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>OVR</th>
+                    <th>Team</th>
+                    <th>Series</th>
+                    <th>Position</th>
+                    <th>Qty</th>
+                    <th>Roster</th>
+                    <th>Quick View</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for card in cards_data %}
+                <tr>
+                    <td>{{ card.player_name }}</td>
+                    <td>{{ card.ovr or '-' }}</td>
+                    <td>{{ card.team_short_name or card.team or '-' }}</td>
+                    <td>{{ card.series or '-' }}</td>
+                    <td>{{ card.display_position or '-' }}</td>
+                    <td>{{ card.quantity }}</td>
+                    <td>
+                        {% if card.on_team %}
+                        <span class="badge-on-team">ON TEAM</span>
+                        {% else %}
+                        <span class="badge-bench">IN INVENTORY</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span
+                            class="quick-link"
+                            data-card='{{ {
+                                "uuid": card.uuid,
+                                "name": card.player_name or "",
+                                "ovr": card.ovr or "-",
+                                "team": card.team_short_name or card.team or "-",
+                                "series": card.series or "-",
+                                "position": card.display_position or "-",
+                                "quantity": card.quantity or 0,
+                                "on_team": 1 if card.on_team else 0,
+                                "img": card.card_image_url or ""
+                            } | tojson }}'
+                            onclick="openQuickViewFromNode(this)">View</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination" style="margin-top: var(--spacing-md);">
+        {% if pagination.page > 1 %}
+        <a href="?page={{ pagination.page - 1 }}&sort_by={{ request.args.get('sort_by', 'ovr') }}&sort_order={{ request.args.get('sort_order', 'desc') }}&team={{ request.args.get('team', '') }}&series={{ request.args.get('series', '') }}&position={{ request.args.get('position', '') }}&min_ovr={{ request.args.get('min_ovr', '') }}&max_ovr={{ request.args.get('max_ovr', '') }}&search={{ request.args.get('search', '') }}" class="pagination-btn">← Previous</a>
+        {% else %}
+        <button class="pagination-btn" disabled>← Previous</button>
+        {% endif %}
+
+        <span class="pagination-info">Page {{ pagination.page }} of {{ pagination.total_pages }} ({{ pagination.total }} cards)</span>
+
+        {% if pagination.page < pagination.total_pages %}
+        <a href="?page={{ pagination.page + 1 }}&sort_by={{ request.args.get('sort_by', 'ovr') }}&sort_order={{ request.args.get('sort_order', 'desc') }}&team={{ request.args.get('team', '') }}&series={{ request.args.get('series', '') }}&position={{ request.args.get('position', '') }}&min_ovr={{ request.args.get('min_ovr', '') }}&max_ovr={{ request.args.get('max_ovr', '') }}&search={{ request.args.get('search', '') }}" class="pagination-btn">Next →</a>
+        {% else %}
+        <button class="pagination-btn" disabled>Next →</button>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="text-center" style="padding: 60px 20px;">
+        <h3>No owned cards found</h3>
+        <p class="text-muted">Run Sync My Roster to populate this inventory view.</p>
+    </div>
+    {% endif %}
+
+    <div class="audit-list">
+        <h3 style="margin-bottom: var(--spacing-sm);">Recent Mission Auto-Update Audit</h3>
+        {% if recent_audit %}
+            {% for entry in recent_audit %}
+            <div class="audit-row">
+                {{ entry.created_at }} | Mission #{{ entry.mission_id }} {{ entry.mission_name or '' }} ({{ entry.program_category or 'Unknown Program' }})
+                <br>
+                Player Match: {{ entry.player_id }} | {{ entry.previous_acquired or 'Not Acquired' }} / {{ entry.previous_priority or 'In the Hole' }} → {{ entry.new_acquired }} / {{ entry.new_priority }}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No automated mission updates logged yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div id="quickViewModal" class="modal" onclick="closeQuickView(event)">
+    <div class="modal-content" id="quickViewContent"></div>
+</div>
+
+<div id="settingsModal" class="modal" onclick="closeSettingsModal(event)">
+    <div class="modal-content" id="settingsModalContent">
+        <h2>API Settings</h2>
+        <p class="text-muted">These values are saved to a local untracked file and used for roster sync authentication.</p>
+
+        <div class="settings-grid">
+            <div class="filter-group">
+                <label>Inventory Endpoint</label>
+                <input id="settingEndpoint" type="text" placeholder="/apis/profile/inventory.json">
+            </div>
+            <div class="filter-group">
+                <label>Auth Header</label>
+                <input id="settingHeader" type="text" placeholder="Authorization">
+            </div>
+            <div class="filter-group">
+                <label>Auth Prefix</label>
+                <input id="settingPrefix" type="text" placeholder="Bearer ">
+            </div>
+            <div class="filter-group">
+                <label>Auth Token</label>
+                <input id="settingToken" type="password" placeholder="Leave blank to keep current token">
+            </div>
+        </div>
+
+        <p id="settingsTokenStatus" class="text-muted" style="margin-top: var(--spacing-sm);"></p>
+        <p id="settingsResult" class="text-muted"></p>
+
+        <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md); flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" onclick="saveApiSettings()">Save Settings</button>
+            <button class="btn btn-secondary btn-sm" onclick="testApiSettings()">Test Connection</button>
+            <button class="btn btn-secondary btn-sm" onclick="closeSettingsModal()">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function searchCards() {
+    const value = document.getElementById('searchInput').value;
+    const params = new URLSearchParams(window.location.search);
+    if (value.trim()) {
+        params.set('search', value.trim());
+    } else {
+        params.delete('search');
+    }
+    params.set('page', '1');
+    window.location.search = params.toString();
+}
+
+function applyFilters() {
+    const params = new URLSearchParams(window.location.search);
+
+    const team = document.getElementById('filterTeam').value;
+    const series = document.getElementById('filterSeries').value;
+    const position = document.getElementById('filterPosition').value;
+    const minOvr = document.getElementById('filterMinOVR').value;
+    const maxOvr = document.getElementById('filterMaxOVR').value;
+
+    if (team) params.set('team', team); else params.delete('team');
+    if (series) params.set('series', series); else params.delete('series');
+    if (position) params.set('position', position); else params.delete('position');
+    if (minOvr) params.set('min_ovr', minOvr); else params.delete('min_ovr');
+    if (maxOvr) params.set('max_ovr', maxOvr); else params.delete('max_ovr');
+
+    params.set('page', '1');
+    window.location.search = params.toString();
+}
+
+function applySort() {
+    const sortValue = document.getElementById('sortBy').value;
+    const [sortBy, sortOrder] = sortValue.split('-');
+
+    const params = new URLSearchParams(window.location.search);
+    params.set('sort_by', sortBy);
+    params.set('sort_order', sortOrder);
+    params.set('page', '1');
+
+    window.location.search = params.toString();
+}
+
+function clearFilters() {
+    window.location.href = "{{ url_for('actual_card_tracker') }}";
+}
+
+function openQuickViewFromNode(node) {
+    const card = JSON.parse(node.dataset.card || '{}');
+    openQuickView(card);
+}
+
+function openQuickView(card) {
+    const modal = document.getElementById('quickViewModal');
+    const content = document.getElementById('quickViewContent');
+
+    content.innerHTML = `
+        <div class="quick-card">
+            <div>
+                ${card.img ? `<img src="${card.img}" alt="${card.name}">` : '<div style="height: 200px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border-color); border-radius: var(--border-radius);">No Image</div>'}
+            </div>
+            <div>
+                <h2 style="margin-bottom: 8px;">${card.name}</h2>
+                <p><strong>OVR:</strong> ${card.ovr}</p>
+                <p><strong>Team:</strong> ${card.team}</p>
+                <p><strong>Series:</strong> ${card.series}</p>
+                <p><strong>Position:</strong> ${card.position}</p>
+                <p><strong>Quantity:</strong> ${card.quantity}</p>
+                <p><strong>Roster Status:</strong> ${card.on_team ? 'On Team' : 'In Inventory'}</p>
+                <div style="margin-top: var(--spacing-md); display: flex; gap: var(--spacing-sm);">
+                    <a class="btn btn-primary btn-sm" href="/cards/${card.uuid}">Open Full Detail</a>
+                    <button class="btn btn-secondary btn-sm" onclick="closeQuickView()">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+}
+
+function closeQuickView(event) {
+    if (event && event.target && event.target.id !== 'quickViewModal') {
+        return;
+    }
+    document.getElementById('quickViewModal').style.display = 'none';
+}
+
+async function openSettingsModal() {
+    const modal = document.getElementById('settingsModal');
+    modal.style.display = 'flex';
+    await loadApiSettings();
+}
+
+function closeSettingsModal(event) {
+    if (event && event.target && event.target.id !== 'settingsModal') {
+        return;
+    }
+    document.getElementById('settingsModal').style.display = 'none';
+}
+
+async function loadApiSettings() {
+    const output = document.getElementById('settingsResult');
+    const tokenStatus = document.getElementById('settingsTokenStatus');
+    output.textContent = 'Loading settings...';
+
+    try {
+        const response = await fetch('/api/settings/api-auth');
+        const result = await response.json();
+        if (!result.success) {
+            output.textContent = result.error || 'Failed to load settings.';
+            return;
+        }
+
+        const settings = result.settings || {};
+        document.getElementById('settingEndpoint').value = settings.inventory_endpoint || '';
+        document.getElementById('settingHeader').value = settings.auth_header || 'Authorization';
+        document.getElementById('settingPrefix').value = settings.auth_prefix || 'Bearer ';
+        document.getElementById('settingToken').value = '';
+        tokenStatus.textContent = settings.has_token
+            ? `Token saved locally (${settings.token_masked || 'masked'}). Leave token blank to keep it.`
+            : 'No token saved yet.';
+        output.textContent = '';
+    } catch (error) {
+        output.textContent = `Failed to load settings: ${error.message}`;
+    }
+}
+
+async function saveApiSettings() {
+    const output = document.getElementById('settingsResult');
+    output.textContent = 'Saving settings...';
+
+    const payload = {
+        inventory_endpoint: document.getElementById('settingEndpoint').value,
+        auth_header: document.getElementById('settingHeader').value,
+        auth_prefix: document.getElementById('settingPrefix').value,
+        auth_token: document.getElementById('settingToken').value,
+    };
+
+    try {
+        const response = await fetch('/api/settings/api-auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        if (!result.success) {
+            output.textContent = result.error || 'Failed to save settings.';
+            return;
+        }
+
+        output.textContent = 'Settings saved successfully.';
+        await loadApiSettings();
+    } catch (error) {
+        output.textContent = `Failed to save settings: ${error.message}`;
+    }
+}
+
+async function testApiSettings() {
+    const output = document.getElementById('settingsResult');
+    output.textContent = 'Testing API connection...';
+
+    try {
+        const response = await fetch('/api/settings/api-auth/test', { method: 'POST' });
+        const result = await response.json();
+
+        if (!result.success) {
+            output.textContent = `Test failed: ${result.warning || result.error || 'No inventory data returned.'}`;
+            return;
+        }
+
+        output.textContent = `Connection successful. Source: ${result.source}. Parsed cards: ${(result.cards || []).length}.`;
+    } catch (error) {
+        output.textContent = `Test failed: ${error.message}`;
+    }
+}
+
+async function syncRoster() {
+    const button = document.getElementById('syncButton');
+    const output = document.getElementById('syncResult');
+
+    button.disabled = true;
+    button.textContent = 'Syncing...';
+    output.textContent = 'Running manual roster sync...';
+
+    try {
+        const response = await fetch('/api/cards/actual/sync', { method: 'POST' });
+        const result = await response.json();
+
+        if (!result.success) {
+            output.textContent = result.error || 'Sync failed';
+            return;
+        }
+
+        let message = `Synced ${result.cards_synced} cards (${result.cards_created} created, ${result.cards_updated} updated). Missions updated: ${result.missions_updated}.`;
+        if (result.warning) {
+            message += ` Warning: ${result.warning}.`;
+        }
+        message += ` Source: ${result.source}.`;
+        output.textContent = message;
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 800);
+    } catch (error) {
+        output.textContent = `Sync failed: ${error.message}`;
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Sync My Roster';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('team')) document.getElementById('filterTeam').value = params.get('team');
+    if (params.get('series')) document.getElementById('filterSeries').value = params.get('series');
+    if (params.get('position')) document.getElementById('filterPosition').value = params.get('position');
+    if (params.get('min_ovr')) document.getElementById('filterMinOVR').value = params.get('min_ovr');
+    if (params.get('max_ovr')) document.getElementById('filterMaxOVR').value = params.get('max_ovr');
+    if (params.get('search')) document.getElementById('searchInput').value = params.get('search');
+
+    const sortBy = params.get('sort_by') || 'ovr';
+    const sortOrder = params.get('sort_order') || 'desc';
+    document.getElementById('sortBy').value = `${sortBy}-${sortOrder}`;
+});
+</script>
+{% endblock %}

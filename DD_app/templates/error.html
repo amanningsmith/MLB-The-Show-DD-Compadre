@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Error - MLB The Show 26 DD Tracker{% endblock %}
+
+{% block content %}
+<div class="content-section text-center" style="max-width: 600px; margin: var(--spacing-xxl) auto; padding: var(--spacing-xxl);">
+    <h1 style="color: var(--error-color); font-size: 72px; margin-bottom: var(--spacing-md);">⚠️</h1>
+    <h2 style="margin-bottom: var(--spacing-lg);">Oops! Something went wrong</h2>
+    <p class="text-secondary" style="font-size: 18px; margin-bottom: var(--spacing-xl);">{{ error }}</p>
+    <a href="{{ url_for('mission_tracker') }}" class="btn btn-primary">← Go to Programs Tracker</a>
+</div>
+{% endblock %}

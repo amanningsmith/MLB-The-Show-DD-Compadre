@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MLB The Show 26 DD Tracker{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_guide.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-logo">
+            <span style="font-size: 36px;">⚾</span>
+            <h1>MLB The Show 26</h1>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}"
+               class="nav-link nav-link-home {% if request.endpoint == 'home' %}active{% endif %}"
+               title="Home">&#8962;</a>
+            <a href="{{ url_for('mission_tracker') }}" 
+               class="nav-link {% if request.endpoint == 'mission_tracker' %}active{% endif %}">
+                🎯 Programs Tracker
+            </a>
+            <a href="{{ url_for('card_tracker') }}" 
+               class="nav-link {% if request.endpoint in ['card_tracker', 'card_detail'] %}active{% endif %}">
+                🃏 Card Tracker
+            </a>
+            <a href="{{ url_for('actual_card_tracker') }}"
+               class="nav-link {% if request.endpoint == 'actual_card_tracker' %}active{% endif %}">
+                📦 Actual Card Tracker
+            </a>
+            <a href="{{ url_for('scores_dashboard') }}"
+               class="nav-link {% if request.endpoint == 'scores_dashboard' %}active{% endif %}">
+                📈 Live Scores
+            </a>
+            <a href="{{ url_for('card_search') }}" 
+               class="nav-link {% if request.endpoint == 'card_search' %}active{% endif %}">
+                🔍 Add New Card
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bottom Scores Ticker -->
+    <div id="scoresTickerDock" class="scores-ticker-dock" aria-live="polite">
+        <div class="scores-ticker-header">
+            <div class="scores-ticker-title">MLB Live Scores (ET)</div>
+            <div class="scores-ticker-actions">
+                <button id="scoresTickerSpoilerBtn" class="scores-ticker-toggle-btn" type="button">Hide Scores</button>
+                <a class="scores-ticker-dashboard-link" href="{{ url_for('scores_dashboard') }}">Open Dashboard</a>
+                <button id="scoresTickerHideBtn" class="scores-ticker-toggle-btn" type="button">Hide Ticker</button>
+            </div>
+        </div>
+        <div class="scores-ticker-body">
+            <div id="scoresTickerFavoritesHint" class="scores-ticker-favorites-hint">Favorites: none</div>
+            <div id="scoresTickerStatus" class="scores-ticker-status">Loading scores...</div>
+            <div class="scores-ticker-marquee">
+                <div id="scoresTickerTrack" class="scores-ticker-track"></div>
+            </div>
+        </div>
+    </div>
+    <button id="scoresTickerShowBtn" class="scores-ticker-show-btn" type="button">Show Scores</button>
+    
+    <script>
+        // Global utility functions
+        function showLoading() {
+            document.body.style.cursor = 'wait';
+        }
+        
+        function hideLoading() {
+            document.body.style.cursor = 'default';
+        }
+        
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `flash-message flash-${type}`;
+            alertDiv.textContent = message;
+            
+            const flashContainer = document.querySelector('.flash-messages') || createFlashContainer();
+            flashContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.animation = 'slideInRight 0.3s reverse';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 5000);
+        }
+        
+        function createFlashContainer() {
+            const container = document.createElement('div');
+            container.className = 'flash-messages';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // Shared bottom ticker (Beta 4.0)
+        (function initScoresTicker() {
+            const POLL_MS = 30000;
+            const STORAGE_KEY = 'scoresTickerHidden';
+            const SPOILER_KEY = 'scoresHideScores';
+            const FAVORITES_KEY = 'scoresFavoriteTeamIds';
+
+            const dockEl = document.getElementById('scoresTickerDock');
+            const showBtn = document.getElementById('scoresTickerShowBtn');
+            const hideBtn = document.getElementById('scoresTickerHideBtn');
+            const spoilerBtn = document.getElementById('scoresTickerSpoilerBtn');
+            const favoritesHintEl = document.getElementById('scoresTickerFavoritesHint');
+            const statusEl = document.getElementById('scoresTickerStatus');
+            const trackEl = document.getElementById('scoresTickerTrack');
+
+            if (!dockEl || !showBtn || !hideBtn || !spoilerBtn || !favoritesHintEl || !statusEl || !trackEl) {
+                return;
+            }
+
+            let tickerTimerId = null;
+            let lastGames = [];
+
+            function escapeHtml(value) {
+                return String(value || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function isHidden() {
+                return localStorage.getItem(STORAGE_KEY) === 'true';
+            }
+
+            function hideScoresEnabled() {
+                return localStorage.getItem(SPOILER_KEY) === 'true';
+            }
+
+            function readFavoriteTeamIds() {
+                try {
+                    const raw = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+                    if (!Array.isArray(raw)) {
+                        return [];
+                    }
+                    return raw.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0);
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            function updateSpoilerButton() {
+                spoilerBtn.textContent = hideScoresEnabled() ? 'Show Scores' : 'Hide Scores';
+            }
+
+            function setHideScores(hidden) {
+                localStorage.setItem(SPOILER_KEY, hidden ? 'true' : 'false');
+                updateSpoilerButton();
+                renderGames(lastGames);
+            }
+
+            function updateFavoritesHint(games) {
+                const favoriteIds = readFavoriteTeamIds();
+                if (!favoriteIds.length) {
+                    favoritesHintEl.textContent = 'Favorites: none';
+                    return;
+                }
+
+                const teamMap = {};
+                (games || []).forEach((game) => {
+                    if (game?.away?.id) {
+                        teamMap[game.away.id] = game.away.abbr || game.away.name || `Team ${game.away.id}`;
+                    }
+                    if (game?.home?.id) {
+                        teamMap[game.home.id] = game.home.abbr || game.home.name || `Team ${game.home.id}`;
+                    }
+                });
+
+                const labels = favoriteIds.map((id) => teamMap[id] || `Team ${id}`);
+                favoritesHintEl.textContent = `Favorites: ${labels.join(', ')}`;
+            }
+
+            function isFavoriteGame(game, favoriteIdsSet) {
+                const awayId = Number(game?.away?.id || 0);
+                const homeId = Number(game?.home?.id || 0);
+                return favoriteIdsSet.has(awayId) || favoriteIdsSet.has(homeId);
+            }
+
+            function weightedGames(games) {
+                const favoriteIdsSet = new Set(readFavoriteTeamIds());
+                if (!favoriteIdsSet.size) {
+                    return games;
+                }
+
+                const list = [];
+                games.forEach((game) => {
+                    list.push(game);
+                    if (isFavoriteGame(game, favoriteIdsSet)) {
+                        list.push(game, game);
+                    }
+                });
+                return list;
+            }
+
+            function buildTickerLabel(game) {
+                const away = game?.away?.abbr || 'Away';
+                const home = game?.home?.abbr || 'Home';
+                const state = game?.state || 'Pre-Game';
+                const startTime = game?.start_time_et || 'TBD';
+                const context = game?.live_context || '';
+
+                if (state === 'Pre-Game') {
+                    return `${away} at ${home} | ${startTime} | ${state}`;
+                }
+
+                if (hideScoresEnabled()) {
+                    const base = `${away} at ${home} | ${state}`;
+                    return context ? `${base} | ${context}` : base;
+                }
+
+                return game?.ticker_display || `${away} ${game?.away?.runs ?? 0} - ${game?.home?.runs ?? 0} ${home} | ${state}`;
+            }
+
+            function setHidden(hidden) {
+                localStorage.setItem(STORAGE_KEY, hidden ? 'true' : 'false');
+                dockEl.classList.toggle('is-hidden', hidden);
+                showBtn.classList.toggle('is-visible', hidden);
+
+                if (hidden) {
+                    if (tickerTimerId) {
+                        clearInterval(tickerTimerId);
+                        tickerTimerId = null;
+                    }
+                } else {
+                    fetchTickerData();
+                    startPolling();
+                }
+            }
+
+            function renderGames(games) {
+                lastGames = Array.isArray(games) ? games : [];
+                updateFavoritesHint(lastGames);
+
+                if (!Array.isArray(games) || !games.length) {
+                    trackEl.innerHTML = '<span class="scores-ticker-item is-empty">No games found for today.</span>';
+                    trackEl.classList.add('no-animate');
+                    return;
+                }
+
+                const gameList = weightedGames(games);
+
+                const items = gameList.map((game) => {
+                    const label = buildTickerLabel(game);
+                    const href = game && game.mlb_url ? game.mlb_url : '#';
+                    return `
+                        <a class="scores-ticker-item" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">
+                            ${escapeHtml(label)}
+                        </a>
+                    `;
+                }).join('');
+
+                trackEl.innerHTML = `${items}${items}`;
+                if (gameList.length <= 1) {
+                    trackEl.classList.add('no-animate');
+                } else {
+                    trackEl.classList.remove('no-animate');
+                }
+            }
+
+            async function fetchTickerData() {
+                try {
+                    const response = await fetch('/api/scores/ticker', {
+                        headers: {'Accept': 'application/json'}
+                    });
+                    const payload = await response.json();
+
+                    if (!response.ok && !payload.success) {
+                        throw new Error(payload.warning || payload.error || 'Ticker request failed');
+                    }
+
+                    renderGames(payload.games || []);
+
+                    if (payload.warning) {
+                        statusEl.textContent = `${payload.warning} (${payload.generated_at_et || 'ET'})`;
+                        statusEl.classList.add('warning');
+                    } else {
+                        statusEl.textContent = `Last update: ${payload.generated_at_et || 'N/A'}`;
+                        statusEl.classList.remove('warning');
+                    }
+                } catch (error) {
+                    statusEl.textContent = error.message || 'Unable to refresh score ticker.';
+                    statusEl.classList.add('warning');
+                    renderGames([]);
+                }
+            }
+
+            function startPolling() {
+                if (tickerTimerId) {
+                    clearInterval(tickerTimerId);
+                }
+                tickerTimerId = setInterval(fetchTickerData, POLL_MS);
+            }
+
+            hideBtn.addEventListener('click', () => setHidden(true));
+            showBtn.addEventListener('click', () => setHidden(false));
+            spoilerBtn.addEventListener('click', () => setHideScores(!hideScoresEnabled()));
+
+            window.addEventListener('scoresPreferencesUpdated', () => {
+                updateSpoilerButton();
+                renderGames(lastGames);
+            });
+
+            updateSpoilerButton();
+            setHidden(isHidden());
+            if (!isHidden()) {
+                fetchTickerData();
+                startPolling();
+            }
+        })();
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

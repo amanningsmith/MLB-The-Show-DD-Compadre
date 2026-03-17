@@ -1,0 +1,2399 @@
+{% extends "base.html" %}
+
+{% block title %}Programs Tracker - MLB The Show 26 DD Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mission-hero {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .mission-hero h1 {
+        margin-bottom: 6px;
+    }
+
+    .mission-hero p {
+        margin: 0;
+        color: var(--text-muted);
+    }
+
+    .mission-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .program-toolbar {
+        display: grid;
+        grid-template-columns: 1fr 220px 200px;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .program-type-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .program-type-bubble {
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        background: var(--surface-color);
+        color: var(--text-primary);
+        padding: 6px 14px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .program-type-bubble:hover {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+    }
+
+    .program-type-bubble.active {
+        background: var(--accent-color);
+        color: #000000;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 12px rgba(5, 207, 222, 0.35);
+    }
+
+    .program-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+        gap: 16px;
+    }
+
+    .program-card {
+        width: 100%;
+        min-height: 200px;
+        text-align: left;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--surface-color);
+        padding: 16px;
+        cursor: pointer;
+        transition: border-color 0.2s ease, transform 0.2s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .program-card:hover {
+        border-color: var(--accent-color);
+        box-shadow: 0 6px 24px rgba(5, 207, 222, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .program-card .program-title {
+        margin: 0 0 8px 0;
+        font-size: clamp(16px, 0.6vw + 13px, 20px);
+        line-height: 1.35;
+        letter-spacing: -0.005em;
+        overflow-wrap: anywhere;
+        display: -webkit-box;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 2.7em;
+    }
+
+    .program-meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: auto;
+        padding-top: 10px;
+    }
+
+    .program-meta div {
+        background: var(--surface-hover);
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+    }
+
+    .program-meta .label {
+        color: var(--text-muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .program-meta .value {
+        font-weight: 700;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--accent-color);
+    }
+
+    .program-status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-pill.not-started {
+        color: #D7CEC8;
+        background: rgba(215, 206, 200, 0.1);
+        border: 1px solid rgba(215, 206, 200, 0.25);
+    }
+
+    .status-pill.in-progress {
+        color: #FC5C36;
+        background: rgba(252, 92, 54, 0.15);
+        border: 1px solid rgba(252, 92, 54, 0.4);
+    }
+
+    .status-pill.completed {
+        color: #22C55E;
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .modal-wide {
+        width: min(1380px, 98vw);
+        max-width: min(1380px, 98vw);
+        max-height: 94vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .modal-wide .mission-quick-actions {
+        flex-wrap: wrap;
+    }
+
+    .mission-modal-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        gap: 14px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .mission-modal-grid > div {
+        min-width: 0;
+    }
+
+    .modal-wide .grind-panel {
+        min-height: 0;
+    }
+
+    .table-scroll {
+        overflow: auto;
+        max-height: calc(94vh - 300px);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+    }
+
+    .table-scroll table {
+        min-width: 960px;
+    }
+
+    .player-chip-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .player-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        background: var(--surface-hover);
+        border: 1px solid var(--border-color);
+        padding: 3px 10px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .player-chip.owned {
+        border-color: #57a773;
+    }
+
+    .player-chip.not-owned {
+        border-color: #d28a8a;
+    }
+
+    .mission-quick-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .mission-quick-actions .left,
+    .mission-quick-actions .right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .inline-current-status {
+        width: 72px;
+    }
+
+    .mission-inline-input,
+    .mission-inline-select {
+        width: 100%;
+        min-width: 96px;
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+
+    .mission-inline-name {
+        min-width: 220px;
+    }
+
+    .mission-inline-subrow {
+        display: grid;
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    .grind-panel {
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--surface-color);
+        padding: 12px;
+    }
+
+    .grind-panel h3 {
+        margin: 0 0 8px 0;
+        font-size: 15px;
+    }
+
+    .list-stack {
+        display: grid;
+        gap: 8px;
+        max-height: 390px;
+        overflow: auto;
+    }
+
+    .list-row {
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 8px;
+        background: var(--surface-hover);
+        font-size: 13px;
+    }
+
+    .picker-results {
+        display: grid;
+        gap: 6px;
+        max-height: 250px;
+        overflow: auto;
+        margin-top: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 8px;
+        background: var(--surface-color);
+    }
+
+    .picker-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 13px;
+        border-radius: var(--radius-sm);
+        padding: 6px;
+    }
+
+    .picker-row:hover {
+        background: var(--surface-hover);
+    }
+
+    .picker-row .meta {
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+
+    .program-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+
+    .program-pagination-info {
+        color: var(--text-muted);
+        font-size: 13px;
+    }
+
+    .program-pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .program-pagination-page {
+        min-width: 108px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .auto-grind-modal {
+        width: min(1320px, 98vw);
+        max-width: min(1320px, 98vw);
+        max-height: 94vh;
+        overflow: auto;
+        padding: 18px;
+    }
+
+    .auto-grind-meta {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .auto-grind-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .auto-grind-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        background: var(--surface-hover);
+    }
+
+    .legend-swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        display: inline-block;
+    }
+
+    .legend-swatch.green {
+        background: #22c55e;
+    }
+
+    .legend-swatch.yellow {
+        background: #facc15;
+    }
+
+    .legend-swatch.red {
+        background: #ef4444;
+    }
+
+    .auto-grind-fieldboard {
+        position: relative;
+        min-height: 760px;
+        margin-bottom: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 50% 73%, rgba(200, 155, 90, 0.95) 0 8%, transparent 8.5%),
+            linear-gradient(135deg, transparent 48.5%, rgba(255, 255, 255, 0.26) 49%, rgba(255, 255, 255, 0.26) 50%, transparent 50.5%),
+            linear-gradient(225deg, transparent 48.5%, rgba(255, 255, 255, 0.26) 49%, rgba(255, 255, 255, 0.26) 50%, transparent 50.5%),
+            radial-gradient(circle at 50% 92%, rgba(187, 137, 74, 0.95) 0 11%, transparent 11.5%),
+            radial-gradient(circle at 50% 58%, rgba(193, 145, 79, 0.85) 0 20%, transparent 20.5%),
+            linear-gradient(180deg, rgba(193, 206, 179, 0.55) 0%, rgba(71, 124, 54, 0.18) 14%, rgba(41, 107, 43, 0.4) 40%, rgba(28, 87, 37, 0.92) 100%),
+            repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 34px, rgba(255,255,255,0.00) 34px 68px),
+            linear-gradient(180deg, #d8d0c5 0%, #8db173 16%, #2c7135 54%, #1d5a2a 100%);
+    }
+
+    .auto-grind-fieldboard::before {
+        content: '';
+        position: absolute;
+        inset: 12px;
+        border-radius: 16px;
+        background:
+            radial-gradient(circle at 50% 8%, rgba(255,255,255,0.34), transparent 25%),
+            linear-gradient(180deg, rgba(255,255,255,0.18), transparent 22%);
+        pointer-events: none;
+    }
+
+    .auto-grind-fieldboard::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 118px;
+        width: 220px;
+        height: 220px;
+        transform: translateX(-50%) rotate(45deg);
+        border: 2px solid rgba(255, 255, 255, 0.58);
+        border-radius: 8px;
+        background: rgba(189, 144, 86, 0.42);
+        box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.06);
+        pointer-events: none;
+    }
+
+    .auto-grind-field {
+        position: absolute;
+        z-index: 1;
+        width: min(240px, 26vw);
+        min-width: 180px;
+    }
+
+    .auto-grind-field.auto-slot-cf { top: 24px; left: 50%; transform: translateX(-50%); }
+    .auto-grind-field.auto-slot-lf { top: 86px; left: 30px; }
+    .auto-grind-field.auto-slot-rf { top: 86px; right: 30px; }
+    .auto-grind-field.auto-slot-ss { top: 246px; left: 210px; }
+    .auto-grind-field.auto-slot-2b { top: 246px; right: 210px; }
+    .auto-grind-field.auto-slot-3b { top: 388px; left: 56px; }
+    .auto-grind-field.auto-slot-1b { top: 388px; right: 56px; }
+    .auto-grind-field.auto-slot-p { top: 410px; left: 50%; transform: translateX(-50%); }
+    .auto-grind-field.auto-slot-c { bottom: 22px; left: 50%; transform: translateX(-50%); }
+
+    .auto-slot {
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid rgba(17, 24, 39, 0.14);
+        box-shadow: 0 10px 28px rgba(17, 24, 39, 0.18);
+        backdrop-filter: blur(4px);
+        color: #0f172a;
+    }
+
+    .auto-slot h3 {
+        margin: 0 0 6px;
+        font-size: 11px;
+        line-height: 1.2;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #1e3a5f;
+        border-bottom: 1px solid rgba(17, 24, 39, 0.1);
+        padding-bottom: 4px;
+    }
+
+    .auto-slot .list-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        max-height: 132px;
+        overflow-y: auto;
+    }
+
+    .auto-grind-bottom {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .auto-grind-bottom .auto-slot {
+        background: var(--surface-color);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    .auto-grind-bottom .auto-slot h3 {
+        color: var(--accent-color);
+        border-bottom-color: var(--border-color);
+    }
+
+    .ag-player-row {
+        border-left: 4px solid #94a3b8;
+        padding: 2px 0 2px 8px;
+        background: transparent;
+        font-size: 12px;
+        color: #0f172a;
+    }
+
+    .auto-grind-bottom .ag-player-row {
+        color: var(--text-color);
+    }
+
+    .auto-grind-bottom .ag-player-row .meta {
+        color: var(--text-muted);
+    }
+
+    .ag-player-row.green {
+        border-left-color: #16a34a;
+    }
+
+    .ag-player-row.yellow {
+        border-left-color: #ca8a04;
+    }
+
+    .ag-player-row.red {
+        border-left-color: #dc2626;
+    }
+
+    .ag-player-row .meta {
+        color: #475569;
+        font-size: 10px;
+        margin-top: 2px;
+    }
+
+    @media (max-width: 1180px) {
+        .auto-grind-fieldboard {
+            min-height: 700px;
+        }
+
+        .auto-grind-field {
+            width: min(210px, 24vw);
+            min-width: 150px;
+        }
+
+        .auto-grind-field.auto-slot-lf { top: 96px; left: 18px; }
+        .auto-grind-field.auto-slot-rf { top: 96px; right: 18px; }
+        .auto-grind-field.auto-slot-ss { top: 256px; left: 150px; }
+        .auto-grind-field.auto-slot-2b { top: 256px; right: 150px; }
+        .auto-grind-field.auto-slot-3b { top: 398px; left: 30px; }
+        .auto-grind-field.auto-slot-1b { top: 398px; right: 30px; }
+    }
+
+    @media (max-width: 900px) {
+        .program-toolbar {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-wide {
+            overflow: auto;
+            padding: 16px;
+        }
+
+        .mission-modal-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .table-scroll {
+            max-height: none;
+        }
+
+        .auto-grind-fieldboard {
+            min-height: 620px;
+        }
+
+        .auto-grind-field {
+            width: min(180px, 28vw);
+            min-width: 130px;
+        }
+
+        .auto-grind-field.auto-slot-cf { top: 20px; }
+        .auto-grind-field.auto-slot-lf { top: 88px; left: 10px; }
+        .auto-grind-field.auto-slot-rf { top: 88px; right: 10px; }
+        .auto-grind-field.auto-slot-ss { top: 235px; left: 110px; }
+        .auto-grind-field.auto-slot-2b { top: 235px; right: 110px; }
+        .auto-grind-field.auto-slot-3b { top: 365px; left: 8px; }
+        .auto-grind-field.auto-slot-1b { top: 365px; right: 8px; }
+        .auto-grind-field.auto-slot-p { top: 382px; }
+        .auto-grind-field.auto-slot-c { bottom: 14px; }
+
+        .auto-grind-bottom {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .auto-grind-fieldboard {
+            min-height: auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            background: linear-gradient(180deg, #9dba84 0%, #437a41 100%);
+        }
+
+        .auto-grind-fieldboard::before,
+        .auto-grind-fieldboard::after {
+            display: none;
+        }
+
+        .auto-grind-field {
+            position: static;
+            width: auto;
+            min-width: 0;
+            transform: none;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .auto-grind-fieldboard {
+            grid-template-columns: 1fr;
+        }
+
+        .program-card .program-title {
+            font-size: 17px;
+            min-height: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mission-hero">
+    <div>
+        <h1>Programs Tracker</h1>
+        <p>Program cards are your default view. Click any program to open its mission table and assign players.</p>
+    </div>
+    <div class="mission-actions">
+        <button class="btn btn-primary" onclick="openAddMissionModal()">Add Mission</button>
+        <button class="btn btn-secondary" onclick="openAllMissionsModal()">View All Missions</button>
+        <button class="btn btn-success" onclick="openAutoGrindModal()">Auto Grind Roster</button>
+        <button class="btn btn-secondary" onclick="refreshProgramCards()">Refresh Programs</button>
+    </div>
+</div>
+
+<div class="content-section" style="margin-bottom: var(--spacing-md);">
+    <div class="program-type-bar" id="programTypeBar">
+        <button type="button" class="program-type-bubble active" data-program-type="All" onclick="setProgramTypeFilter('All')">All</button>
+        {% for ptype in program_type_options %}
+        <button type="button" class="program-type-bubble" data-program-type="{{ ptype }}" onclick="setProgramTypeFilter('{{ ptype }}')">{{ ptype }}</button>
+        {% endfor %}
+    </div>
+
+    <div class="program-toolbar">
+        <div class="filter-group">
+            <label for="programSearch">Search Program</label>
+            <input id="programSearch" type="text" placeholder="Type program name..." oninput="renderProgramCards()">
+        </div>
+        <div class="filter-group">
+            <label for="programStatusFilter">Program Status</label>
+            <select id="programStatusFilter" onchange="renderProgramCards()">
+                <option value="">All Statuses</option>
+                <option value="Not Started">Not Started</option>
+                <option value="In-Progress">In-Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="programSort">Sort By</label>
+            <select id="programSort" onchange="renderProgramCards()">
+                <option value="priority_status" selected>Priority + Status</option>
+                <option value="completion_desc">Completion (High to Low)</option>
+                <option value="completion_asc">Completion (Low to High)</option>
+                <option value="name_asc">Program Name (A-Z)</option>
+                <option value="name_desc">Program Name (Z-A)</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="mission-quick-actions" style="margin-bottom: 12px;">
+        <div class="left">
+            <strong id="programCardCount">0 Programs</strong>
+        </div>
+    </div>
+
+    <div id="programGrid" class="program-grid"></div>
+
+    <div id="programPagination" class="program-pagination" style="display: none;">
+        <div id="programPaginationInfo" class="program-pagination-info">Showing 0 of 0</div>
+        <div class="program-pagination-controls">
+            <button id="programPrevPage" class="btn btn-secondary btn-sm" onclick="changeProgramPage(-1)">Previous</button>
+            <span id="programPaginationPage" class="program-pagination-page">Page 1 of 1</span>
+            <button id="programNextPage" class="btn btn-secondary btn-sm" onclick="changeProgramPage(1)">Next</button>
+        </div>
+    </div>
+
+    <div id="programEmptyState" class="text-center" style="display: none; padding: 36px 12px;">
+        <h3 style="margin-bottom: 8px;">No programs found</h3>
+        <p class="text-muted" style="margin: 0;">Try changing search filters or add a mission to create a new program card.</p>
+    </div>
+</div>
+
+<!-- Program Missions Modal -->
+<div id="programModal" class="modal-overlay" style="display: none;">
+    <div class="modal modal-wide">
+        <div class="modal-header">
+            <h2 id="programModalTitle">Program Missions</h2>
+            <button class="modal-close" onclick="closeProgramModal()">&times;</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 0 12px; border-bottom: 1px solid var(--border-color, #e0e0e0); margin-bottom: 4px;">
+            <label for="programTypeEdit" style="font-size: 13px; font-weight: 600; margin: 0; white-space: nowrap;">Program Type:</label>
+            <input type="text" id="programTypeEdit" list="programTypeDatalist"
+                   placeholder="e.g. TA, WBC, Player..."
+                   onchange="updateProgramType(this.value.trim())"
+                   style="font-size: 13px; padding: 3px 6px; width: 180px;">
+        </div>
+
+        <div class="mission-quick-actions">
+            <div class="left">
+                <button class="btn btn-primary btn-sm" onclick="openAddMissionModal(activeProgram)">Add Mission</button>
+                <button class="btn btn-secondary btn-sm" onclick="saveAllMissionEdits()">Save All</button>
+                <button class="btn btn-secondary btn-sm" onclick="recalculateProgramPriorities()">Recalculate Priority</button>
+                <button class="btn btn-success btn-sm" id="btnMarkSelectedComplete" onclick="markSelectedMissionsComplete()" disabled>
+                    Mark Selected Complete
+                </button>
+                <button class="btn btn-danger btn-sm" id="btnDeleteSelectedMissions" onclick="deleteSelectedMissions()" disabled>
+                    Delete Selected
+                </button>
+            </div>
+            <div class="right">
+                <span class="text-muted" id="programMissionCount">0 missions</span>
+                <button class="btn btn-secondary btn-sm" onclick="loadActiveProgramMissions()">Refresh Program</button>
+            </div>
+        </div>
+
+        <div class="grind-panel">
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 36px;">
+                                    <input id="selectAllProgramMissions" type="checkbox" onchange="toggleSelectAllProgramMissions()">
+                                </th>
+                                <th>Priority</th>
+                                <th>Mission</th>
+                                <th>Type</th>
+                                <th>Total</th>
+                                <th>Current</th>
+                                <th>Progress</th>
+                                <th>Status</th>
+                                <th>Acquired</th>
+                                <th>Players</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="programMissionsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+    </div>
+</div>
+
+<!-- All Missions Modal -->
+<div id="allMissionsModal" class="modal-overlay" style="display: none;">
+    <div class="modal modal-wide">
+        <div class="modal-header">
+            <h2>All Missions</h2>
+            <button class="modal-close" onclick="closeAllMissionsModal()">&times;</button>
+        </div>
+
+        <div class="mission-quick-actions">
+            <div class="left">
+                <button class="btn btn-secondary btn-sm" onclick="saveAllMissionsEdits()">Save All</button>
+                <button class="btn btn-secondary btn-sm" onclick="recalculateAllMissionsPriorities()">Recalculate Priority</button>
+                <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px;">
+                    <input id="allMissionsIncludeCompleted" type="checkbox" onchange="renderAllMissionsTable()">
+                    Include Completed
+                </label>
+            </div>
+            <div class="right">
+                <span class="text-muted" id="allMissionCount">0 missions</span>
+                <button class="btn btn-secondary btn-sm" onclick="loadAllMissions()">Refresh</button>
+            </div>
+        </div>
+
+        <div class="grind-panel">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Mission</th>
+                            <th>Type</th>
+                            <th>Total</th>
+                            <th>Current</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Acquired</th>
+                            <th>Players</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allMissionsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto Grind Diamond Modal -->
+<div id="autoGrindModal" class="modal-overlay" style="display: none;">
+    <div class="modal auto-grind-modal">
+        <div class="modal-header">
+            <h2>Auto Grind Diamond</h2>
+            <button class="modal-close" onclick="closeAutoGrindModal()">&times;</button>
+        </div>
+
+        <div id="autoGrindMeta" class="auto-grind-meta">Loading active mission candidates...</div>
+
+        <div class="auto-grind-legend">
+            <span class="auto-grind-legend-item"><span class="legend-swatch green"></span>Owned and on team</span>
+            <span class="auto-grind-legend-item"><span class="legend-swatch yellow"></span>Owned, not on team</span>
+            <span class="auto-grind-legend-item"><span class="legend-swatch red"></span>Not owned</span>
+        </div>
+
+        <div class="auto-grind-fieldboard">
+            <section class="auto-grind-field auto-slot auto-slot-cf">
+                <h3>Center Field</h3>
+                <div id="agPosCF" class="list-stack"></div>
+            </section>
+            <section class="auto-grind-field auto-slot auto-slot-lf">
+                <h3>Left Field</h3>
+                <div id="agPosLF" class="list-stack"></div>
+            </section>
+            <section class="auto-grind-field auto-slot auto-slot-rf">
+                <h3>Right Field</h3>
+                <div id="agPosRF" class="list-stack"></div>
+            </section>
+            <section class="auto-grind-field auto-slot auto-slot-ss">
+                <h3>Shortstop</h3>
+                <div id="agPosSS" class="list-stack"></div>
+            </section>
+            <section class="auto-grind-field auto-slot auto-slot-2b">
+                <h3>2nd Base</h3>
+                <div id="agPos2B" class="list-stack"></div>
+            </section>
+            <section class="auto-grind-field auto-slot auto-slot-3b">
+                <h3>3rd Base</h3>
+                <div id="agPos3B" class="list-stack"></div>
+            </section>
+            <section class="auto-grind-field auto-slot auto-slot-1b">
+                <h3>1st Base</h3>
+                <div id="agPos1B" class="list-stack"></div>
+            </section>
+            <section class="auto-grind-field auto-slot auto-slot-p">
+                <h3>Pitcher</h3>
+                <div id="agPosP" class="list-stack"></div>
+            </section>
+            <section class="auto-grind-field auto-slot auto-slot-c">
+                <h3>Catcher</h3>
+                <div id="agPosC" class="list-stack"></div>
+            </section>
+        </div>
+
+        <div class="auto-grind-bottom">
+            <section class="auto-slot">
+                <h3>Bench</h3>
+                <div id="agPosBENCH" class="list-stack"></div>
+            </section>
+            <section class="auto-slot">
+                <h3>Utility</h3>
+                <div id="agPosUTILITY" class="list-stack"></div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<datalist id="programTypeDatalist">
+    {% for ptype in program_type_options %}
+    <option value="{{ ptype }}"></option>
+    {% endfor %}
+</datalist>
+
+<!-- Add Mission Modal -->
+<div id="addMissionModal" class="modal-overlay" style="display: none;">
+    <div class="modal" style="width: min(760px, 96vw); max-height: 90vh; overflow: auto;">
+        <div class="modal-header">
+            <h2>Add Mission</h2>
+            <button class="modal-close" onclick="closeAddMissionModal()">&times;</button>
+        </div>
+
+        <form id="addMissionForm" onsubmit="submitAddMission(event)">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+                <div>
+                    <label>Program Category *</label>
+                    <input type="text" name="program_category" list="programCategoryList" required>
+                    <datalist id="programCategoryList">
+                        {% for category in program_categories %}
+                        <option value="{{ category }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div>
+                    <label>Mission Name *</label>
+                    <input type="text" name="mission_name" required>
+                </div>
+                <div>
+                    <label>Mission Type *</label>
+                    <select name="mission_type" required>
+                        <option value="Single Card">Single Card</option>
+                        <option value="Grouped Card">Grouped Card</option>
+                        <option value="Moment">Moment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Tracking Mode *</label>
+                    <select name="tracking_mode" required>
+                        <option value="Quantity Count">Quantity Count</option>
+                        <option value="Moment Count">Moment Count</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Priority *</label>
+                    <select name="priority" required>
+                        <option value="At-Bat">At-Bat</option>
+                        <option value="On-Deck">On-Deck</option>
+                        <option value="In the Hole">In the Hole</option>
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div>
+                        <label>Mission Total *</label>
+                        <input id="addMissionTotal" type="number" name="mission_total" min="1" required>
+                    </div>
+                    <div>
+                        <label>Current Status *</label>
+                        <input id="addCurrentStatus" type="number" name="current_status" min="0" value="0" required>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 14px;">
+                <label>Add Mission Players (optional)</label>
+                <input id="addPlayerSearch" type="text" placeholder="Search full player catalog..." oninput="searchAddMissionPlayers()">
+                <div id="addPlayerResults" class="picker-results"></div>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <label>Selected Players</label>
+                <div id="addMissionSelectedPlayers" class="player-chip-wrap"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddMissionModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Mission</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assign Players Modal -->
+<div id="assignPlayersModal" class="modal-overlay" style="display: none;">
+    <div class="modal" style="width: min(760px, 96vw); max-height: 90vh; overflow: auto;">
+        <div class="modal-header">
+            <h2 id="assignPlayersTitle">Assign Players</h2>
+            <button class="modal-close" onclick="closeAssignPlayersModal()">&times;</button>
+        </div>
+
+        <div>
+            <label>Search Players</label>
+            <input id="assignPlayerSearch" type="text" placeholder="Search full player catalog..." oninput="searchAssignPlayers()">
+            <div id="assignPlayerResults" class="picker-results"></div>
+        </div>
+
+        <div style="margin-top: 12px;">
+            <label>Selected Players for This Mission</label>
+            <div id="assignSelectedPlayers" class="player-chip-wrap"></div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeAssignPlayersModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="saveAssignedPlayers()">Save Players</button>
+        </div>
+    </div>
+</div>
+
+<script id="programCardsData" type="application/json">{{ program_cards | tojson }}</script>
+<script id="samplePlayersData" type="application/json">{{ sample_players | tojson }}</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const initialProgramCards = JSON.parse(document.getElementById('programCardsData').textContent || '[]');
+const initialSamplePlayers = JSON.parse(document.getElementById('samplePlayersData').textContent || '[]');
+
+const PROGRAMS_PER_PAGE = 10;
+
+let programCards = Array.isArray(initialProgramCards) ? initialProgramCards : [];
+let activeProgramTypeFilter = 'All';
+let currentProgramPage = 1;
+let lastProgramFilterSignature = '';
+let activeProgram = null;
+let activeProgramMissions = [];
+let allMissions = [];
+let selectedMissionIds = new Set();
+
+const playerDirectory = new Map();
+if (Array.isArray(initialSamplePlayers)) {
+    initialSamplePlayers.forEach(player => {
+        if (player && player.player_id) {
+            playerDirectory.set(player.player_id, player);
+        }
+    });
+}
+
+let addMissionPlayerResults = Array.isArray(initialSamplePlayers) ? initialSamplePlayers : [];
+let addMissionSelectedPlayerIds = new Set();
+
+const assignState = {
+    missionId: null,
+    missionName: '',
+    results: Array.isArray(initialSamplePlayers) ? initialSamplePlayers : [],
+    selectedPlayerIds: new Set(),
+};
+
+const AUTO_GRIND_BUCKET_IDS = {
+    P: 'agPosP',
+    C: 'agPosC',
+    '1B': 'agPos1B',
+    '2B': 'agPos2B',
+    '3B': 'agPos3B',
+    SS: 'agPosSS',
+    LF: 'agPosLF',
+    CF: 'agPosCF',
+    RF: 'agPosRF',
+    BENCH: 'agPosBENCH',
+    UTILITY: 'agPosUTILITY',
+};
+
+function rememberPlayers(players) {
+    if (!Array.isArray(players)) return;
+    players.forEach(player => {
+        if (player && player.player_id) {
+            playerDirectory.set(player.player_id, player);
+        }
+    });
+}
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function toStatusClass(statusText) {
+    const normalized = String(statusText || '').toLowerCase();
+    if (normalized.includes('completed')) return 'completed';
+    if (normalized.includes('progress')) return 'in-progress';
+    return 'not-started';
+}
+
+function missionPriorityRank(priority) {
+    if (priority === 'At-Bat') return 1;
+    if (priority === 'On-Deck') return 2;
+    return 3;
+}
+
+function missionStatusRank(status) {
+    if (status === 'In-Progress') return 1;
+    if (status === 'Not Started') return 2;
+    if (status === 'Completed') return 3;
+    return 4;
+}
+
+function programPriorityRank(priority) {
+    if (priority === 'At-Bat') return 1;
+    if (priority === 'On-Deck') return 2;
+    return 3;
+}
+
+function programStatusRank(status) {
+    if (status === 'In-Progress') return 1;
+    if (status === 'Not Started') return 2;
+    if (status === 'Completed') return 3;
+    return 4;
+}
+
+function formatProgramCount(count) {
+    return `${count} Program${count === 1 ? '' : 's'}`;
+}
+
+function updateProgramPagination(totalItems, totalPages, startIndex, visibleCount) {
+    const paginationEl = document.getElementById('programPagination');
+    const infoEl = document.getElementById('programPaginationInfo');
+    const pageEl = document.getElementById('programPaginationPage');
+    const prevButton = document.getElementById('programPrevPage');
+    const nextButton = document.getElementById('programNextPage');
+
+    if (totalItems === 0) {
+        paginationEl.style.display = 'none';
+        return;
+    }
+
+    const from = startIndex + 1;
+    const to = startIndex + visibleCount;
+
+    paginationEl.style.display = 'flex';
+    infoEl.textContent = `Showing ${from}-${to} of ${totalItems}`;
+    pageEl.textContent = `Page ${currentProgramPage} of ${totalPages}`;
+    prevButton.disabled = currentProgramPage <= 1;
+    nextButton.disabled = currentProgramPage >= totalPages;
+}
+
+function changeProgramPage(direction) {
+    currentProgramPage += Number(direction || 0);
+    renderProgramCards();
+}
+
+function setProgramTypeFilter(programType) {
+    activeProgramTypeFilter = programType || 'All';
+
+    document.querySelectorAll('.program-type-bubble').forEach(button => {
+        if (button.dataset.programType === activeProgramTypeFilter) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+        }
+    });
+
+    renderProgramCards();
+}
+
+function renderProgramCards() {
+    const grid = document.getElementById('programGrid');
+    const emptyState = document.getElementById('programEmptyState');
+    const countEl = document.getElementById('programCardCount');
+
+    const searchText = document.getElementById('programSearch').value.trim().toLowerCase();
+    const statusFilter = document.getElementById('programStatusFilter').value;
+    const sortValue = document.getElementById('programSort').value;
+
+    const filterSignature = [searchText, statusFilter, activeProgramTypeFilter, sortValue, programCards.length].join('|');
+    if (filterSignature !== lastProgramFilterSignature) {
+        currentProgramPage = 1;
+        lastProgramFilterSignature = filterSignature;
+    }
+
+    let filtered = [...programCards].filter(card => {
+        const programName = String(card['Program Category'] || '').toLowerCase();
+        const status = card['Program Status'] || '';
+        const programType = card['Program Type'] || 'not-assigned';
+
+        const matchesSearch = !searchText || programName.includes(searchText);
+        const matchesStatus = !statusFilter || status === statusFilter;
+        const matchesType = activeProgramTypeFilter === 'All' || programType === activeProgramTypeFilter;
+
+        return matchesSearch && matchesStatus && matchesType;
+    });
+
+    filtered.sort((a, b) => {
+        if (sortValue === 'completion_asc') {
+            return (a['Program Completion Percent'] || 0) - (b['Program Completion Percent'] || 0);
+        }
+
+        if (sortValue === 'name_asc') {
+            return String(a['Program Category'] || '').localeCompare(String(b['Program Category'] || ''));
+        }
+
+        if (sortValue === 'name_desc') {
+            return String(b['Program Category'] || '').localeCompare(String(a['Program Category'] || ''));
+        }
+
+        if (sortValue === 'completion_desc') {
+            return (b['Program Completion Percent'] || 0) - (a['Program Completion Percent'] || 0);
+        }
+
+        const priorityCompare = programPriorityRank(a['Program Priority']) - programPriorityRank(b['Program Priority']);
+        if (priorityCompare !== 0) return priorityCompare;
+
+        const statusCompare = programStatusRank(a['Program Status']) - programStatusRank(b['Program Status']);
+        if (statusCompare !== 0) return statusCompare;
+
+        const completionCompare = (a['Program Completion Percent'] || 0) - (b['Program Completion Percent'] || 0);
+        if (completionCompare !== 0) return completionCompare;
+
+        return String(a['Program Category'] || '').localeCompare(String(b['Program Category'] || ''));
+    });
+
+    const totalPrograms = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalPrograms / PROGRAMS_PER_PAGE));
+    currentProgramPage = Math.max(1, Math.min(currentProgramPage, totalPages));
+
+    if (totalPrograms === 0) {
+        grid.innerHTML = '';
+        emptyState.style.display = 'block';
+        countEl.textContent = formatProgramCount(0);
+        updateProgramPagination(0, 1, 0, 0);
+        return;
+    }
+
+    const startIndex = (currentProgramPage - 1) * PROGRAMS_PER_PAGE;
+    const pagedCards = filtered.slice(startIndex, startIndex + PROGRAMS_PER_PAGE);
+
+    emptyState.style.display = 'none';
+    countEl.textContent = formatProgramCount(totalPrograms);
+    updateProgramPagination(totalPrograms, totalPages, startIndex, pagedCards.length);
+
+    grid.innerHTML = pagedCards.map(card => {
+        const programName = card['Program Category'] || 'Unassigned';
+        const completion = Number(card['Program Completion Percent'] || 0);
+        const status = card['Program Status'] || 'Not Started';
+        const programType = card['Program Type'] || 'not-assigned';
+        const programPriority = card['Program Priority'] || 'At-Bat';
+        const statusClass = toStatusClass(status);
+
+        return `
+            <button class="program-card" data-program="${escapeHtml(programName)}">
+                <h3 class="program-title" title="${escapeHtml(programName)}">${escapeHtml(programName)}</h3>
+                <div class="program-status-row">
+                    <span>
+                        <span class="status-pill ${statusClass}">${escapeHtml(status)}</span>
+                        <span class="status-pill" style="margin-left: 6px;">${escapeHtml(programType)}</span>
+                    </span>
+                    <strong>${completion.toFixed(2)}%</strong>
+                </div>
+                <progress max="100" value="${completion}" style="width: 100%; height: 9px;"></progress>
+                <div class="program-meta">
+                    <div>
+                        <div class="label">Total Missions</div>
+                        <div class="value">${card['Total Missions'] || 0}</div>
+                    </div>
+                    <div>
+                        <div class="label">Completed</div>
+                        <div class="value">${card['Completed Missions'] || 0}</div>
+                    </div>
+                    <div>
+                        <div class="label">In Progress</div>
+                        <div class="value">${card['In-Progress Missions'] || 0}</div>
+                    </div>
+                    <div>
+                        <div class="label">Priority</div>
+                        <div class="value">${escapeHtml(programPriority)}</div>
+                    </div>
+                </div>
+            </button>
+        `;
+    }).join('');
+
+    grid.querySelectorAll('.program-card').forEach(cardEl => {
+        cardEl.addEventListener('click', () => openProgramModal(cardEl.dataset.program));
+    });
+}
+
+async function refreshProgramCards() {
+    try {
+        const response = await fetch('/api/missions/program-progress');
+        const result = await response.json();
+        if (!result.success) {
+            showAlert(result.error || 'Failed to refresh program cards.', 'error');
+            return;
+        }
+
+        programCards = Array.isArray(result.program_cards) ? result.program_cards : [];
+        rebuildProgramTypeBubbles();
+        renderProgramCards();
+    } catch (error) {
+        showAlert('Refresh failed: ' + error.message, 'error');
+    }
+}
+
+function rebuildProgramTypeBubbles() {
+    const bar = document.getElementById('programTypeBar');
+    const types = [...new Set(programCards.map(c => c['Program Type'] || 'not-assigned'))].sort();
+    bar.querySelectorAll('.program-type-bubble:not([data-program-type="All"])').forEach(b => b.remove());
+    types.forEach(t => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'program-type-bubble' + (t === activeProgramTypeFilter ? ' active' : '');
+        btn.dataset.programType = t;
+        btn.textContent = t;
+        btn.addEventListener('click', () => setProgramTypeFilter(t));
+        bar.appendChild(btn);
+    });
+    const allBtn = bar.querySelector('[data-program-type="All"]');
+    if (allBtn) allBtn.classList.toggle('active', activeProgramTypeFilter === 'All');
+}
+
+async function openProgramModal(programName) {
+    activeProgram = programName;
+    document.getElementById('programModalTitle').textContent = `${programName} Missions`;
+    const card = programCards.find(c => c['Program Category'] === programName);
+    const currentType = (card && card['Program Type']) || 'not-assigned';
+    document.getElementById('programTypeEdit').value = currentType;
+    document.getElementById('programModal').style.display = 'flex';
+    await loadActiveProgramMissions();
+}
+
+async function updateProgramType(newType) {
+    if (!activeProgram) return;
+    try {
+        const response = await fetch(`/api/missions/program/${encodeURIComponent(activeProgram)}/type`, {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({program_type: newType})
+        });
+        const result = await response.json();
+        if (!result.success) {
+            showAlert(result.error || 'Failed to update program type.', 'error');
+            return;
+        }
+        const card = programCards.find(c => c['Program Category'] === activeProgram);
+        if (card) card['Program Type'] = newType;
+        rebuildProgramTypeBubbles();
+        renderProgramCards();
+    } catch (error) {
+        showAlert('Update failed: ' + error.message, 'error');
+    }
+}
+
+function closeProgramModal() {
+    document.getElementById('programModal').style.display = 'none';
+    activeProgram = null;
+    activeProgramMissions = [];
+    selectedMissionIds.clear();
+}
+
+function openAllMissionsModal() {
+    document.getElementById('allMissionsIncludeCompleted').checked = false;
+    document.getElementById('allMissionsModal').style.display = 'flex';
+    loadAllMissions();
+}
+
+function closeAllMissionsModal() {
+    document.getElementById('allMissionsModal').style.display = 'none';
+    allMissions = [];
+}
+
+async function loadAllMissions() {
+    try {
+        const response = await fetch('/api/missions?include_players=true');
+        const result = await response.json();
+        if (!result.success) {
+            showAlert(result.error || 'Failed to load all missions.', 'error');
+            return;
+        }
+
+        allMissions = Array.isArray(result.missions) ? result.missions : [];
+        renderAllMissionsTable();
+    } catch (error) {
+        showAlert('Error loading all missions: ' + error.message, 'error');
+    }
+}
+
+function renderAllMissionsTable() {
+    const tbody = document.getElementById('allMissionsBody');
+    const countEl = document.getElementById('allMissionCount');
+    const includeCompleted = document.getElementById('allMissionsIncludeCompleted').checked;
+
+    const filtered = allMissions.filter(mission => {
+        if (includeCompleted) return true;
+        return mission['Status'] !== 'Completed';
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+        const priorityCompare = missionPriorityRank(a['Priority']) - missionPriorityRank(b['Priority']);
+        if (priorityCompare !== 0) return priorityCompare;
+        const statusCompare = missionStatusRank(a['Status']) - missionStatusRank(b['Status']);
+        if (statusCompare !== 0) return statusCompare;
+        return Number(b['Progress Percent'] || 0) - Number(a['Progress Percent'] || 0);
+    });
+
+    if (sorted.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center text-muted" style="padding: 20px;">No missions found.</td>
+            </tr>
+        `;
+        countEl.textContent = '0 missions';
+        return;
+    }
+
+    tbody.innerHTML = sorted.map(mission => {
+        const missionId = mission['Mission ID'];
+        const programCategory = mission['Program Category'] || '';
+        const missionName = mission['Mission Name'] || '';
+        const missionType = mission['Mission Type'] || 'Other';
+        const trackingMode = mission['Tracking Mode'] || 'Quantity Count';
+        const missionPriority = mission['Priority'] || 'At-Bat';
+        const missionTotal = Number(mission['Mission Total'] || 0);
+        const currentStatus = Number(mission['Current Status'] || 0);
+        const progress = Number(mission['Progress Percent'] || 0);
+        const status = mission['Status'] || 'Not Started';
+        const statusClass = toStatusClass(status);
+        const acquired = mission['Acquired'] || 'Not Acquired';
+
+        return `
+            <tr data-mission-id="${missionId}">
+                <td>
+                    <select id="allMissionPriority_${missionId}" class="mission-inline-select">
+                        <option value="At-Bat" ${missionPriority === 'At-Bat' ? 'selected' : ''}>At-Bat</option>
+                        <option value="On-Deck" ${missionPriority === 'On-Deck' ? 'selected' : ''}>On-Deck</option>
+                        <option value="In the Hole" ${missionPriority === 'In the Hole' ? 'selected' : ''}>In the Hole</option>
+                    </select>
+                </td>
+                <td>
+                    <input
+                        id="allMissionName_${missionId}"
+                        class="mission-inline-input mission-inline-name"
+                        type="text"
+                        value="${escapeHtml(missionName)}"
+                    >
+                    <div class="mission-inline-subrow">
+                        <span class="text-muted" style="font-size: 12px;">${escapeHtml(programCategory)}</span>
+                        <select id="allMissionTracking_${missionId}" class="mission-inline-select">
+                            <option value="Quantity Count" ${trackingMode === 'Quantity Count' ? 'selected' : ''}>Quantity Count</option>
+                            <option value="Moment Count" ${trackingMode === 'Moment Count' ? 'selected' : ''}>Moment Count</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <select id="allMissionType_${missionId}" class="mission-inline-select">
+                        <option value="Single Card" ${missionType === 'Single Card' ? 'selected' : ''}>Single Card</option>
+                        <option value="Grouped Card" ${missionType === 'Grouped Card' ? 'selected' : ''}>Grouped Card</option>
+                        <option value="Moment" ${missionType === 'Moment' ? 'selected' : ''}>Moment</option>
+                        <option value="Other" ${missionType === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                </td>
+                <td>
+                    <input
+                        id="allMissionTotal_${missionId}"
+                        class="mission-inline-input"
+                        type="number"
+                        min="1"
+                        oninput="syncAllMissionCurrentMax(${missionId})"
+                        value="${missionTotal}"
+                    >
+                </td>
+                <td>
+                    <input
+                        id="allMissionCurrent_${missionId}"
+                        class="mission-inline-input inline-current-status"
+                        type="number"
+                        min="0"
+                        max="${missionTotal}"
+                        value="${currentStatus}"
+                    >
+                </td>
+                <td style="min-width: 120px;">
+                    <div style="font-size: 12px; margin-bottom: 4px;">${progress.toFixed(2)}%</div>
+                    <progress max="100" value="${progress}" style="width: 100%; height: 8px;"></progress>
+                </td>
+                <td><span class="status-pill ${statusClass}">${escapeHtml(status)}</span></td>
+                <td>
+                    <select id="allMissionAcquired_${missionId}" class="mission-inline-select">
+                        <option value="Not Acquired" ${acquired === 'Not Acquired' ? 'selected' : ''}>Not Acquired</option>
+                        <option value="Acquired" ${acquired === 'Acquired' ? 'selected' : ''}>Acquired</option>
+                    </select>
+                </td>
+                <td style="min-width: 220px;"><div class="player-chip-wrap">${missionPlayersMarkup(mission['Players'])}</div></td>
+                <td style="white-space: nowrap;">
+                    <button class="btn btn-primary btn-sm" onclick="openAssignPlayersModal(${missionId})">Players</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    countEl.textContent = `${sorted.length} mission${sorted.length === 1 ? '' : 's'}`;
+}
+
+async function loadActiveProgramMissions() {
+    if (!activeProgram) return;
+
+    try {
+        const response = await fetch(`/api/missions/program/${encodeURIComponent(activeProgram)}`);
+        const result = await response.json();
+        if (!result.success) {
+            showAlert(result.error || 'Failed to load program missions.', 'error');
+            return;
+        }
+
+        activeProgramMissions = Array.isArray(result.missions) ? result.missions : [];
+        selectedMissionIds.clear();
+        renderProgramMissionsTable();
+    } catch (error) {
+        showAlert('Error loading program missions: ' + error.message, 'error');
+    }
+}
+
+function missionPlayersMarkup(players) {
+    if (!Array.isArray(players) || players.length === 0) {
+        return '<span class="text-muted">No players assigned</span>';
+    }
+
+    return players.slice(0, 4).map(player => {
+        const ownedClass = String(player.ownership_status || '').toLowerCase() === 'owned' ? 'owned' : 'not-owned';
+        const ownership = player.ownership_status || 'Not Owned';
+        return `<span class="player-chip ${ownedClass}">${escapeHtml(player.player_name)} (${escapeHtml(ownership)})</span>`;
+    }).join('') + (players.length > 4 ? `<span class="text-muted">+${players.length - 4} more</span>` : '');
+}
+
+function renderProgramMissionsTable() {
+    const tbody = document.getElementById('programMissionsBody');
+    const countEl = document.getElementById('programMissionCount');
+    const selectAll = document.getElementById('selectAllProgramMissions');
+
+    if (selectAll) selectAll.checked = false;
+
+    const sorted = [...activeProgramMissions].sort((a, b) => {
+        const priorityCompare = missionPriorityRank(a['Priority']) - missionPriorityRank(b['Priority']);
+        if (priorityCompare !== 0) return priorityCompare;
+        const statusCompare = missionStatusRank(a['Status']) - missionStatusRank(b['Status']);
+        if (statusCompare !== 0) return statusCompare;
+        return Number(b['Progress Percent'] || 0) - Number(a['Progress Percent'] || 0);
+    });
+
+    if (sorted.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="11" class="text-center text-muted" style="padding: 20px;">No missions found in this program.</td>
+            </tr>
+        `;
+        countEl.textContent = '0 missions';
+        updateMissionBulkButtons();
+        return;
+    }
+
+    tbody.innerHTML = sorted.map(mission => {
+        const missionId = mission['Mission ID'];
+        const programCategory = mission['Program Category'] || '';
+        const missionName = mission['Mission Name'] || '';
+        const missionType = mission['Mission Type'] || 'Other';
+        const trackingMode = mission['Tracking Mode'] || 'Quantity Count';
+        const missionPriority = mission['Priority'] || 'At-Bat';
+        const missionTotal = Number(mission['Mission Total'] || 0);
+        const currentStatus = Number(mission['Current Status'] || 0);
+        const progress = Number(mission['Progress Percent'] || 0);
+        const status = mission['Status'] || 'Not Started';
+        const statusClass = toStatusClass(status);
+        const acquired = mission['Acquired'] || 'Not Acquired';
+
+        return `
+            <tr data-mission-id="${missionId}">
+                <td>
+                    <input
+                        type="checkbox"
+                        class="program-mission-select"
+                        value="${missionId}"
+                        onchange="toggleMissionSelection(${missionId}, this.checked)"
+                    >
+                </td>
+                <td>
+                    <select id="missionPriority_${missionId}" class="mission-inline-select">
+                        <option value="At-Bat" ${missionPriority === 'At-Bat' ? 'selected' : ''}>At-Bat</option>
+                        <option value="On-Deck" ${missionPriority === 'On-Deck' ? 'selected' : ''}>On-Deck</option>
+                        <option value="In the Hole" ${missionPriority === 'In the Hole' ? 'selected' : ''}>In the Hole</option>
+                    </select>
+                </td>
+                <td>
+                    <input
+                        id="missionName_${missionId}"
+                        class="mission-inline-input mission-inline-name"
+                        type="text"
+                        value="${escapeHtml(missionName)}"
+                    >
+                    <div class="mission-inline-subrow">
+                        <input
+                            id="missionProgram_${missionId}"
+                            class="mission-inline-input"
+                            type="text"
+                            value="${escapeHtml(programCategory)}"
+                            placeholder="Program Category"
+                        >
+                        <select id="missionTracking_${missionId}" class="mission-inline-select">
+                            <option value="Quantity Count" ${trackingMode === 'Quantity Count' ? 'selected' : ''}>Quantity Count</option>
+                            <option value="Moment Count" ${trackingMode === 'Moment Count' ? 'selected' : ''}>Moment Count</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <select id="missionType_${missionId}" class="mission-inline-select">
+                        <option value="Single Card" ${missionType === 'Single Card' ? 'selected' : ''}>Single Card</option>
+                        <option value="Grouped Card" ${missionType === 'Grouped Card' ? 'selected' : ''}>Grouped Card</option>
+                        <option value="Moment" ${missionType === 'Moment' ? 'selected' : ''}>Moment</option>
+                        <option value="Other" ${missionType === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                </td>
+                <td>
+                    <input
+                        id="missionTotal_${missionId}"
+                        class="mission-inline-input"
+                        type="number"
+                        min="1"
+                        oninput="syncMissionCurrentMax(${missionId})"
+                        value="${missionTotal}"
+                    >
+                </td>
+                <td>
+                    <input
+                        id="missionCurrent_${missionId}"
+                        class="mission-inline-input inline-current-status"
+                        type="number"
+                        min="0"
+                        max="${missionTotal}"
+                        value="${currentStatus}"
+                    >
+                </td>
+                <td style="min-width: 120px;">
+                    <div style="font-size: 12px; margin-bottom: 4px;">${progress.toFixed(2)}%</div>
+                    <progress max="100" value="${progress}" style="width: 100%; height: 8px;"></progress>
+                </td>
+                <td><span class="status-pill ${statusClass}">${escapeHtml(status)}</span></td>
+                <td>
+                    <select id="missionAcquired_${missionId}" class="mission-inline-select">
+                        <option value="Not Acquired" ${acquired === 'Not Acquired' ? 'selected' : ''}>Not Acquired</option>
+                        <option value="Acquired" ${acquired === 'Acquired' ? 'selected' : ''}>Acquired</option>
+                    </select>
+                </td>
+                <td style="min-width: 220px;"><div class="player-chip-wrap">${missionPlayersMarkup(mission['Players'])}</div></td>
+                <td style="white-space: nowrap;">
+                    <button class="btn btn-primary btn-sm" onclick="openAssignPlayersModal(${missionId})">Players</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    countEl.textContent = `${sorted.length} mission${sorted.length === 1 ? '' : 's'}`;
+    updateMissionBulkButtons();
+}
+
+function toggleSelectAllProgramMissions() {
+    const checked = document.getElementById('selectAllProgramMissions').checked;
+    document.querySelectorAll('.program-mission-select').forEach(cb => {
+        cb.checked = checked;
+        const missionId = Number(cb.value);
+        if (checked) {
+            selectedMissionIds.add(missionId);
+        } else {
+            selectedMissionIds.delete(missionId);
+        }
+    });
+
+    updateMissionBulkButtons();
+}
+
+function toggleMissionSelection(missionId, isChecked) {
+    if (isChecked) {
+        selectedMissionIds.add(Number(missionId));
+    } else {
+        selectedMissionIds.delete(Number(missionId));
+    }
+
+    updateMissionBulkButtons();
+}
+
+function updateMissionBulkButtons() {
+    const selectedCount = selectedMissionIds.size;
+    document.getElementById('btnMarkSelectedComplete').disabled = selectedCount === 0;
+    document.getElementById('btnDeleteSelectedMissions').disabled = selectedCount === 0;
+}
+
+function syncMissionCurrentMax(missionId) {
+    const totalInput = document.getElementById(`missionTotal_${missionId}`);
+    const currentInput = document.getElementById(`missionCurrent_${missionId}`);
+    if (!totalInput || !currentInput) return;
+
+    const maxValue = Math.max(1, Number(totalInput.value || 1));
+    currentInput.max = String(maxValue);
+}
+
+function syncAllMissionCurrentMax(missionId) {
+    const totalInput = document.getElementById(`allMissionTotal_${missionId}`);
+    const currentInput = document.getElementById(`allMissionCurrent_${missionId}`);
+    if (!totalInput || !currentInput) return;
+
+    const maxValue = Math.max(1, Number(totalInput.value || 1));
+    currentInput.max = String(maxValue);
+}
+
+function getMissionEditPayload(missionId) {
+    const missionName = (document.getElementById(`missionName_${missionId}`)?.value || '').trim();
+    const programCategory = (document.getElementById(`missionProgram_${missionId}`)?.value || '').trim();
+    const missionType = document.getElementById(`missionType_${missionId}`)?.value || 'Other';
+    const trackingMode = document.getElementById(`missionTracking_${missionId}`)?.value || 'Quantity Count';
+    const priority = document.getElementById(`missionPriority_${missionId}`)?.value || 'At-Bat';
+    const missionTotal = Number(document.getElementById(`missionTotal_${missionId}`)?.value || 0);
+    const currentStatus = Number(document.getElementById(`missionCurrent_${missionId}`)?.value || 0);
+    const acquired = document.getElementById(`missionAcquired_${missionId}`)?.value || 'Not Acquired';
+
+    if (!missionName || !programCategory) return null;
+    if (!Number.isFinite(missionTotal) || missionTotal <= 0) return null;
+    if (!Number.isFinite(currentStatus) || currentStatus < 0 || currentStatus > missionTotal) return null;
+
+    return { program_category: programCategory, mission_name: missionName, mission_type: missionType,
+             tracking_mode: trackingMode, priority, mission_total: missionTotal,
+             current_status: currentStatus, acquired };
+}
+
+function getAllMissionEditPayload(missionId) {
+    const sourceMission = allMissions.find(m => Number(m['Mission ID']) === Number(missionId));
+    if (!sourceMission) return null;
+
+    const missionName = (document.getElementById(`allMissionName_${missionId}`)?.value || '').trim();
+    const missionType = document.getElementById(`allMissionType_${missionId}`)?.value || 'Other';
+    const trackingMode = document.getElementById(`allMissionTracking_${missionId}`)?.value || 'Quantity Count';
+    const priority = document.getElementById(`allMissionPriority_${missionId}`)?.value || 'At-Bat';
+    const missionTotal = Number(document.getElementById(`allMissionTotal_${missionId}`)?.value || 0);
+    const currentStatus = Number(document.getElementById(`allMissionCurrent_${missionId}`)?.value || 0);
+    const acquired = document.getElementById(`allMissionAcquired_${missionId}`)?.value || 'Not Acquired';
+
+    if (!missionName) return null;
+    if (!Number.isFinite(missionTotal) || missionTotal <= 0) return null;
+    if (!Number.isFinite(currentStatus) || currentStatus < 0 || currentStatus > missionTotal) return null;
+
+    return {
+        program_category: sourceMission['Program Category'] || '',
+        mission_name: missionName,
+        mission_type: missionType,
+        tracking_mode: trackingMode,
+        priority,
+        mission_total: missionTotal,
+        current_status: currentStatus,
+        acquired,
+    };
+}
+
+async function saveAllMissionEdits() {
+    if (activeProgramMissions.length === 0) {
+        showAlert('No missions to save.', 'error');
+        return;
+    }
+
+    const updates = activeProgramMissions
+        .map(m => ({ id: m['Mission ID'], payload: getMissionEditPayload(m['Mission ID']) }))
+        .filter(u => u.payload !== null);
+
+    if (updates.length === 0) {
+        showAlert('No valid mission data to save.', 'error');
+        return;
+    }
+
+    try {
+        const responses = await Promise.all(
+            updates.map(u => fetch(`/api/missions/${u.id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(u.payload),
+            }))
+        );
+        const results = await Promise.all(responses.map(r => r.json()));
+        const failed = results.filter(r => !r.success);
+
+        await loadActiveProgramMissions();
+        await refreshProgramCards();
+
+        if (failed.length > 0) {
+            showAlert(`${updates.length - failed.length} saved, ${failed.length} failed.`, 'error');
+        } else {
+            showAlert(`${updates.length} mission(s) saved.`, 'success');
+        }
+    } catch (error) {
+        showAlert('Save all failed: ' + error.message, 'error');
+    }
+}
+
+async function saveAllMissionsEdits() {
+    if (allMissions.length === 0) {
+        showAlert('No missions to save.', 'error');
+        return;
+    }
+
+    const updates = allMissions
+        .map(m => ({ id: m['Mission ID'], payload: getAllMissionEditPayload(m['Mission ID']) }))
+        .filter(u => u.payload !== null);
+
+    if (updates.length === 0) {
+        showAlert('No valid mission data to save.', 'error');
+        return;
+    }
+
+    try {
+        const responses = await Promise.all(
+            updates.map(u => fetch(`/api/missions/${u.id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(u.payload),
+            }))
+        );
+        const results = await Promise.all(responses.map(r => r.json()));
+        const failed = results.filter(r => !r.success);
+
+        await loadAllMissions();
+        await refreshProgramCards();
+        if (activeProgram) {
+            await loadActiveProgramMissions();
+        }
+
+        if (failed.length > 0) {
+            showAlert(`${updates.length - failed.length} saved, ${failed.length} failed.`, 'error');
+        } else {
+            showAlert(`${updates.length} mission(s) saved.`, 'success');
+        }
+    } catch (error) {
+        showAlert('Save all failed: ' + error.message, 'error');
+    }
+}
+
+async function recalculateProgramPriorities() {
+    if (!activeProgram) return;
+    try {
+        const response = await fetch('/api/missions/recalculate-priority', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ program_category: activeProgram }),
+        });
+        const result = await response.json();
+        if (!result.success) {
+            showAlert(result.error || 'Priority recalculation failed.', 'error');
+            return;
+        }
+
+        await loadActiveProgramMissions();
+        await refreshProgramCards();
+        if (document.getElementById('allMissionsModal').style.display === 'flex') {
+            await loadAllMissions();
+        }
+        showAlert(`Priority recalculated for ${result.updated || 0} mission(s).`, 'success');
+    } catch (error) {
+        showAlert('Priority recalculation failed: ' + error.message, 'error');
+    }
+}
+
+async function recalculateAllMissionsPriorities() {
+    try {
+        const response = await fetch('/api/missions/recalculate-priority', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({}),
+        });
+        const result = await response.json();
+        if (!result.success) {
+            showAlert(result.error || 'Priority recalculation failed.', 'error');
+            return;
+        }
+
+        await loadAllMissions();
+        await refreshProgramCards();
+        if (activeProgram) {
+            await loadActiveProgramMissions();
+        }
+        showAlert(`Priority recalculated for ${result.updated || 0} mission(s).`, 'success');
+    } catch (error) {
+        showAlert('Priority recalculation failed: ' + error.message, 'error');
+    }
+}
+
+async function saveMissionEdits(missionId) {
+    const payload = getMissionEditPayload(missionId);
+    if (!payload) {
+        showAlert('Missing required fields — check mission name, program category, and totals.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/missions/${missionId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+
+        if (!result.success) {
+            showAlert(result.error || 'Failed to update mission.', 'error');
+            return;
+        }
+
+        await loadActiveProgramMissions();
+        await refreshProgramCards();
+        showAlert('Mission saved.', 'success');
+    } catch (error) {
+        showAlert('Update failed: ' + error.message, 'error');
+    }
+}
+
+async function markSelectedMissionsComplete() {
+    if (selectedMissionIds.size === 0) return;
+
+    if (!confirm(`Mark ${selectedMissionIds.size} selected mission(s) as complete?`)) {
+        return;
+    }
+
+    try {
+        const ids = [...selectedMissionIds];
+        for (const missionId of ids) {
+            const response = await fetch(`/api/missions/${missionId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ status: 'Completed' }),
+            });
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || `Mission ${missionId} update failed`);
+            }
+        }
+
+        await loadActiveProgramMissions();
+        await refreshProgramCards();
+        showAlert('Selected missions marked complete.', 'success');
+    } catch (error) {
+        showAlert('Bulk complete failed: ' + error.message, 'error');
+    }
+}
+
+async function deleteSelectedMissions() {
+    if (selectedMissionIds.size === 0) return;
+
+    if (!confirm(`Delete ${selectedMissionIds.size} selected mission(s)? This cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/missions/delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ mission_ids: [...selectedMissionIds] }),
+        });
+        const result = await response.json();
+
+        if (!result.success) {
+            showAlert(result.error || 'Delete failed.', 'error');
+            return;
+        }
+
+        await loadActiveProgramMissions();
+        await refreshProgramCards();
+        showAlert(`${result.deleted_count || 0} mission(s) deleted.`, 'success');
+    } catch (error) {
+        showAlert('Delete failed: ' + error.message, 'error');
+    }
+}
+
+function buildMissionIdQuery() {
+    const ids = selectedMissionIds.size > 0
+        ? [...selectedMissionIds]
+        : activeProgramMissions.map(mission => mission['Mission ID']);
+    return ids.join(',');
+}
+
+async function refreshAutoGrindPanels() {
+    const missionIds = buildMissionIdQuery();
+    const playersContainer = document.getElementById('grindPlayersList');
+    const lineupContainer = document.getElementById('grindLineupList');
+
+    if (!playersContainer || !lineupContainer) return;
+
+    try {
+        const [playersResp, lineupResp] = await Promise.all([
+            fetch(`/api/missions/grind-players?mission_ids=${encodeURIComponent(missionIds)}`),
+            fetch(`/api/missions/grind-lineup?mission_ids=${encodeURIComponent(missionIds)}`),
+        ]);
+
+        const playersResult = await playersResp.json();
+        const lineupResult = await lineupResp.json();
+
+        if (!playersResult.success) {
+            playersContainer.innerHTML = `<div class="text-muted">${escapeHtml(playersResult.error || 'Unable to load grind players.')}</div>`;
+        } else {
+            const players = Array.isArray(playersResult.players) ? playersResult.players : [];
+            if (players.length === 0) {
+                playersContainer.innerHTML = '<div class="text-muted">No players linked to selected missions.</div>';
+            } else {
+                playersContainer.innerHTML = players.slice(0, 30).map(player => {
+                    const owned = String(player.ownership_status || '').toLowerCase() === 'owned' ? 'Owned' : 'Not Owned';
+                    return `
+                        <div class="list-row">
+                            <div><strong>${escapeHtml(player.player_name)}</strong> (${escapeHtml(player.primary_position || 'UTIL')})</div>
+                            <div class="text-muted">${escapeHtml(player.team || 'No Team')} | ${escapeHtml(player.top_priority || 'In the Hole')} | ${player.mission_count || 0} missions | ${owned}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        if (!lineupResult.success) {
+            lineupContainer.innerHTML = `<div class="text-muted">${escapeHtml(lineupResult.error || 'Unable to load lineup suggestion.')}</div>`;
+        } else {
+            const lineup = Array.isArray(lineupResult.lineup) ? lineupResult.lineup : [];
+            if (lineup.length === 0) {
+                lineupContainer.innerHTML = '<div class="text-muted">No lineup suggestion available.</div>';
+            } else {
+                lineupContainer.innerHTML = lineup.map(slot => `
+                    <div class="list-row">
+                        <div><strong>${slot.slot}. ${escapeHtml(slot.player_name || 'Unknown')}</strong></div>
+                        <div class="text-muted">${escapeHtml(slot.position || 'UTIL')} | ${escapeHtml(slot.top_priority || 'In the Hole')} | ${slot.mission_count || 0} missions | ${escapeHtml(slot.ownership_status || 'Not Owned')}</div>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        playersContainer.innerHTML = `<div class="text-muted">Error: ${escapeHtml(error.message)}</div>`;
+        lineupContainer.innerHTML = `<div class="text-muted">Error: ${escapeHtml(error.message)}</div>`;
+    }
+}
+
+function autoGrindRowMarkup(player) {
+    const colorToken = String(player.color_token || 'red').toLowerCase();
+    const colorClass = ['green', 'yellow', 'red'].includes(colorToken) ? colorToken : 'red';
+    const closeness = Number(player.completion_closeness || 0).toFixed(2);
+    const team = player.team || 'No Team';
+    const topPriority = player.top_priority || 'In the Hole';
+    const ownershipLabel = player.ownership_label || 'Not Owned';
+    const missionCount = Number(player.mission_count || 0);
+
+    return `
+        <div class="ag-player-row ${colorClass}">
+            <div><strong>${escapeHtml(player.player_name || 'Unknown')}</strong></div>
+            <div class="meta">${escapeHtml(team)} | ${closeness}% close | ${escapeHtml(topPriority)} | ${missionCount} missions</div>
+            <div class="meta">${escapeHtml(ownershipLabel)}</div>
+        </div>
+    `;
+}
+
+function renderAutoGrindBucket(bucket, players) {
+    const containerId = AUTO_GRIND_BUCKET_IDS[bucket];
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (!Array.isArray(players) || players.length === 0) {
+        container.innerHTML = '<div class="text-muted">No eligible players.</div>';
+        return;
+    }
+
+    rememberPlayers(players);
+    container.innerHTML = players.map(autoGrindRowMarkup).join('');
+}
+
+function setAutoGrindLoadingState(message) {
+    const loadingText = escapeHtml(message || 'Loading...');
+    Object.values(AUTO_GRIND_BUCKET_IDS).forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+            container.innerHTML = `<div class="text-muted">${loadingText}</div>`;
+        }
+    });
+}
+
+function openAutoGrindModal() {
+    document.getElementById('autoGrindModal').style.display = 'flex';
+    refreshAutoGrindDiamond();
+}
+
+function closeAutoGrindModal() {
+    document.getElementById('autoGrindModal').style.display = 'none';
+}
+
+async function refreshAutoGrindDiamond() {
+    const metaEl = document.getElementById('autoGrindMeta');
+    if (!metaEl) return;
+
+    metaEl.textContent = 'Loading active mission candidates...';
+    setAutoGrindLoadingState('Loading...');
+
+    try {
+        const response = await fetch('/api/missions/auto-grind-diamond?limit_per_position=10');
+        const result = await response.json();
+
+        if (!result.success) {
+            const message = result.error || 'Unable to load auto grind diamond.';
+            metaEl.textContent = message;
+            setAutoGrindLoadingState(message);
+            return;
+        }
+
+        const meta = result.meta || {};
+        const positions = result.positions || {};
+
+        metaEl.textContent = `Active missions: ${meta.missions_considered || 0} | Players: ${meta.players_considered || 0} | Top 10 per position`;
+
+        Object.keys(AUTO_GRIND_BUCKET_IDS).forEach(bucket => {
+            renderAutoGrindBucket(bucket, positions[bucket]);
+        });
+    } catch (error) {
+        const message = `Error: ${error.message}`;
+        metaEl.textContent = message;
+        setAutoGrindLoadingState(message);
+    }
+}
+
+function openAddMissionModal(prefillProgramCategory) {
+    document.getElementById('addMissionModal').style.display = 'flex';
+    addMissionSelectedPlayerIds.clear();
+    document.getElementById('addMissionForm').reset();
+    document.getElementById('addCurrentStatus').value = 0;
+    if (prefillProgramCategory) {
+        const catInput = document.querySelector('#addMissionForm [name="program_category"]');
+        if (catInput) catInput.value = prefillProgramCategory;
+    }
+    renderAddMissionSelectedPlayers();
+    renderAddMissionPlayerResults(addMissionPlayerResults);
+}
+
+function closeAddMissionModal() {
+    document.getElementById('addMissionModal').style.display = 'none';
+}
+
+function renderAddMissionSelectedPlayers() {
+    const container = document.getElementById('addMissionSelectedPlayers');
+    const selectedPlayers = [...addMissionSelectedPlayerIds].map(playerId => {
+        return playerDirectory.get(playerId) || { player_id: playerId, player_name: playerId, ownership_status: 'Not Owned' };
+    });
+
+    if (selectedPlayers.length === 0) {
+        container.innerHTML = '<span class="text-muted">No players selected.</span>';
+        return;
+    }
+
+    container.innerHTML = selectedPlayers.map(player => {
+        const ownedClass = String(player.ownership_status || '').toLowerCase() === 'owned' ? 'owned' : 'not-owned';
+        return `
+            <span class="player-chip ${ownedClass}">
+                ${escapeHtml(player.player_name)}
+                <button type="button" style="border: none; background: transparent; cursor: pointer;" onclick="toggleAddMissionPlayer('${escapeHtml(player.player_id)}', false)">x</button>
+            </span>
+        `;
+    }).join('');
+}
+
+function renderAddMissionPlayerResults(players) {
+    const container = document.getElementById('addPlayerResults');
+    if (!Array.isArray(players) || players.length === 0) {
+        container.innerHTML = '<div class="text-muted">No players found.</div>';
+        return;
+    }
+
+    container.innerHTML = players.map(player => {
+        const checked = addMissionSelectedPlayerIds.has(player.player_id) ? 'checked' : '';
+        return `
+            <label class="picker-row">
+                <span>
+                    <strong>${escapeHtml(player.player_name)}</strong>
+                    <span class="meta">${escapeHtml(player.primary_position || 'UTIL')} | ${escapeHtml(player.series || '')} | OVR ${player.ovr || '?'} | ${escapeHtml(player.team || 'No Team')} | ${escapeHtml(player.ownership_status || 'Not Owned')}</span>
+                </span>
+                <input type="checkbox" ${checked} onchange="toggleAddMissionPlayer('${escapeHtml(player.player_id)}', this.checked)">
+            </label>
+        `;
+    }).join('');
+}
+
+function toggleAddMissionPlayer(playerId, isChecked) {
+    if (isChecked) {
+        addMissionSelectedPlayerIds.add(playerId);
+    } else {
+        addMissionSelectedPlayerIds.delete(playerId);
+    }
+
+    renderAddMissionSelectedPlayers();
+    renderAddMissionPlayerResults(addMissionPlayerResults);
+}
+
+async function searchAddMissionPlayers() {
+    const query = document.getElementById('addPlayerSearch').value.trim();
+    try {
+        const response = await fetch(`/api/missions/players?query=${encodeURIComponent(query)}&limit=120`);
+        const result = await response.json();
+
+        if (!result.success) {
+            showAlert(result.error || 'Player search failed.', 'error');
+            return;
+        }
+
+        addMissionPlayerResults = Array.isArray(result.players) ? result.players : [];
+        rememberPlayers(addMissionPlayerResults);
+        renderAddMissionPlayerResults(addMissionPlayerResults);
+        renderAddMissionSelectedPlayers();
+    } catch (error) {
+        showAlert('Player search failed: ' + error.message, 'error');
+    }
+}
+
+async function submitAddMission(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+
+    const missionTotal = Number(data.mission_total || 0);
+    const currentStatus = Number(data.current_status || 0);
+
+    if (missionTotal <= 0) {
+        showAlert('Mission total must be greater than 0.', 'error');
+        return;
+    }
+
+    if (currentStatus < 0 || currentStatus > missionTotal) {
+        showAlert('Current status must be between 0 and mission total.', 'error');
+        return;
+    }
+
+    data.player_ids = [...addMissionSelectedPlayerIds];
+
+    try {
+        const response = await fetch('/api/missions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        });
+        const result = await response.json();
+
+        if (!result.success) {
+            showAlert(result.error || 'Failed to create mission.', 'error');
+            return;
+        }
+
+        closeAddMissionModal();
+        await refreshProgramCards();
+
+        if (activeProgram && activeProgram === data.program_category) {
+            await loadActiveProgramMissions();
+        }
+
+        showAlert('Mission created successfully.', 'success');
+    } catch (error) {
+        showAlert('Create mission failed: ' + error.message, 'error');
+    }
+}
+
+function openAssignPlayersModal(missionId) {
+    const mission = activeProgramMissions.find(item => Number(item['Mission ID']) === Number(missionId))
+        || allMissions.find(item => Number(item['Mission ID']) === Number(missionId));
+    if (!mission) return;
+
+    rememberPlayers(mission['Players'] || []);
+
+    assignState.missionId = missionId;
+    assignState.missionName = mission['Mission Name'] || 'Mission';
+    assignState.selectedPlayerIds = new Set((mission['Players'] || []).map(player => player.player_id));
+    assignState.results = [...addMissionPlayerResults];
+
+    document.getElementById('assignPlayersTitle').textContent = `Assign Players: ${assignState.missionName}`;
+    document.getElementById('assignPlayersModal').style.display = 'flex';
+    document.getElementById('assignPlayerSearch').value = '';
+
+    renderAssignPlayerResults(assignState.results);
+    renderAssignSelectedPlayers();
+}
+
+function closeAssignPlayersModal() {
+    document.getElementById('assignPlayersModal').style.display = 'none';
+    assignState.missionId = null;
+    assignState.missionName = '';
+    assignState.selectedPlayerIds.clear();
+}
+
+function renderAssignSelectedPlayers() {
+    const container = document.getElementById('assignSelectedPlayers');
+    const selectedPlayers = [...assignState.selectedPlayerIds].map(playerId => {
+        return playerDirectory.get(playerId) || { player_id: playerId, player_name: playerId, ownership_status: 'Not Owned' };
+    });
+
+    if (selectedPlayers.length === 0) {
+        container.innerHTML = '<span class="text-muted">No players selected.</span>';
+        return;
+    }
+
+    container.innerHTML = selectedPlayers.map(player => {
+        const ownedClass = String(player.ownership_status || '').toLowerCase() === 'owned' ? 'owned' : 'not-owned';
+        return `
+            <span class="player-chip ${ownedClass}">
+                ${escapeHtml(player.player_name)}
+                <button type="button" style="border: none; background: transparent; cursor: pointer;" onclick="toggleAssignPlayer('${escapeHtml(player.player_id)}', false)">x</button>
+            </span>
+        `;
+    }).join('');
+}
+
+function renderAssignPlayerResults(players) {
+    const container = document.getElementById('assignPlayerResults');
+    if (!Array.isArray(players) || players.length === 0) {
+        container.innerHTML = '<div class="text-muted">No players found.</div>';
+        return;
+    }
+
+    container.innerHTML = players.map(player => {
+        const checked = assignState.selectedPlayerIds.has(player.player_id) ? 'checked' : '';
+        return `
+            <label class="picker-row">
+                <span>
+                    <strong>${escapeHtml(player.player_name)}</strong>
+                    <span class="meta">${escapeHtml(player.primary_position || 'UTIL')} | ${escapeHtml(player.series || '')} | OVR ${player.ovr || '?'} | ${escapeHtml(player.team || 'No Team')} | ${escapeHtml(player.ownership_status || 'Not Owned')}</span>
+                </span>
+                <input type="checkbox" ${checked} onchange="toggleAssignPlayer('${escapeHtml(player.player_id)}', this.checked)">
+            </label>
+        `;
+    }).join('');
+}
+
+function toggleAssignPlayer(playerId, isChecked) {
+    if (isChecked) {
+        assignState.selectedPlayerIds.add(playerId);
+    } else {
+        assignState.selectedPlayerIds.delete(playerId);
+    }
+
+    renderAssignSelectedPlayers();
+    renderAssignPlayerResults(assignState.results);
+}
+
+async function searchAssignPlayers() {
+    const query = document.getElementById('assignPlayerSearch').value.trim();
+    try {
+        const response = await fetch(`/api/missions/players?query=${encodeURIComponent(query)}&limit=120`);
+        const result = await response.json();
+
+        if (!result.success) {
+            showAlert(result.error || 'Player search failed.', 'error');
+            return;
+        }
+
+        assignState.results = Array.isArray(result.players) ? result.players : [];
+        rememberPlayers(assignState.results);
+        renderAssignPlayerResults(assignState.results);
+        renderAssignSelectedPlayers();
+    } catch (error) {
+        showAlert('Player search failed: ' + error.message, 'error');
+    }
+}
+
+async function saveAssignedPlayers() {
+    if (!assignState.missionId) return;
+
+    try {
+        const response = await fetch(`/api/missions/${assignState.missionId}/players`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ player_ids: [...assignState.selectedPlayerIds] }),
+        });
+        const result = await response.json();
+
+        if (!result.success) {
+            showAlert(result.error || 'Failed to save mission players.', 'error');
+            return;
+        }
+
+        closeAssignPlayersModal();
+        if (activeProgram) {
+            await loadActiveProgramMissions();
+        }
+        if (document.getElementById('allMissionsModal').style.display === 'flex') {
+            await loadAllMissions();
+        }
+        showAlert('Mission players saved.', 'success');
+    } catch (error) {
+        showAlert('Save players failed: ' + error.message, 'error');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    rememberPlayers(addMissionPlayerResults);
+    setProgramTypeFilter('All');
+    renderAddMissionPlayerResults(addMissionPlayerResults);
+    renderAddMissionSelectedPlayers();
+});
+</script>
+{% endblock %}

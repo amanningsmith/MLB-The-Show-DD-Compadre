@@ -1,0 +1,1165 @@
+{% extends "base.html" %}
+
+{% block title %}Add Card - MLB The Show 26 DD Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .search-input-group {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+    
+    .search-input-group input {
+        flex: 1;
+        padding: 12px;
+        font-size: 18px;
+    }
+    
+    .search-results {
+        display: grid;
+        gap: var(--spacing-md);
+    }
+    
+    .result-card {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: var(--spacing-lg);
+        display: flex;
+        gap: var(--spacing-lg);
+        align-items: center;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        backdrop-filter: blur(10px);
+    }
+    
+    .result-card:hover {
+        border-color: var(--secondary-color);
+        background-color: var(--surface-hover);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .result-img {
+        width: 100px;
+        height: 120px;
+        object-fit: cover;
+        object-position: top center;
+        border-radius: var(--border-radius-sm);
+    }
+    
+    .result-info {
+        flex: 1;
+    }
+    
+    .result-name {
+        font-size: 20px;
+        font-weight: var(--font-weight-bold);
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .result-details {
+        display: flex;
+        gap: var(--spacing-md);
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-xs);
+        flex-wrap: wrap;
+    }
+    
+    .selected-card-display {
+        padding: var(--spacing-lg);
+        background-color: rgba(0,0,0,0.3);
+        border-radius: var(--border-radius);
+        display: flex;
+        gap: var(--spacing-lg);
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="dashboard-header">
+        <h1>🔍 Search for a Card</h1>
+        <a href="{{ url_for('card_tracker') }}" class="btn btn-secondary">← Back to Cards</a>
+    </div>
+    
+    <!-- Search Mode Tabs -->
+    <div class="content-section">
+        <div style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); border-bottom: 2px solid var(--border-color);">
+            <button class="tab-btn active" onclick="switchSearchMode('name')" id="tabName" 
+                    style="padding: 12px 24px; background: none; border: none; border-bottom: 3px solid var(--secondary-color); color: var(--text-color); font-weight: var(--font-weight-semibold); cursor: pointer;">
+                Unified Card Search
+            </button>
+            <button class="tab-btn" onclick="switchSearchMode('manual')" id="tabManual"
+                    style="padding: 12px 24px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: var(--font-weight-semibold); cursor: pointer;">
+                ✍️ Manual Entry
+            </button>
+        </div>
+        
+        <p class="text-muted mb-3" style="font-size: 14px; padding: 12px; background-color: rgba(254, 125, 60, 0.1); border-left: 3px solid var(--secondary-color); border-radius: var(--border-radius);">
+            <strong>💡 Note:</strong> Unified Search returns both marketplace cards and reward/no-sell cards from your local catalog cache.
+        </p>
+
+        <!-- Empty catalog warning banner — shown when catalog has never been synced -->
+        <div id="catalogEmptyBanner" style="display: none; padding: 12px 16px; margin-bottom: var(--spacing-md); background-color: rgba(234, 179, 8, 0.12); border-left: 4px solid #eab308; border-radius: var(--border-radius);">
+            <strong>⚠️ Earned Card Catalog Not Ready</strong> — Reward and non-sellable cards won't appear in searches until you sync the catalog.
+            &nbsp;<button type="button" class="btn btn-secondary" style="padding: 4px 12px; font-size: 13px;" onclick="syncCardCatalog()">Sync Now</button>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+            <button type="button" id="syncCatalogBtn" class="btn btn-secondary" onclick="syncCardCatalog()">🔄 Sync Card Catalog</button>
+            <span id="catalogStatus" class="text-muted" style="font-size: 13px;">Catalog status: checking...</span>
+        </div>
+
+        <!-- Sync progress bar — hidden until a sync is in progress -->
+        <div id="syncProgressContainer" style="display: none; margin-bottom: var(--spacing-lg);">
+            <div style="height: 8px; background-color: var(--surface-hover); border-radius: 4px; overflow: hidden;">
+                <div id="syncProgressBar" style="height: 100%; width: 0%; background-color: var(--secondary-color); transition: width 0.4s ease;"></div>
+            </div>
+            <p id="syncProgressLabel" class="text-muted" style="font-size: 12px; margin-top: 6px;"></p>
+        </div>
+        
+        <!-- Mode 1: Search by Name -->
+        <div id="modeSearchByName">
+            <h3 class="mb-3">Enter Player Name</h3>
+            <div class="search-input-group">
+                <input type="text" id="searchInput" placeholder="e.g. Mike Trout, Shohei Ohtani..." 
+                       onkeypress="if(event.key==='Enter') searchForCard()">
+                <button class="btn btn-primary" onclick="searchForCard()">Search</button>
+            </div>
+            <p class="text-muted mt-2" style="font-size: 14px;">
+                ✨ Search will find all card versions across all series for the player
+            </p>
+            
+            <!-- Advanced Filters (Collapsible) -->
+            <div style="margin-top: var(--spacing-lg);">
+                <button type="button" onclick="toggleAdvancedFilters()" 
+                        style="background: none; border: none; color: var(--secondary-color); font-size: 16px; font-weight: var(--font-weight-semibold); cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 8px 0;">
+                    ⚙️ Advanced Filters
+                    <span id="filterToggleIcon" style="font-size: 12px;">▼</span>
+                </button>
+                
+                <div id="advancedFiltersSection" style="display: none; margin-top: var(--spacing-md); padding: var(--spacing-lg); background-color: rgba(255,255,255,0.03); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color);">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <!-- Rarity Filter -->
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: var(--font-weight-semibold);">Rarity</label>
+                            <select id="filterRarity" style="width: 100%;">
+                                <option value="">All Rarities</option>
+                                <option value="diamond">Diamond</option>
+                                <option value="gold">Gold</option>
+                                <option value="silver">Silver</option>
+                                <option value="bronze">Bronze</option>
+                                <option value="common">Common</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Position Filter -->
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: var(--font-weight-semibold);">Position</label>
+                            <select id="filterPosition" style="width: 100%;">
+                                <option value="">All Positions</option>
+                                <option value="SP">SP - Starting Pitcher</option>
+                                <option value="RP">RP - Relief Pitcher</option>
+                                <option value="CP">CP - Closer</option>
+                                <option value="C">C - Catcher</option>
+                                <option value="1B">1B - First Base</option>
+                                <option value="2B">2B - Second Base</option>
+                                <option value="3B">3B - Third Base</option>
+                                <option value="SS">SS - Shortstop</option>
+                                <option value="LF">LF - Left Field</option>
+                                <option value="CF">CF - Center Field</option>
+                                <option value="RF">RF - Right Field</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Team Filter -->
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: var(--font-weight-semibold);">Team</label>
+                            <select id="filterTeam" style="width: 100%;">
+                                <option value="">All Teams</option>
+                                <option value="FA">Free Agent</option>
+                                <option value="ARI">Arizona Diamondbacks</option>
+                                <option value="ATL">Atlanta Braves</option>
+                                <option value="BAL">Baltimore Orioles</option>
+                                <option value="BOS">Boston Red Sox</option>
+                                <option value="CHC">Chicago Cubs</option>
+                                <option value="CWS">Chicago White Sox</option>
+                                <option value="CIN">Cincinnati Reds</option>
+                                <option value="CLE">Cleveland Guardians</option>
+                                <option value="COL">Colorado Rockies</option>
+                                <option value="DET">Detroit Tigers</option>
+                                <option value="HOU">Houston Astros</option>
+                                <option value="KC">Kansas City Royals</option>
+                                <option value="LAA">Los Angeles Angels</option>
+                                <option value="LAD">Los Angeles Dodgers</option>
+                                <option value="MIA">Miami Marlins</option>
+                                <option value="MIL">Milwaukee Brewers</option>
+                                <option value="MIN">Minnesota Twins</option>
+                                <option value="NYM">New York Mets</option>
+                                <option value="NYY">New York Yankees</option>
+                                <option value="OAK">Oakland Athletics</option>
+                                <option value="PHI">Philadelphia Phillies</option>
+                                <option value="PIT">Pittsburgh Pirates</option>
+                                <option value="SD">San Diego Padres</option>
+                                <option value="SF">San Francisco Giants</option>
+                                <option value="SEA">Seattle Mariners</option>
+                                <option value="STL">St. Louis Cardinals</option>
+                                <option value="TB">Tampa Bay Rays</option>
+                                <option value="TEX">Texas Rangers</option>
+                                <option value="TOR">Toronto Blue Jays</option>
+                                <option value="WAS">Washington Nationals</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Series Filter -->
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: var(--font-weight-semibold);">Series</label>
+                            <select id="filterSeries" style="width: 100%;">
+                                <option value="">All Series</option>
+                                <option value="1337">Live Series</option>
+                                <option value="10001">Rookie</option>
+                                <option value="10002">Breakout</option>
+                                <option value="10003">Veteran</option>
+                                <option value="10004">All-Star</option>
+                                <option value="10005">Awards</option>
+                                <option value="10006">Postseason</option>
+                                <option value="10009">Signature</option>
+                                <option value="10013">Prime</option>
+                                <option value="10017">Topps Now</option>
+                                <option value="10020">2nd Half Heroes</option>
+                                <option value="10022">Milestone</option>
+                                <option value="10028">World Baseball Classic</option>
+                                <option value="10034">Standout</option>
+                                <option value="10035">The Negro Leagues</option>
+                                <option value="10044">Contributor</option>
+                                <option value="10045">Last Ride</option>
+                                <option value="10046">Jolt</option>
+                                <option value="10049">Cornerstone</option>
+                                <option value="10052">Ranked 1000</option>
+                                <option value="10067">WBC</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Filters -->
+                    <div style="margin-top: var(--spacing-lg);">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
+                            <!-- Sell Price Range -->
+                            <div>
+                                <label style="display: block; margin-bottom: 12px; font-weight: var(--font-weight-semibold);">
+                                    Sell Price Range (stubs)
+                                </label>
+                                <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                                    <input type="number" id="filterMinSellPrice" placeholder="Min" min="0" style="width: 100px;">
+                                    <span>to</span>
+                                    <input type="number" id="filterMaxSellPrice" placeholder="Max" min="0" style="width: 100px;">
+                                </div>
+                            </div>
+                            
+                            <!-- Buy Price Range -->
+                            <div>
+                                <label style="display: block; margin-bottom: 12px; font-weight: var(--font-weight-semibold);">
+                                    Buy Price Range (stubs)
+                                </label>
+                                <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                                    <input type="number" id="filterMinBuyPrice" placeholder="Min" min="0" style="width: 100px;">
+                                    <span>to</span>
+                                    <input type="number" id="filterMaxBuyPrice" placeholder="Max" min="0" style="width: 100px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <div style="margin-top: var(--spacing-lg); display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: var(--font-weight-semibold);">Sort By</label>
+                            <select id="filterSort" style="width: 100%;">
+                                <option value="rank">Rank</option>
+                                <option value="best_sell_price">Price (High → Low)</option>
+                                <option value="best_buy_price">Buy Price (High → Low)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: var(--font-weight-semibold);">Order</label>
+                            <select id="filterOrder" style="width: 100%;">
+                                <option value="desc">Descending</option>
+                                <option value="asc">Ascending</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Apply Button -->
+                    <div style="margin-top: var(--spacing-lg); display: flex; justify-content: flex-end; gap: var(--spacing-sm);">
+                        <button type="button" class="btn btn-secondary" onclick="clearAdvancedFilters()">
+                            Clear Filters
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="searchForCard()">
+                            🔍 Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mode 2: Filter by Series -->
+        <div id="modeFilterBySeries" style="display: none;">
+            <h3 class="mb-3">Select a Series</h3>
+            <div style="margin-bottom: var(--spacing-md);">
+                <select id="seriesFilter" onchange="filterBySeries()" style="width: 100%; max-width: 500px;">
+                    <option value="">-- Select a Series --</option>
+                    <option value="Live Series">Live Series</option>
+                    <option value="Legends">Legends</option>
+                    <option value="Flashback">Flashback</option>
+                    <option value="Topps Now">Topps Now</option>
+                    <option value="WBC">World Baseball Classic</option>
+                    <option value="All-Star">All-Star</option>
+                    <option value="Rookie">Rookie</option>
+                    <option value="Veteran">Veteran</option>
+                    <option value="Postseason">Postseason</option>
+                    <option value="2nd Half Heroes">2nd Half Heroes</option>
+                    <option value="Milestone">Milestone</option>
+                    <option value="Breakout">Breakout</option>
+                </select>
+            </div>
+            <div id="seriesSearchBox" style="display: none;">
+                <div class="search-input-group">
+                    <input type="text" id="seriesSearchInput" placeholder="Search within selected series..." 
+                           onkeypress="if(event.key==='Enter') searchWithinSeries()">
+                    <button class="btn btn-primary" onclick="searchWithinSeries()">Search</button>
+                </div>
+                <p class="text-muted mt-2" style="font-size: 14px;">
+                    🎯 Searching only within <strong id="selectedSeriesName"></strong> cards
+                </p>
+            </div>
+        </div>
+        
+        <!-- Mode 3: Manual Entry -->
+        <div id="modeManualEntry" style="display: none;">
+            <h3 class="mb-3">Manually Add Card</h3>
+            <p class="text-muted mb-3" style="font-size: 14px;">
+                Use this form to add cards not found in the API (reward cards, no-sell cards, etc.)
+            </p>
+            
+            <form id="manualEntryForm" onsubmit="submitManualEntry(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Player Name *</label>
+                        <input type="text" name="player_name" required>
+                    </div>
+                    <div>
+                        <label>Overall Rating *</label>
+                        <input type="number" name="ovr" min="1" max="125" required>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                    <div>
+                        <label>Position *</label>
+                        <select name="display_position" required>
+                            <option value="">Select...</option>
+                            <option value="SP">SP - Starting Pitcher</option>
+                            <option value="RP">RP - Relief Pitcher</option>
+                            <option value="CP">CP - Closer</option>
+                            <option value="C">C - Catcher</option>
+                            <option value="1B">1B - First Base</option>
+                            <option value="2B">2B - Second Base</option>
+                            <option value="3B">3B - Third Base</option>
+                            <option value="SS">SS - Shortstop</option>
+                            <option value="LF">LF - Left Field</option>
+                            <option value="CF">CF - Center Field</option>
+                            <option value="RF">RF - Right Field</option>
+                            <option value="OF">OF - Outfield</option>
+                            <option value="IF">IF - Infield</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Team</label>
+                        <input type="text" name="team" placeholder="e.g., LAD, NYY, BOS">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                    <div>
+                        <label>Series *</label>
+                        <input type="text" name="series" list="seriesList" required placeholder="e.g., Legends, Flashback">
+                        <datalist id="seriesList">
+                            <option value="Live Series">
+                            <option value="Legends">
+                            <option value="Flashback">
+                            <option value="Topps Now">
+                            <option value="World Baseball Classic">
+                            <option value="All-Star">
+                            <option value="Rookie">
+                            <option value="Veteran">
+                            <option value="Postseason">
+                            <option value="2nd Half Heroes">
+                            <option value="Milestone">
+                            <option value="Breakout">
+                            <option value="Awards">
+                            <option value="Program">
+                            <option value="Event">
+                            <option value="Battle Royale">
+                            <option value="Ranked Seasons">
+                        </datalist>
+                    </div>
+                    <div>
+                        <label>Rarity *</label>
+                        <select name="rarity" required>
+                            <option value="">Select...</option>
+                            <option value="Diamond">Diamond</option>
+                            <option value="Gold">Gold</option>
+                            <option value="Silver">Silver</option>
+                            <option value="Bronze">Bronze</option>
+                            <option value="Common">Common</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 16px;">
+                    <label>Card Image URL (optional)</label>
+                    <input type="url" name="card_image_url" placeholder="https://...">
+                    <small style="display: block; margin-top: 4px; color: var(--text-muted); font-size: 13px;">
+                        Leave blank if you don't have an image URL
+                    </small>
+                </div>
+                
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+                
+                <h4 style="margin-bottom: 16px;">Your Information</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Purchased Price (stubs)</label>
+                        <input type="number" name="purchased_price" min="0" placeholder="Leave empty if earned">
+                    </div>
+                    <div>
+                        <label>Quantity *</label>
+                        <input type="number" name="quantity" min="1" value="1" required>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                    <div>
+                        <label style="display: flex; align-items: center; text-transform: none; font-size: var(--font-size-base); cursor: pointer;">
+                            <input type="checkbox" name="on_team" value="1" style="width: auto; margin-right: var(--spacing-sm);">
+                            This card is on my active team
+                        </label>
+                    </div>
+                    <div>
+                        <label style="display: flex; align-items: center; text-transform: none; font-size: var(--font-size-base); cursor: pointer;">
+                            <input type="checkbox" name="grind_card" value="1" style="width: auto; margin-right: var(--spacing-sm);">
+                            This is a grind target card
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 16px;">
+                    <label>PXP (Parallel XP)</label>
+                    <input type="number" name="pxp" min="0" value="0">
+                </div>
+                
+                <div style="margin-top: 16px;">
+                    <label>Inside Edge</label>
+                    <input type="text" name="inside_edge" placeholder="e.g., IE+3, IE-1">
+                </div>
+                
+                <div style="margin-top: 16px;">
+                    <label>Comments</label>
+                    <textarea name="comments" rows="3" placeholder="Any notes about this card..."></textarea>
+                </div>
+                
+                <div class="flex gap-2" style="justify-content: flex-end; margin-top: 24px;">
+                    <button type="submit" class="btn btn-primary">💾 Add Card</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="hidden text-center" style="padding: var(--spacing-xxl);">
+        <div class="spinner" style="margin: 0 auto;"></div>
+        <p class="text-muted mt-3">Searching The Show API...</p>
+    </div>
+    
+    <!-- Search Results -->
+    <div id="searchResults" class="search-results"></div>
+    
+    <!-- Add Card Form (appears after selection) -->
+    <div id="addCardForm" class="hidden">
+        <div class="content-section">
+            <h2 class="mb-4">Add Card to Collection</h2>
+            
+            <div id="selectedCardInfo" class="selected-card-display"></div>
+            
+            <form onsubmit="submitAddCard(event)">
+                <input type="hidden" id="selectedUuid" name="uuid">
+                
+                <div class="mb-4">
+                    <h3 style="margin-bottom: var(--spacing-md); padding-bottom: var(--spacing-sm); border-bottom: 2px solid var(--secondary-color);">Your Information</h3>
+                    
+                    <div class="mb-3">
+                        <label>Purchased Price (stubs)</label>
+                        <input type="number" name="purchased_price" min="0" placeholder="Leave empty if earned/packed">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label>Quantity *</label>
+                        <input type="number" name="quantity" min="1" value="1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label style="display: flex; align-items: center; text-transform: none; font-size: var(--font-size-base); cursor: pointer;">
+                            <input type="checkbox" name="on_team" value="1" style="width: auto; margin-right: var(--spacing-sm);">
+                            This card is on my active team
+                        </label>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label style="display: flex; align-items: center; text-transform: none; font-size: var(--font-size-base); cursor: pointer;">
+                            <input type="checkbox" name="grind_card" value="1" style="width: auto; margin-right: var(--spacing-sm);">
+                            This is a grind target card
+                        </label>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label>Inside Edge</label>
+                        <input type="text" name="inside_edge" placeholder="e.g., IE+3, IE-1">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label>Comments</label>
+                        <textarea name="comments" rows="3" placeholder="Any notes about this card..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2" style="justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="cancelAddCard()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add to Collection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let searchResults = [];
+let currentSearchMode = 'name';
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadCatalogStatus();
+});
+
+// Switch between search modes
+function switchSearchMode(mode) {
+    currentSearchMode = mode;
+    
+    // Update tab styling
+    const tabName = document.getElementById('tabName');
+    const tabManual = document.getElementById('tabManual');
+    
+    // Reset all tabs
+    [tabName, tabManual].forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.borderBottomColor = 'transparent';
+        tab.style.color = 'var(--text-secondary)';
+    });
+    
+    // Hide all modes
+    document.getElementById('modeSearchByName').style.display = 'none';
+    document.getElementById('modeManualEntry').style.display = 'none';
+    
+    // Show selected mode and activate tab
+    if (mode === 'manual') {
+        tabManual.classList.add('active');
+        tabManual.style.borderBottomColor = 'var(--secondary-color)';
+        tabManual.style.color = 'var(--text-color)';
+        document.getElementById('modeManualEntry').style.display = 'block';
+    } else {
+        tabName.classList.add('active');
+        tabName.style.borderBottomColor = 'var(--secondary-color)';
+        tabName.style.color = 'var(--text-color)';
+        document.getElementById('modeSearchByName').style.display = 'block';
+    }
+    
+    // Clear results
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('addCardForm').classList.add('hidden');
+}
+
+// Filter by series dropdown
+function filterBySeries() {
+    const series = document.getElementById('seriesFilter').value;
+    
+    if (series) {
+        document.getElementById('seriesSearchBox').style.display = 'block';
+        document.getElementById('selectedSeriesName').textContent = series;
+    } else {
+        document.getElementById('seriesSearchBox').style.display = 'none';
+        document.getElementById('searchResults').innerHTML = '';
+    }
+}
+
+// Search within selected series
+async function searchWithinSeries() {
+    const query = document.getElementById('seriesSearchInput').value.trim();
+    const series = document.getElementById('seriesFilter').value;
+    
+    if (!query) {
+        showAlert('Please enter a player name', 'warning');
+        return;
+    }
+    
+    if (!series) {
+        showAlert('Please select a series first', 'warning');
+        return;
+    }
+    
+    document.getElementById('loadingSpinner').classList.remove('hidden');
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('addCardForm').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`/api/cards/search?name=${encodeURIComponent(query)}`);
+        const result = await response.json();
+        
+        if (result.success && result.results.length > 0) {
+            // Filter results by series
+            const filteredResults = result.results.filter(r => {
+                const item = r.item || r.listing?.item || r;
+                return item.series && item.series.includes(series);
+            });
+            
+            if (filteredResults.length > 0) {
+                searchResults = filteredResults;
+                displayResults(filteredResults, false); // Don't group when filtering by series
+            } else {
+                document.getElementById('searchResults').innerHTML = `
+                    <div class="content-section text-center" style="padding: var(--spacing-xxl);">
+                        <p style="font-size: 48px; margin-bottom: var(--spacing-md);">🔍</p>
+                        <h3>No cards found in ${series}</h3>
+                        <p class="text-muted">Try searching for a different player or series</p>
+                    </div>
+                `;
+            }
+        } else {
+            document.getElementById('searchResults').innerHTML = `
+                <div class="content-section text-center" style="padding: var(--spacing-xxl);">
+                    <p style="font-size: 48px; margin-bottom: var(--spacing-md);">🔍</p>
+                    <h3>No cards found</h3>
+                    <p class="text-muted">Try searching for a different player name</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        showAlert('Search failed: ' + error.message, 'error');
+    } finally {
+        document.getElementById('loadingSpinner').classList.add('hidden');
+    }
+}
+
+// Toggle advanced filters section
+function toggleAdvancedFilters() {
+    const section = document.getElementById('advancedFiltersSection');
+    const icon = document.getElementById('filterToggleIcon');
+    
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        section.style.display = 'none';
+        icon.textContent = '▼';
+    }
+}
+
+// Clear all advanced filters
+function clearAdvancedFilters() {
+    document.getElementById('filterRarity').value = '';
+    document.getElementById('filterPosition').value = '';
+    document.getElementById('filterTeam').value = '';
+    document.getElementById('filterSeries').value = '';
+    document.getElementById('filterMinSellPrice').value = '';
+    document.getElementById('filterMaxSellPrice').value = '';
+    document.getElementById('filterMinBuyPrice').value = '';
+    document.getElementById('filterMaxBuyPrice').value = '';
+    document.getElementById('filterSort').value = 'rank';
+    document.getElementById('filterOrder').value = 'desc';
+}
+
+async function searchForCard() {
+    const query = document.getElementById('searchInput').value.trim();
+    
+    if (!query) {
+        showAlert('Please enter a player name', 'warning');
+        return;
+    }
+    
+    // Gather advanced filter values
+    const filters = {
+        name: query,
+        rarity: document.getElementById('filterRarity').value,
+        position: document.getElementById('filterPosition').value,
+        team: document.getElementById('filterTeam').value,
+        series_id: document.getElementById('filterSeries').value,
+        min_sell_price: document.getElementById('filterMinSellPrice').value,
+        max_sell_price: document.getElementById('filterMaxSellPrice').value,
+        min_buy_price: document.getElementById('filterMinBuyPrice').value,
+        max_buy_price: document.getElementById('filterMaxBuyPrice').value,
+        sort: document.getElementById('filterSort').value,
+        order: document.getElementById('filterOrder').value
+    };
+    
+    // Build query string
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+            params.append(key, filters[key]);
+        }
+    });
+    
+    document.getElementById('loadingSpinner').classList.remove('hidden');
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('addCardForm').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`/api/cards/search/unified?${params.toString()}`);
+        const result = await response.json();
+        
+        if (!result.success) {
+            showAlert(result.error || 'Search failed', 'error');
+            return;
+        }
+
+        const purchasableCards = result.purchasable_cards || [];
+        const rewardCards = result.reward_cards || [];
+        const isPartial = result.catalog_is_partial || false;
+
+        if (purchasableCards.length > 0 || rewardCards.length > 0) {
+            searchResults = [...purchasableCards, ...rewardCards];
+            displayUnifiedResults(purchasableCards, rewardCards, isPartial);
+        } else {
+            document.getElementById('searchResults').innerHTML = `
+                <div class="content-section text-center" style="padding: var(--spacing-xxl);">
+                    <p style="font-size: 48px; margin-bottom: var(--spacing-md);">🔍</p>
+                    <h3>No cards found</h3>
+                    <p class="text-muted">Try adjusting your search criteria or filters</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        showAlert('Search failed: ' + error.message, 'error');
+    } finally {
+        document.getElementById('loadingSpinner').classList.add('hidden');
+    }
+}
+
+function displayUnifiedResults(purchasableCards, rewardCards, isPartial) {
+    const container = document.getElementById('searchResults');
+    container.innerHTML = '';
+
+    if (isPartial) {
+        const warning = document.createElement('div');
+        warning.style.cssText = 'padding: 10px 16px; margin-bottom: var(--spacing-md); background-color: rgba(234,179,8,0.12); border-left: 4px solid #eab308; border-radius: var(--border-radius); font-size: 13px;';
+        warning.innerHTML = `⚠️ <strong>Partial earned-card results</strong> — catalog not synced. Showing matches from the first 8 API pages only.
+            <button type="button" class="btn btn-secondary" style="padding:3px 10px;font-size:12px;margin-left:10px;" onclick="syncCardCatalog()">Sync Catalog for Full Coverage</button>`;
+        container.appendChild(warning);
+    }
+
+    if (purchasableCards.length > 0) {
+        const purchHeader = document.createElement('div');
+        purchHeader.style.cssText = 'background-color: var(--surface-hover); padding: 12px 20px; border-radius: var(--border-radius); margin-bottom: var(--spacing-md); border-left: 4px solid #22c55e;';
+        purchHeader.innerHTML = `
+            <h3 style="margin: 0; font-size: 18px;">
+                🏪 Purchasable Cards
+                <span style="color: var(--text-muted); font-size: 14px; font-weight: normal; margin-left: 8px;">(${purchasableCards.length})</span>
+            </h3>
+        `;
+        container.appendChild(purchHeader);
+
+        purchasableCards.forEach(item => {
+            const card = createResultCard(item, { showPrices: true, nonSellable: false });
+            container.appendChild(card);
+        });
+    }
+
+    if (rewardCards.length > 0) {
+        const rewardHeader = document.createElement('div');
+        rewardHeader.style.cssText = 'background-color: var(--surface-hover); padding: 12px 20px; border-radius: var(--border-radius); margin: var(--spacing-lg) 0 var(--spacing-md); border-left: 4px solid #3b82f6;';
+        rewardHeader.innerHTML = `
+            <h3 style="margin: 0; font-size: 18px;">
+                🎁 Earned / Reward Cards
+                <span style="color: var(--text-muted); font-size: 14px; font-weight: normal; margin-left: 8px;">(${rewardCards.length})</span>
+            </h3>
+        `;
+        container.appendChild(rewardHeader);
+
+        rewardCards.forEach(item => {
+            const card = createResultCard(item, { showPrices: false, nonSellable: true });
+            container.appendChild(card);
+        });
+    }
+}
+
+function displayResults(results, groupBySeries = false) {
+    const container = document.getElementById('searchResults');
+    container.innerHTML = '';
+    
+    if (groupBySeries && results.length > 1) {
+        // Group results by series
+        const seriesGroups = {};
+        
+        results.forEach(result => {
+            const item = result.item || result.listing?.item || result;
+            const series = item.series || 'Unknown Series';
+            
+            if (!seriesGroups[series]) {
+                seriesGroups[series] = [];
+            }
+            seriesGroups[series].push(item);
+        });
+        
+        // Display grouped results
+        Object.keys(seriesGroups).sort().forEach(series => {
+            const group = seriesGroups[series];
+            
+            // Series header
+            const header = document.createElement('div');
+            header.style.cssText = 'background-color: var(--surface-hover); padding: 12px 20px; border-radius: var(--border-radius); margin-bottom: var(--spacing-md); border-left: 4px solid var(--secondary-color);';
+            header.innerHTML = `
+                <h3 style="margin: 0; font-size: 18px;">
+                    <span style="color: var(--secondary-color);">📦</span> ${series}
+                    <span style="color: var(--text-muted); font-size: 14px; font-weight: normal; margin-left: 8px;">(${group.length} card${group.length > 1 ? 's' : ''})</span>
+                </h3>
+            `;
+            container.appendChild(header);
+            
+            // Cards in this series
+            group.forEach(item => {
+                const card = createResultCard(item);
+                container.appendChild(card);
+            });
+        });
+    } else {
+        // Display ungrouped results
+        results.forEach(result => {
+            const item = result.item || result.listing?.item || result;
+            const card = createResultCard(item);
+            container.appendChild(card);
+        });
+    }
+}
+
+function createResultCard(item, options = {}) {
+    const showPrices = options.showPrices === true;
+    const nonSellable = options.nonSellable === true;
+
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.onclick = () => selectCard(item);
+    
+    const rarityClass = (item.rarity || 'common').toLowerCase();
+    const rarityBadge = `<span class="badge badge-rarity badge-${rarityClass}">${item.rarity || 'Common'}</span>`;
+    const sellabilityBadge = nonSellable
+        ? '<span class="badge" style="background-color: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35);">NOT SELLABLE</span>'
+        : '<span class="badge" style="background-color: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.35);">SELLABLE</span>';
+
+    const priceLine = showPrices
+        ? `<div class="text-muted" style="font-size: 14px; margin-top: 6px;">Sell: <strong>${item.best_sell_price ?? 'N/A'}</strong> • Buy: <strong>${item.best_buy_price ?? 'N/A'}</strong></div>`
+        : '<div class="text-muted" style="font-size: 14px; margin-top: 6px;">Marketplace pricing not available</div>';
+    
+    card.innerHTML = `
+        ${item.img ? `<img src="${item.img}" alt="${item.name}" class="result-img">` : '<div class="result-img" style="background: var(--surface-hover); display: flex; align-items: center; justify-content: center; font-size: 36px;">🃏</div>'}
+        <div class="result-info">
+            <div class="result-name">${item.name}</div>
+            <div class="result-details">
+                ${rarityBadge}
+                ${sellabilityBadge}
+                <span>OVR: <strong>${item.ovr || '??'}</strong></span>
+                <span>${item.display_position || 'N/A'}</span>
+                <span>${item.team_short_name || item.team || ''}</span>
+            </div>
+            <div class="text-muted" style="font-size: 14px;">
+                ${item.series || ''} ${item.series_year ? '(' + item.series_year + ')' : ''}
+            </div>
+            ${priceLine}
+        </div>
+        <div>
+            <button class="btn btn-primary">Select →</button>
+        </div>
+    `;
+    
+    return card;
+}
+
+function selectCard(item) {
+    document.getElementById('selectedUuid').value = item.uuid;
+    
+    const infoDiv = document.getElementById('selectedCardInfo');
+    const rarityBadge = `<span class="badge badge-rarity badge-${(item.rarity || 'common').toLowerCase()}">${item.rarity || 'Common'}</span>`;
+    
+    infoDiv.innerHTML = `
+        ${item.img ? `<img src="${item.img}" alt="${item.name}" style="width: 100px; height: 120px; object-fit: cover; border-radius: var(--border-radius-sm);">` : '<div style="width: 100px; height: 120px; background: var(--surface-hover); border-radius: var(--border-radius-sm); display: flex; align-items: center; justify-content: center; font-size: 48px;">🃏</div>'}
+        <div>
+            <h3 style="margin-bottom: var(--spacing-xs);">${item.name}</h3>
+            <div style="margin-bottom: var(--spacing-xs);">${rarityBadge} <strong>OVR ${item.ovr || '??'}</strong></div>
+            <div class="text-secondary">
+                ${item.display_position || 'N/A'} • ${item.team_short_name || item.team || ''} • ${item.series || ''} ${item.series_year || ''}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('searchResults').classList.add('hidden');
+    document.getElementById('addCardForm').classList.remove('hidden');
+    document.getElementById('addCardForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function submitAddCard(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const userData = {
+        purchased_price: formData.get('purchased_price') ? parseInt(formData.get('purchased_price')) : null,
+        quantity: parseInt(formData.get('quantity')),
+        on_team: formData.get('on_team') === '1',
+        grind_card: formData.get('grind_card') === '1',
+        inside_edge: formData.get('inside_edge'),
+        comments: formData.get('comments')
+    };
+    
+    const uuid = document.getElementById('selectedUuid').value;
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/cards', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                uuid: uuid,
+                user_data: userData
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('Card added successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = '/cards/' + result.uuid;
+            }, 1000);
+        } else {
+            showAlert('Failed to add card: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function cancelAddCard() {
+    document.getElementById('addCardForm').classList.add('hidden');
+    document.getElementById('searchResults').classList.remove('hidden');
+    document.getElementById('searchResults').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function submitManualEntry(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Build card data object
+    const cardData = {
+        player_name: formData.get('player_name'),
+        ovr: parseInt(formData.get('ovr')),
+        display_position: formData.get('display_position'),
+        team: formData.get('team'),
+        series: formData.get('series'),
+        rarity: formData.get('rarity'),
+        card_image_url: formData.get('card_image_url') || null,
+        purchased_price: formData.get('purchased_price') ? parseInt(formData.get('purchased_price')) : null,
+        quantity: parseInt(formData.get('quantity')),
+        on_team: formData.get('on_team') === '1',
+        grind_card: formData.get('grind_card') === '1',
+        pxp: formData.get('pxp') ? parseInt(formData.get('pxp')) : 0,
+        inside_edge: formData.get('inside_edge') || null,
+        comments: formData.get('comments') || null
+    };
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/cards/manual', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(cardData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('Card added successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = '/cards/' + result.uuid;
+            }, 1000);
+        } else {
+            showAlert('Failed to add card: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function loadCatalogStatus() {
+    const statusEl = document.getElementById('catalogStatus');
+    if (!statusEl) return;
+
+    try {
+        const response = await fetch('/api/cards/catalog/status');
+        const result = await response.json();
+
+        if (!result.success) {
+            statusEl.textContent = 'Catalog status unavailable';
+            return;
+        }
+
+        const status = result.status || {};
+        const progress = result.sync_progress || {};
+
+        _updateCatalogUI(status, progress);
+    } catch (error) {
+        statusEl.textContent = 'Catalog status unavailable';
+    }
+}
+
+// Internal helper — update all catalog-related UI from status + progress objects.
+function _updateCatalogUI(status, progress) {
+    const statusEl = document.getElementById('catalogStatus');
+    const emptyBanner = document.getElementById('catalogEmptyBanner');
+    const syncBtn = document.getElementById('syncCatalogBtn');
+    const progressContainer = document.getElementById('syncProgressContainer');
+    const progressBar = document.getElementById('syncProgressBar');
+    const progressLabel = document.getElementById('syncProgressLabel');
+
+    const count = status.card_count || 0;
+    const isReady = status.is_ready || false;
+    const isSyncing = progress.is_syncing || false;
+    const currentPage = progress.current_page || 0;
+    const totalPages = progress.total_pages || 0;
+    const cardsSynced = progress.cards_synced || 0;
+    const syncError = progress.error || null;
+
+    // Progress bar visibility
+    if (isSyncing && totalPages > 0) {
+        const pct = Math.round((currentPage / totalPages) * 100);
+        progressContainer.style.display = 'block';
+        progressBar.style.width = pct + '%';
+        progressLabel.textContent = `Syncing: page ${currentPage} / ${totalPages}  (${cardsSynced} cards...)`;
+        if (syncBtn) syncBtn.disabled = true;
+    } else if (isSyncing) {
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '2%';
+        progressLabel.textContent = 'Starting sync...';
+        if (syncBtn) syncBtn.disabled = true;
+    } else {
+        progressContainer.style.display = 'none';
+        if (syncBtn) syncBtn.disabled = false;
+    }
+
+    // Status text
+    if (isSyncing) {
+        statusEl.textContent = 'Sync in progress...';
+    } else if (syncError) {
+        statusEl.textContent = `Catalog sync error: ${syncError}`;
+    } else if (isReady) {
+        const lastSync = status.last_cached_at
+            ? new Date(status.last_cached_at).toLocaleDateString()
+            : 'unknown';
+        statusEl.textContent = `Catalog ready — ${count.toLocaleString()} cards (last synced ${lastSync})`;
+    } else {
+        statusEl.textContent = `Catalog not synced (${count} cards)`;
+    }
+
+    // Empty-catalog banner
+    if (emptyBanner) {
+        emptyBanner.style.display = (!isReady && !isSyncing) ? 'block' : 'none';
+    }
+}
+
+let _syncPollTimer = null;
+
+async function _pollSyncProgress() {
+    try {
+        const response = await fetch('/api/cards/catalog/sync/progress');
+        const result = await response.json();
+
+        if (!result.success) return;
+
+        const progress = result.sync_progress || {};
+        const status = result.status || {};
+
+        _updateCatalogUI(status, progress);
+
+        if (progress.is_syncing) {
+            // Keep polling
+            _syncPollTimer = setTimeout(_pollSyncProgress, 1500);
+        } else {
+            // Sync finished (or errored)
+            _syncPollTimer = null;
+            if (progress.error) {
+                showAlert(`Catalog sync failed: ${progress.error}`, 'error');
+            } else {
+                showAlert(`Catalog sync complete — ${status.card_count || 0} cards cached`, 'success');
+            }
+        }
+    } catch (e) {
+        _syncPollTimer = null;
+    }
+}
+
+async function syncCardCatalog() {
+    // Prevent double-click
+    if (_syncPollTimer) return;
+
+    const statusEl = document.getElementById('catalogStatus');
+    if (statusEl) statusEl.textContent = 'Starting sync...';
+
+    try {
+        const response = await fetch('/api/cards/catalog/sync', { method: 'POST' });
+        const result = await response.json();
+
+        if (!result.success && !result.already_running) {
+            showAlert(`Failed to start catalog sync: ${result.error || 'Unknown error'}`, 'error');
+            loadCatalogStatus();
+            return;
+        }
+
+        if (result.already_running) {
+            showAlert('Catalog sync already in progress', 'info');
+        }
+
+        // Begin polling for progress
+        _updateCatalogUI(result.status || {}, result.sync_progress || {});
+        _syncPollTimer = setTimeout(_pollSyncProgress, 1500);
+    } catch (error) {
+        showAlert('Catalog sync failed: ' + error.message, 'error');
+        loadCatalogStatus();
+    }
+}
+</script>
+{% endblock %}

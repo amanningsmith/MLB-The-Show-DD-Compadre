@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+
+{% block title %}{{ card.player_name }} - Card Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .card-image-large {
+        width: 250px;
+        height: 300px;
+        object-fit: cover;
+        object-position: top center;
+        border-radius: var(--border-radius-lg);
+        border: 2px solid var(--border-light);
+    }
+    
+    .card-header-info {
+        flex: 1;
+    }
+    
+    .card-title {
+        font-size: 36px;
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .card-subtitle {
+        font-size: 18px;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .meta-item {
+        background-color: rgba(0,0,0,0.3);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--border-radius);
+    }
+    
+    .meta-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+    }
+    
+    .meta-value {
+        font-size: 18px;
+        font-weight: var(--font-weight-bold);
+    }
+    
+    .sections-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: var(--spacing-lg);
+    }
+    
+    .section-title {
+        font-size: 20px;
+        font-weight: var(--font-weight-bold);
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-sm);
+        border-bottom: 2px solid var(--secondary-color);
+        color: var(--text-color);
+    }
+    
+    .attr-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
+    }
+    
+    .attr-item {
+        display: flex;
+        justify-content: space-between;
+        padding: var(--spacing-xs);
+        background-color: rgba(0,0,0,0.2);
+        border-radius: var(--border-radius-sm);
+    }
+    
+    .attr-name {
+        color: var(--text-secondary);
+    }
+    
+    .attr-value {
+        font-weight: var(--font-weight-bold);
+        color: var(--text-color);
+    }
+    
+    .attr-bar {
+        height: 4px;
+        background-color: var(--border-color);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 2px;
+    }
+    
+    .attr-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--error-color), var(--warning-color), var(--success-color));
+        transition: width var(--transition-normal);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
+    }
+    
+    .edit-form {
+        display: none;
+    }
+    
+    .edit-form.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card-detail-container">
+    <div class="dashboard-header">
+        <h1>Card Details</h1>
+        <div class="action-buttons">
+            <a href="{{ url_for('card_tracker') }}" class="btn btn-secondary">← Back to Cards</a>
+            <button class="btn btn-primary" onclick="toggleEdit()">✏️ Edit</button>
+            <button class="btn btn-danger" onclick="deleteCard()">🗑️ Delete</button>
+        </div>
+    </div>
+    
+    <!-- Card Header -->
+    <div class="content-section" style="display: flex; gap: var(--spacing-xl);">
+        <div>
+            {% if card.card_image_url %}
+            <img src="{{ card.card_image_url }}" alt="{{ card.player_name }}" class="card-image-large">
+            {% else %}
+            <div class="card-image-large" style="display: flex; align-items: center; justify-content: center; background: var(--surface-hover); font-size: 72px;">
+                🃏
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card-header-info">
+            <div class="card-title">
+                {{ card.player_name }}
+                <span class="badge badge-rarity badge-{{ card.rarity.lower() if card.rarity else 'common' }}">{{ card.rarity }}</span>
+            </div>
+            
+            <div class="card-subtitle">
+                {{ card.display_position }} • {{ card.team }} • {{ card.series }} {{ card.series_year or '' }}
+            </div>
+            
+            <div class="card-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Overall</div>
+                    <div class="meta-value">{{ card.ovr }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Sell Price</div>
+                    <div class="meta-value">{{ card.current_sell_price or 0 }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Buy Price</div>
+                    <div class="meta-value">{{ card.current_buy_price or 0 }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Quantity</div>
+                    <div class="meta-value">{{ card.quantity }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Potential Profit</div>
+                    <div class="meta-value" style="color: var(--success-color);">{{ (card.potential_profit or 0) | int }}</div>
+                </div>
+                <div class="meta-item" style="background: linear-gradient(135deg, rgba(254, 125, 60, 0.2), rgba(254, 125, 60, 0.1)); border: 2px solid var(--secondary-color);">
+                    <div class="meta-label">PXP Level</div>
+                    <div class="meta-value" style="font-size: 24px; color: var(--secondary-color);">
+                        {{ (card.pxp or 0) | pxp_level | roman_numeral }}
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ card.pxp or 0 }} PXP</div>
+                </div>
+            </div>
+            
+            <div class="card-indicators" style="display: flex; gap: 8px; margin-top: 15px;">
+                {% if card.on_team %}
+                <span class="indicator-badge badge-on-team">ON TEAM</span>
+                {% endif %}
+                {% if card.grind_card %}
+                <span class="indicator-badge badge-grind">GRIND TARGET</span>
+                {% endif %}
+                {% if card.card_status == 'Delisted' %}
+                <span class="indicator-badge badge-delisted">DELISTED</span>
+                {% endif %}
+            </div>
+            
+            {% if card.comments %}
+            <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background-color: rgba(0,0,0,0.3); border-radius: var(--border-radius); border-left: 3px solid var(--secondary-color);">
+                <strong>Comments:</strong> {{ card.comments }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Editable Section (hidden by default) -->
+    <div id="editForm" class="edit-form section-card" style="margin-bottom: 20px;">
+        <form onsubmit="saveEdits(event)">
+            <div class="section-title">Edit Your Information</div>
+            
+            <div class="form-group">
+                <label>Purchased Price (stubs)</label>
+                <input type="number" name="purchased_price" value="{{ card.purchased_price or '' }}" min="0">
+            </div>
+            
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" name="quantity" value="{{ card.quantity }}" min="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="on_team" {% if card.on_team %}checked{% endif %}>
+                    On Active Team
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="grind_card" {% if card.grind_card %}checked{% endif %}>
+                    Grind Target
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label>PXP (Parallel XP)</label>
+                <input type="number" name="pxp" value="{{ card.pxp or 0 }}" min="0">
+                <small style="display: block; margin-top: 4px; color: var(--text-muted); font-size: 13px;">
+                    Level thresholds: I (0-999), II (1000-2499), III (2500-4999), IV (5000-9999), V (10000+)
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label>Inside Edge</label>
+                <input type="text" name="inside_edge" value="{{ card.inside_edge or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label>Comments</label>
+                <textarea name="comments" rows="3">{{ card.comments or '' }}</textarea>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" class="btn btn-secondary" onclick="toggleEdit()">Cancel</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Attribute Sections -->
+    <div class="sections-grid">
+        <!-- Player Info -->
+        <div class="content-section">
+            <div class="section-title">Player Information</div>
+            <div class="attr-grid">
+                <div class="attr-item">
+                    <span class="attr-name">Jersey #</span>
+                    <span class="attr-value">{{ card.jersey_number or 'N/A' }}</span>
+                </div>
+                <div class="attr-item">
+                    <span class="attr-name">Age</span>
+                    <span class="attr-value">{{ card.age or 'N/A' }}</span>
+                </div>
+                <div class="attr-item">
+                    <span class="attr-name">Bats</span>
+                    <span class="attr-value">{{ card.bat_hand or 'N/A' }}</span>
+                </div>
+                <div class="attr-item">
+                    <span class="attr-name">Throws</span>
+                    <span class="attr-value">{{ card.throw_hand or 'N/A' }}</span>
+                </div>
+                <div class="attr-item">
+                    <span class="attr-name">Height</span>
+                    <span class="attr-value">{{ card.height or 'N/A' }}</span>
+                </div>
+                <div class="attr-item">
+                    <span class="attr-name">Weight</span>
+                    <span class="attr-value">{{ card.weight or 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hitting -->
+        {% if card.is_hitter %}
+        <div class="content-section">
+            <div class="section-title">Hitting Attributes</div>
+            <div class="attr-grid">
+                {% for attr_name, attr_key in [
+                    ('Contact R', 'contact_right'),
+                    ('Contact L', 'contact_left'),
+                    ('Power R', 'power_right'),
+                    ('Power L', 'power_left'),
+                    ('Plate Vision', 'plate_vision'),
+                    ('Plate Discipline', 'plate_discipline'),
+                    ('Clutch', 'batting_clutch'),
+                    ('Bunting', 'bunting_ability')
+                ] %}
+                <div class="attr-item" style="flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                        <span class="attr-name">{{ attr_name }}</span>
+                        <span class="attr-value">{{ card[attr_key] or 0 }}</span>
+                    </div>
+                    <div class="attr-bar">
+                        <div class="attr-fill" style="width: {{ (card[attr_key] or 0) }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Fielding -->
+        <div class="content-section">
+            <div class="section-title">Fielding Attributes</div>
+            <div class="attr-grid">
+                {% for attr_name, attr_key in [
+                    ('Fielding', 'fielding_ability'),
+                    ('Arm Strength', 'arm_strength'),
+                    ('Arm Accuracy', 'arm_accuracy'),
+                    ('Reaction', 'reaction_time'),
+                    ('Blocking', 'blocking')
+                ] %}
+                <div class="attr-item" style="flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                        <span class="attr-name">{{ attr_name }}</span>
+                        <span class="attr-value">{{ card[attr_key] or 0 }}</span>
+                    </div>
+                    <div class="attr-bar">
+                        <div class="attr-fill" style="width: {{ (card[attr_key] or 0) }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Running -->
+        <div class="content-section">
+            <div class="section-title">Running Attributes</div>
+            <div class="attr-grid">
+                {% for attr_name, attr_key in [
+                    ('Speed', 'speed'),
+                    ('Baserunning', 'baserunning_ability'),
+                    ('Aggression', 'baserunning_aggression'),
+                    ('Stealing', 'steal')
+                ] %}
+                <div class="attr-item" style="flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                        <span class="attr-name">{{ attr_name }}</span>
+                        <span class="attr-value">{{ card[attr_key] or 0 }}</span>
+                    </div>
+                    <div class="attr-bar">
+                        <div class="attr-fill" style="width: {{ (card[attr_key] or 0) }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Pitching (if pitcher) -->
+        {% if card.stamina %}
+        <div class="content-section">
+            <div class="section-title">Pitching Attributes</div>
+            <div class="attr-grid">
+                {% for attr_name, attr_key in [
+                    ('Stamina', 'stamina'),
+                    ('H/9', 'hits_per_9'),
+                    ('K/9', 'k_per_9'),
+                    ('BB/9', 'bb_per_9'),
+                    ('HR/9', 'hr_per_9'),
+                    ('Clutch', 'pitching_clutch'),
+                    ('Velocity', 'pitch_velocity'),
+                    ('Control', 'pitch_control'),
+                    ('Movement', 'pitch_movement')
+                ] %}
+                <div class="attr-item" style="flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                        <span class="attr-name">{{ attr_name }}</span>
+                        <span class="attr-value">{{ card[attr_key] or 0 }}</span>
+                    </div>
+                    <div class="attr-bar">
+                        <div class="attr-fill" style="width: {{ (card[attr_key] or 0) }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Pitches -->
+    {% if card.pitches and card.pitches|length > 0 %}
+    <div class="content-section" style="margin-top: 20px;">
+        <div class="section-title">Pitch Repertoire</div>
+        <div class="attr-grid">
+            {% for pitch in card.pitches %}
+            <div class="attr-item">
+                <span class="attr-name">{{ pitch.name }}</span>
+                <span class="attr-value">{{ pitch.speed or 'N/A' }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Quirks -->
+    {% if card.quirks and card.quirks|length > 0 %}
+    <div class="content-section" style="margin-top: 20px;">
+        <div class="section-title">Quirks</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            {% for quirk in card.quirks %}
+            <div style="background-color: var(--background-color); padding: 8px 12px; border-radius: var(--border-radius-sm); font-size: 14px;">
+                {{ quirk.name }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleEdit() {
+    const form = document.getElementById('editForm');
+    form.classList.toggle('active');
+}
+
+async function saveEdits(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const updates = {
+        purchased_price: formData.get('purchased_price') ? parseInt(formData.get('purchased_price')) : null,
+        quantity: parseInt(formData.get('quantity')),
+        on_team: formData.get('on_team') ? 1 : 0,
+        grind_card: formData.get('grind_card') ? 1 : 0,
+        pxp: formData.get('pxp') ? parseInt(formData.get('pxp')) : 0,
+        inside_edge: formData.get('inside_edge'),
+        comments: formData.get('comments')
+    };
+    
+    const uuid = '{{ card.uuid }}';
+    
+    try {
+        const response = await fetch(`/api/cards/${uuid}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(updates)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('Card updated successfully!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert('Update failed: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'error');
+    }
+}
+
+async function deleteCard() {
+    if (!confirm('Are you sure you want to delete this card? This cannot be undone.')) {
+        return;
+    }
+    
+    const uuid = '{{ card.uuid }}';
+    
+    try {
+        const response = await fetch('/api/cards/delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ uuids: [uuid] })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('Card deleted!', 'success');
+            setTimeout(() => {
+                window.location.href = '{{ url_for('card_tracker') }}';
+            }, 1000);
+        } else {
+            showAlert('Delete failed: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'error');
+    }
+}
+</script>
+{% endblock %}

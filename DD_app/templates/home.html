@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}Home — MLB The Show 26 DD Tracker{% endblock %}
+
+{% block content %}
+<!-- ========================
+     HERO BANNER
+     ======================== -->
+<section class="home-hero">
+    <div class="home-hero-content">
+        <div class="home-hero-badge">⚾ Diamond Dynasty Tracker</div>
+        <h1 class="home-hero-title">MLB The Show 26</h1>
+        <p class="home-hero-subtitle">Your all-in-one hub for missions, cards, and live scores.</p>
+    </div>
+</section>
+
+<!-- ========================
+     TODAY AT A GLANCE
+     ======================== -->
+<section class="home-glance-section">
+    <h2 class="home-section-title">Today at a Glance</h2>
+    <div class="home-glance-strip" id="homeGlanceStrip">
+        <div class="home-glance-stat" id="glanceGames">
+            <span class="home-glance-value" id="glanceGamesValue">—</span>
+            <span class="home-glance-label">Games Today</span>
+        </div>
+        <div class="home-glance-divider"></div>
+        <div class="home-glance-stat" id="glanceMissions">
+            <span class="home-glance-value" id="glanceMissionsValue">—</span>
+            <span class="home-glance-label">At-Bat Missions</span>
+        </div>
+        <div class="home-glance-divider"></div>
+        <div class="home-glance-stat" id="glanceTracked">
+            <span class="home-glance-value" id="glanceTrackedValue">—</span>
+            <span class="home-glance-label">Tracked Cards</span>
+        </div>
+        <div class="home-glance-divider"></div>
+        <div class="home-glance-stat" id="glanceOwned">
+            <span class="home-glance-value" id="glanceOwnedValue">—</span>
+            <span class="home-glance-label">Owned Cards</span>
+        </div>
+    </div>
+    <div class="home-glance-error" id="homeGlanceError" style="display:none;">
+        Live stats temporarily unavailable.
+    </div>
+</section>
+
+<!-- ========================
+     FEATURE CARDS
+     ======================== -->
+<section class="home-features-section">
+    <h2 class="home-section-title">Features</h2>
+    <div class="home-feature-grid">
+
+        <a href="{{ url_for('mission_tracker') }}" class="home-feature-card">
+            <div class="home-feature-card-icon">🎯</div>
+            <div class="home-feature-card-body">
+                <h3 class="home-feature-card-title">Programs Tracker</h3>
+                <p class="home-feature-card-desc">Organise missions by program, track completion progress, and use the Auto Grind diamond to plan your grinding sessions.</p>
+            </div>
+            <button class="home-feature-info-btn" data-feature="programs" title="How it works" aria-label="Programs Tracker info">ℹ</button>
+            <div class="home-feature-card-arrow">→</div>
+        </a>
+
+        <a href="{{ url_for('card_tracker') }}" class="home-feature-card">
+            <div class="home-feature-card-icon">🃏</div>
+            <div class="home-feature-card-body">
+                <h3 class="home-feature-card-title">Card Tracker</h3>
+                <p class="home-feature-card-desc">Browse your full Diamond Dynasty card catalog. Filter by rarity, position, team, and series. Track on-team and grind status.</p>
+            </div>
+            <button class="home-feature-info-btn" data-feature="cards" title="How it works" aria-label="Card Tracker info">ℹ</button>
+            <div class="home-feature-card-arrow">→</div>
+        </a>
+
+        <a href="{{ url_for('actual_card_tracker') }}" class="home-feature-card">
+            <div class="home-feature-card-icon">📦</div>
+            <div class="home-feature-card-body">
+                <h3 class="home-feature-card-title">Actual Card Tracker</h3>
+                <p class="home-feature-card-desc">See exactly what you own. Sync directly from your inventory and let the tracker auto-update mission progress for acquired cards.</p>
+            </div>
+            <button class="home-feature-info-btn" data-feature="actual" title="How it works" aria-label="Actual Card Tracker info">ℹ</button>
+            <div class="home-feature-card-arrow">→</div>
+        </a>
+
+        <a href="{{ url_for('scores_dashboard') }}" class="home-feature-card">
+            <div class="home-feature-card-icon">📈</div>
+            <div class="home-feature-card-body">
+                <h3 class="home-feature-card-title">Live Scores</h3>
+                <p class="home-feature-card-desc">Follow every MLB game with a persistent live score ticker. Open the dashboard for full game details, innings, Gameday links, and one-click MLB.TV access.</p>
+            </div>
+            <button class="home-feature-info-btn" data-feature="scores" title="How it works" aria-label="Live Scores info">ℹ</button>
+            <div class="home-feature-card-arrow">→</div>
+        </a>
+
+    </div>
+</section>
+
+<!-- ========================
+     FEATURE INFO MODAL
+     ======================== -->
+<div class="home-info-overlay" id="homeInfoOverlay" role="dialog" aria-modal="true" aria-labelledby="homeInfoTitle" style="display:none;">
+    <div class="home-info-modal">
+        <div class="home-info-modal-header">
+            <span class="home-info-modal-icon" id="homeInfoIcon"></span>
+            <h3 class="home-info-modal-title" id="homeInfoTitle"></h3>
+            <button class="home-info-modal-close" id="homeInfoClose" aria-label="Close">&times;</button>
+        </div>
+        <div class="home-info-modal-body" id="homeInfoBody"></div>
+    </div>
+</div>
+
+<script>
+(function initFeatureInfoModals() {
+    var FEATURES = {
+        programs: {
+            icon: '🎯',
+            title: 'Programs Tracker',
+            html: [
+                '<h4>Overview</h4>',
+                '<p>The Programs Tracker organises all your Diamond Dynasty missions into programs — named groups like TA (Team Affinity), WBC, Topps Now, Moments, and more. The main view shows a grid of <strong>program cards</strong>, each displaying the program name, status, and a weighted completion percentage.</p>',
+
+                '<h4>Program Cards &amp; Completion</h4>',
+                '<ul>',
+                '<li>Each program card shows: Program Category, Status, and Completion %.</li>',
+                '<li>Completion is calculated as: <code>sum(Current Status) ÷ sum(Mission Total) × 100</code>.</li>',
+                '<li>Program status automatically derives from completion: <strong>0% → Not Started</strong>, <strong>1–99% → In-Progress</strong>, <strong>100% → Completed</strong>.</li>',
+                '</ul>',
+
+                '<h4>Mission Drill-Down</h4>',
+                '<ul>',
+                '<li>Click any program card to open a popup showing all missions for that program.</li>',
+                '<li>Every mission row is fully editable inline: Priority, Mission Name, Type, Tracking Mode, Mission Total, Current Status, and Acquired state.</li>',
+                '<li>Save all edits in one action per row.</li>',
+                '</ul>',
+
+                '<h4>Mission Priority System</h4>',
+                '<p>Missions use a baseball-themed three-tier priority:</p>',
+                '<ul>',
+                '<li><strong>At-Bat</strong> — Active focus mission (highest priority).</li>',
+                '<li><strong>On-Deck</strong> — Next up; you own at least one player linked to this mission.</li>',
+                '<li><strong>In the Hole</strong> — Queued; no owned players linked yet.</li>',
+                '</ul>',
+                '<p>Priority can be set manually or auto-recalculated on demand using the <strong>Recalculate Priority</strong> action.</p>',
+
+                '<h4>Auto Grind Diamond</h4>',
+                '<ul>',
+                '<li>Opens a baseball diamond depth chart across all active missions.</li>',
+                '<li>Shows the best candidate players per position, sorted by mission completion closeness, priority, and ownership status.</li>',
+                '<li>Player rows are colour-coded: <strong>green</strong> = owned in inventory, <strong>yellow</strong> = owned but not on active team, <strong>red</strong> = not owned.</li>',
+                '</ul>',
+
+                '<h4>Player Associations</h4>',
+                '<ul>',
+                '<li>Any mission can have multiple players linked to it (many-to-many).</li>',
+                '<li>Player picker searches the full synced DD card catalog — not just cards you own.</li>',
+                '<li>Each linked player shows an ownership label (Owned / Not Owned) for quick reference.</li>',
+                '</ul>',
+
+                '<h4>View All Missions</h4>',
+                '<p>A cross-program missions list is available via the <strong>View All Missions</strong> button. It shows all In-Progress and Not Started missions by default, with a toggle to include Completed missions. Edits are saved with a single top-level Save All action.</p>',
+            ].join('')
+        },
+
+        cards: {
+            icon: '🃏',
+            title: 'Card Tracker',
+            html: [
+                '<h4>Overview</h4>',
+                '<p>The Card Tracker is your local Diamond Dynasty card catalog. It stores detailed card data pulled from The Show API and lets you track which cards you are targeting, grinding for stubs, or keeping on your team.</p>',
+
+                '<h4>Card Data</h4>',
+                '<p>Each card stores two types of fields:</p>',
+                '<ul>',
+                '<li><strong>API-populated:</strong> Player Name, Position, Team, Overall Rating (OVR), Rarity (Diamond / Gold / Silver / Bronze / Common), Series, pitching attributes, batting/fielding attributes, quirks, and market prices.</li>',
+                '<li><strong>User-managed:</strong> On Team flag, Grind Card flag, Card Status, and personal notes.</li>',
+                '</ul>',
+
+                '<h4>Browse &amp; Filter</h4>',
+                '<ul>',
+                '<li>Filter by Rarity, Position, Team, Series, On Team, Grind Card, Card Status, and free-text search by player name.</li>',
+                '<li>Sort by Overall Rating, player name, or other fields in ascending or descending order.</li>',
+                '<li>Results are paginated at 20 cards per page.</li>',
+                '</ul>',
+
+                '<h4>Adding Cards</h4>',
+                '<ul>',
+                '<li>Use the <strong>Add New Card</strong> search to find any card from The Show marketplace or the full items catalog.</li>',
+                '<li>Cards with marketplace listings show live buy/sell prices.</li>',
+                '<li>Reward and earned cards (non-sellable) are found via the synced local catalog or a live Items API fallback.</li>',
+                '<li>Cards can also be added manually for cards not available via the API.</li>',
+                '</ul>',
+
+                '<h4>Card Catalog Sync</h4>',
+                '<ul>',
+                '<li>A full background sync pulls every card from The Show Items API into a local catalog.</li>',
+                '<li>Sync progress is shown inline with a live page counter.</li>',
+                '<li>Once synced, card searches run entirely offline against the local database — fast and API-free.</li>',
+                '</ul>',
+
+                '<h4>Card Detail</h4>',
+                '<p>Each card has a dedicated detail page showing all attributes, market prices, quirks, pitch types, and full positional data. Prices are refreshed on demand via the global Refresh action.</p>',
+            ].join('')
+        },
+
+        actual: {
+            icon: '📦',
+            title: 'Actual Card Tracker',
+            html: [
+                '<h4>Overview</h4>',
+                '<p>The Actual Card Tracker surfaces exactly which Diamond Dynasty cards you currently own. It works from a local inventory that you control, and it can automatically update your missions when new cards are synced.</p>',
+
+                '<h4>Syncing Your Inventory</h4>',
+                '<ul>',
+                '<li>Sync is <strong>manual</strong> — click <strong>Sync My Roster</strong> on the Actual Card Tracker page to trigger an inventory import.</li>',
+                '<li>The sync reads your owned card data and updates the local database with current quantities and active/inactive status.</li>',
+                '</ul>',
+
+                '<h4>Inventory View</h4>',
+                '<ul>',
+                '<li>Displays all cards where you have a quantity greater than zero and status is Active.</li>',
+                '<li>Sort by: Overall Rating, Team, Series, or Position.</li>',
+                '<li>Filter by: Team, Series, Position, OVR range, and player name search.</li>',
+                '<li>Paginated and supports quick card detail view.</li>',
+                '</ul>',
+
+                '<h4>Mission Automation</h4>',
+                '<p>When a synced owned card matches a player linked to one of your missions, the tracker automatically:</p>',
+                '<ul>',
+                '<li>Sets the mission <strong>Acquired</strong> field to <em>Acquired</em>.</li>',
+                '<li>Sets the mission <strong>Priority</strong> to <em>At-Bat</em>.</li>',
+                '<li>Writes an <strong>audit log entry</strong> recording the automated update for traceability.</li>',
+                '</ul>',
+
+                '<h4>Matching Rule</h4>',
+                '<ul>',
+                '<li>Cards are matched to mission players using a composite <code>player_id</code> key (format: <code>name::series</code>).</li>',
+                '<li>If multiple owned cards could satisfy the same mission player linkage, any match qualifies.</li>',
+                '</ul>',
+
+                '<h4>Audit Trail</h4>',
+                '<p>The most recent automated mission updates are shown in the Actual Card Tracker page, giving you a clear record of which missions were auto-updated on each sync run.</p>',
+            ].join('')
+        },
+
+        scores: {
+            icon: '📈',
+            title: 'Live Scores',
+            html: [
+                '<h4>Overview</h4>',
+                '<p>The Live Scores feature keeps you up to date on every MLB game happening today — without leaving your missions or cards workflow. It has two surfaces: a persistent bottom ticker on every page and a dedicated Scores dashboard.</p>',
+
+                '<h4>Bottom Ticker</h4>',
+                '<ul>',
+                '<li>Scrolls across the bottom of every page in the app.</li>',
+                '<li>Shows all games for today (ET): Pre-Game, Live, and Final.</li>',
+                '<li>Each ticker item shows: Away team, Home team, current score (or scheduled start time for pre-game), game state, and inning context for live games.</li>',
+                '<li>Auto-refreshes every <strong>30 seconds</strong> in the background without interrupting your workflow.</li>',
+                '<li>Can be hidden or revealed at any time using the Hide/Show Ticker button.</li>',
+                '</ul>',
+
+                '<h4>Spoiler Mode</h4>',
+                '<p>Enable <strong>Spoiler Mode</strong> (Hide Scores button) to keep team matchups and game state visible while hiding all score values — useful if you are watching a game on delay.</p>',
+
+                '<h4>Favorite Teams</h4>',
+                '<p>Mark favorite teams in the ticker settings. Favorites scroll more frequently in the ticker so your key games are always front and centre.</p>',
+
+                '<h4>Click Behavior</h4>',
+                '<ul>',
+                '<li><strong>Pre-Game games</strong> → opens MLB preview / lineups page in a new tab.</li>',
+                '<li><strong>Live / Final games</strong> → opens MLB Gameday for that game in a new tab.</li>',
+                '</ul>',
+
+                '<h4>Scores Dashboard</h4>',
+                '<ul>',
+                '<li>Dedicated full-page view with expanded game cards.</li>',
+                '<li>Each game card shows: Runs, Hits, Errors, inning/half and out count (live), probable pitchers (pre-game), and team logos.</li>',
+                '<li>Each game card includes a <strong>📺 TV button</strong> — click it to open the MLB.TV watch page for that game in a new tab without leaving the dashboard.</li>',
+                '<li>Date selector to view any day\'s games.</li>',
+                '<li>Manual <strong>Refresh</strong> button for immediate updates.</li>',
+                '</ul>',
+
+                '<h4>Failure Handling</h4>',
+                '<ul>',
+                '<li>If the MLB stats API is temporarily unavailable, the last successful scores payload remains displayed.</li>',
+                '<li>A non-blocking warning appears in the ticker/dashboard indicating scores may be stale.</li>',
+                '<li>Normal updates resume automatically on the next polling interval.</li>',
+                '</ul>',
+            ].join('')
+        }
+    };
+
+    var overlay = document.getElementById('homeInfoOverlay');
+    var iconEl  = document.getElementById('homeInfoIcon');
+    var titleEl = document.getElementById('homeInfoTitle');
+    var bodyEl  = document.getElementById('homeInfoBody');
+    var closeBtn = document.getElementById('homeInfoClose');
+
+    function openModal(featureKey) {
+        var data = FEATURES[featureKey];
+        if (!data) return;
+        iconEl.textContent  = data.icon;
+        titleEl.textContent = data.title;
+        bodyEl.innerHTML    = data.html;
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        closeBtn.focus();
+    }
+
+    function closeModal() {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Info button clicks — stop propagation so the card link doesn't fire
+    document.querySelectorAll('.home-feature-info-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openModal(btn.dataset.feature);
+        });
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && overlay.style.display !== 'none') closeModal();
+    });
+}());
+
+(function loadHomeGlance() {
+    function fmt(val) {
+        return (val === null || val === undefined) ? '—' : String(val);
+    }
+
+    fetch('/api/home/glance')
+        .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+        .then(function(data) {
+            var gamesVal = '—';
+            if (data.total_games !== null && data.total_games !== undefined) {
+                var live = (data.live_games !== null && data.live_games !== undefined) ? data.live_games : 0;
+                gamesVal = live + ' Live / ' + data.total_games + ' Total';
+            }
+            document.getElementById('glanceGamesValue').textContent = gamesVal;
+            document.getElementById('glanceMissionsValue').textContent = fmt(data.at_bat_missions);
+            document.getElementById('glanceTrackedValue').textContent = fmt(data.tracked_cards);
+            document.getElementById('glanceOwnedValue').textContent = fmt(data.owned_cards);
+        })
+        .catch(function() {
+            document.getElementById('homeGlanceStrip').style.display = 'none';
+            document.getElementById('homeGlanceError').style.display = 'block';
+        });
+}());
+</script>
+{% endblock %}

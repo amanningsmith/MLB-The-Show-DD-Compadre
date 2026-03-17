@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block title %}MLB Scores Dashboard - MLB The Show 26 DD Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .scores-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .scores-preferences {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .scores-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-secondary);
+        font-size: 13px;
+    }
+
+    .scores-toolbar .date-input {
+        max-width: 180px;
+    }
+
+    .scores-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .scores-pill {
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        padding: 6px 12px;
+        background: var(--surface-color);
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .scores-warning {
+        margin-bottom: 16px;
+        border: 1px solid rgba(251, 146, 60, 0.4);
+        background: rgba(251, 146, 60, 0.12);
+        color: #ffd8a8;
+        padding: 10px 12px;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .scores-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 14px;
+    }
+
+    .score-card {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        background: var(--surface-color);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--text-color);
+        transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .score-card:hover {
+        border-color: var(--accent-color);
+        transform: translateY(-2px);
+    }
+
+    .score-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .score-state {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--accent-color);
+    }
+
+    .score-time {
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+
+    .score-matchup {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .team-row {
+        display: contents;
+    }
+
+    .team-name {
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .team-main {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .team-logo {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        flex-shrink: 0;
+        background: rgba(5, 207, 222, 0.08);
+        border-radius: 50%;
+        padding: 2px;
+    }
+
+    .team-favorite-btn {
+        border: 1px solid var(--border-light);
+        border-radius: 999px;
+        background: rgba(5, 207, 222, 0.08);
+        color: var(--text-secondary);
+        font-size: 11px;
+        line-height: 1;
+        padding: 4px 7px;
+        cursor: pointer;
+        margin-left: 6px;
+        flex-shrink: 0;
+    }
+
+    .team-favorite-btn.is-favorited {
+        color: #001a2c;
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+
+    .team-score {
+        font-weight: 700;
+        color: var(--accent-color);
+    }
+
+    .score-context {
+        color: var(--text-secondary);
+        font-size: 12px;
+        min-height: 18px;
+    }
+
+    .score-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        margin-top: 4px;
+    }
+
+    .score-stat {
+        border: 1px solid rgba(5, 207, 222, 0.15);
+        border-radius: var(--border-radius-sm);
+        background: rgba(5, 207, 222, 0.06);
+        padding: 6px;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .score-stat strong {
+        display: block;
+        color: var(--accent-color);
+    }
+
+    .probables {
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .score-card-header-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .tv-btn {
+        border: none;
+        background: none;
+        padding: 2px 4px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        opacity: 0.65;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .tv-btn:hover {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    .empty-state {
+        border: 1px dashed var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 26px;
+        text-align: center;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Real Time MLB Scores</h1>
+    <p class="text-muted">All games shown in Eastern Time. Dashboard refreshes every 30 seconds.</p>
+</div>
+
+<section class="content-section">
+    <div class="scores-toolbar">
+        <input id="scoresDateInput" class="date-input" type="date" value="{{ default_date }}">
+        <button id="scoresRefreshBtn" class="btn btn-primary btn-sm">Refresh Now</button>
+        <span id="scoresUpdatedAt" class="text-muted">Loading...</span>
+    </div>
+
+    <div class="scores-preferences">
+        <label class="scores-toggle">
+            <input id="scoresHideScoresToggle" type="checkbox">
+            Hide Scores (No Spoilers)
+        </label>
+        <button id="scoresClearFavoritesBtn" class="btn btn-secondary btn-sm">Clear Favorites</button>
+        <span id="scoresFavoritesInfo" class="text-muted">Favorites: none</span>
+    </div>
+
+    <div id="scoresSummary" class="scores-summary"></div>
+    <div id="scoresWarning" class="scores-warning" style="display: none;"></div>
+    <div id="scoresGrid" class="scores-grid"></div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+    const POLL_MS = 30000;
+    const FAVORITES_KEY = 'scoresFavoriteTeamIds';
+    const SPOILER_KEY = 'scoresHideScores';
+    let timerId = null;
+    let lastGames = [];
+
+    const dateInput = document.getElementById('scoresDateInput');
+    const refreshBtn = document.getElementById('scoresRefreshBtn');
+    const hideScoresToggle = document.getElementById('scoresHideScoresToggle');
+    const clearFavoritesBtn = document.getElementById('scoresClearFavoritesBtn');
+    const favoritesInfoEl = document.getElementById('scoresFavoritesInfo');
+    const updatedAt = document.getElementById('scoresUpdatedAt');
+    const warningEl = document.getElementById('scoresWarning');
+    const gridEl = document.getElementById('scoresGrid');
+    const summaryEl = document.getElementById('scoresSummary');
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function renderSummary(counts, totalGames) {
+        const live = Number(counts?.live || 0);
+        const pregame = Number(counts?.pregame || 0);
+        const finalGames = Number(counts?.final || 0);
+        const total = Number(totalGames || 0);
+
+        summaryEl.innerHTML = [
+            `<span class="scores-pill">Total: ${total}</span>`,
+            `<span class="scores-pill">Live: ${live}</span>`,
+            `<span class="scores-pill">Pre-Game: ${pregame}</span>`,
+            `<span class="scores-pill">Final: ${finalGames}</span>`,
+        ].join('');
+    }
+
+    function readFavoriteTeamIds() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+            if (!Array.isArray(raw)) {
+                return [];
+            }
+            return raw.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0);
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function writeFavoriteTeamIds(teamIds) {
+        const unique = [...new Set(teamIds.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(unique));
+        window.dispatchEvent(new Event('scoresPreferencesUpdated'));
+    }
+
+    function hideScoresEnabled() {
+        return localStorage.getItem(SPOILER_KEY) === 'true';
+    }
+
+    function setHideScores(enabled) {
+        localStorage.setItem(SPOILER_KEY, enabled ? 'true' : 'false');
+        hideScoresToggle.checked = enabled;
+        window.dispatchEvent(new Event('scoresPreferencesUpdated'));
+        renderGames(lastGames);
+    }
+
+    function isFavoriteTeam(teamId, favoriteSet) {
+        return favoriteSet.has(Number(teamId || 0));
+    }
+
+    function gameHasFavorite(game, favoriteSet) {
+        return isFavoriteTeam(game?.away?.id, favoriteSet) || isFavoriteTeam(game?.home?.id, favoriteSet);
+    }
+
+    function sortGamesByFavorite(games, favoriteSet) {
+        return [...games].sort((a, b) => {
+            const aFav = gameHasFavorite(a, favoriteSet) ? 1 : 0;
+            const bFav = gameHasFavorite(b, favoriteSet) ? 1 : 0;
+            if (aFav !== bFav) {
+                return bFav - aFav;
+            }
+            return String(a.start_time_et || '').localeCompare(String(b.start_time_et || ''));
+        });
+    }
+
+    function updateFavoritesInfo(games) {
+        const favoriteIds = readFavoriteTeamIds();
+        if (!favoriteIds.length) {
+            favoritesInfoEl.textContent = 'Favorites: none';
+            return;
+        }
+
+        const teamMap = {};
+        (games || []).forEach((game) => {
+            if (game?.away?.id) {
+                teamMap[game.away.id] = game.away.abbr || game.away.name || `Team ${game.away.id}`;
+            }
+            if (game?.home?.id) {
+                teamMap[game.home.id] = game.home.abbr || game.home.name || `Team ${game.home.id}`;
+            }
+        });
+
+        const labels = favoriteIds.map((teamId) => teamMap[teamId] || `Team ${teamId}`);
+        favoritesInfoEl.textContent = `Favorites: ${labels.join(', ')}`;
+    }
+
+    function gameCardHtml(game, favoriteSet, hideScores) {
+        const awayRuns = game?.away?.runs ?? 0;
+        const homeRuns = game?.home?.runs ?? 0;
+        const awayHits = game?.away?.hits ?? 0;
+        const homeHits = game?.home?.hits ?? 0;
+        const awayErrors = game?.away?.errors ?? 0;
+        const homeErrors = game?.home?.errors ?? 0;
+        const awayFavorite = isFavoriteTeam(game?.away?.id, favoriteSet);
+        const homeFavorite = isFavoriteTeam(game?.home?.id, favoriteSet);
+
+        const awayScoreDisplay = hideScores ? '-' : awayRuns;
+        const homeScoreDisplay = hideScores ? '-' : homeRuns;
+        const runsDisplay = hideScores ? '- -' : `${awayRuns}-${homeRuns}`;
+        const hitsDisplay = hideScores ? '- -' : `${awayHits}-${homeHits}`;
+        const errorsDisplay = hideScores ? '- -' : `${awayErrors}-${homeErrors}`;
+
+        return `
+            <a class="score-card" href="${escapeHtml(game.mlb_url)}" target="_blank" rel="noopener noreferrer">
+                <div class="score-card-header">
+                    <span class="score-state">${escapeHtml(game.state)}</span>
+                    <div class="score-card-header-right">
+                        <span class="score-time">${escapeHtml(game.start_time_et)}</span>
+                        ${game.game_pk ? `<button class="tv-btn" type="button" data-tv-url="https://www.mlb.com/tv/g${game.game_pk}" title="Watch on MLB.TV">📺</button>` : ''}
+                    </div>
+                </div>
+
+                <div class="score-matchup">
+                    <div class="team-row">
+                        <span class="team-main">
+                            <img class="team-logo" src="${escapeHtml(game?.away?.logo_url || '')}" alt="${escapeHtml(game?.away?.abbr || 'Away')} logo" loading="lazy" onerror="this.style.display='none'">
+                            <span class="team-name">${escapeHtml(game.away.name)} (${escapeHtml(game.away.abbr)})</span>
+                            <button
+                                class="team-favorite-btn ${awayFavorite ? 'is-favorited' : ''}"
+                                type="button"
+                                data-team-id="${escapeHtml(game?.away?.id || '')}"
+                            >Fav</button>
+                        </span>
+                        <span class="team-score">${awayScoreDisplay}</span>
+                    </div>
+                    <div class="team-row">
+                        <span class="team-main">
+                            <img class="team-logo" src="${escapeHtml(game?.home?.logo_url || '')}" alt="${escapeHtml(game?.home?.abbr || 'Home')} logo" loading="lazy" onerror="this.style.display='none'">
+                            <span class="team-name">${escapeHtml(game.home.name)} (${escapeHtml(game.home.abbr)})</span>
+                            <button
+                                class="team-favorite-btn ${homeFavorite ? 'is-favorited' : ''}"
+                                type="button"
+                                data-team-id="${escapeHtml(game?.home?.id || '')}"
+                            >Fav</button>
+                        </span>
+                        <span class="team-score">${homeScoreDisplay}</span>
+                    </div>
+                </div>
+
+                <div class="score-context">${escapeHtml(game.live_context || game.detailed_state || '')}</div>
+
+                <div class="score-stats">
+                    <div class="score-stat">
+                        <strong>R</strong>
+                        <span>${runsDisplay}</span>
+                    </div>
+                    <div class="score-stat">
+                        <strong>H</strong>
+                        <span>${hitsDisplay}</span>
+                    </div>
+                    <div class="score-stat">
+                        <strong>E</strong>
+                        <span>${errorsDisplay}</span>
+                    </div>
+                </div>
+
+                <div class="probables">
+                    <div>Away SP: ${escapeHtml(game?.probable_pitchers?.away || 'TBD')}</div>
+                    <div>Home SP: ${escapeHtml(game?.probable_pitchers?.home || 'TBD')}</div>
+                </div>
+            </a>
+        `;
+    }
+
+    function renderGames(games) {
+        lastGames = Array.isArray(games) ? games : [];
+        updateFavoritesInfo(lastGames);
+
+        if (!Array.isArray(games) || !games.length) {
+            gridEl.innerHTML = '<div class="empty-state">No games found for the selected day.</div>';
+            return;
+        }
+
+        const favoriteSet = new Set(readFavoriteTeamIds());
+        const sortedGames = sortGamesByFavorite(games, favoriteSet);
+        const hideScores = hideScoresEnabled();
+
+        gridEl.innerHTML = sortedGames.map((game) => gameCardHtml(game, favoriteSet, hideScores)).join('');
+    }
+
+    function renderWarning(message) {
+        if (!message) {
+            warningEl.style.display = 'none';
+            warningEl.textContent = '';
+            return;
+        }
+        warningEl.style.display = 'block';
+        warningEl.textContent = message;
+    }
+
+    async function fetchScores() {
+        const selectedDate = dateInput.value;
+        const query = selectedDate ? `?date=${encodeURIComponent(selectedDate)}` : '';
+
+        try {
+            const response = await fetch(`/api/scores/dashboard${query}`, {
+                headers: {'Accept': 'application/json'}
+            });
+            const payload = await response.json();
+
+            if (!response.ok && !payload.success) {
+                throw new Error(payload.warning || payload.error || 'Scores API failed');
+            }
+
+            renderSummary(payload.counts, payload.total_games);
+            renderGames(payload.games || []);
+            renderWarning(payload.warning || null);
+            updatedAt.textContent = `Updated: ${payload.generated_at_et || 'N/A'}`;
+        } catch (error) {
+            renderSummary({live: 0, pregame: 0, final: 0}, 0);
+            renderGames([]);
+            renderWarning(error.message || 'Unable to load score data right now.');
+            updatedAt.textContent = 'Update failed';
+        }
+    }
+
+    function startPolling() {
+        if (timerId) {
+            clearInterval(timerId);
+        }
+        timerId = setInterval(fetchScores, POLL_MS);
+    }
+
+    function toggleFavoriteTeam(teamId) {
+        const numericTeamId = Number(teamId || 0);
+        if (!Number.isInteger(numericTeamId) || numericTeamId <= 0) {
+            return;
+        }
+
+        const favorites = new Set(readFavoriteTeamIds());
+        if (favorites.has(numericTeamId)) {
+            favorites.delete(numericTeamId);
+        } else {
+            favorites.add(numericTeamId);
+        }
+        writeFavoriteTeamIds([...favorites]);
+        renderGames(lastGames);
+    }
+
+    refreshBtn.addEventListener('click', fetchScores);
+    dateInput.addEventListener('change', fetchScores);
+    hideScoresToggle.addEventListener('change', () => setHideScores(hideScoresToggle.checked));
+
+    clearFavoritesBtn.addEventListener('click', () => {
+        writeFavoriteTeamIds([]);
+        renderGames(lastGames);
+    });
+
+    gridEl.addEventListener('click', (event) => {
+        const tvBtn = event.target.closest('.tv-btn');
+        if (tvBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            const url = tvBtn.getAttribute('data-tv-url');
+            if (url) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+            return;
+        }
+
+        const button = event.target.closest('.team-favorite-btn');
+        if (!button) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        toggleFavoriteTeam(button.getAttribute('data-team-id'));
+    });
+
+    const tickerSpoilerBtn = document.getElementById('scoresTickerSpoilerBtn');
+    if (tickerSpoilerBtn) {
+        tickerSpoilerBtn.addEventListener('click', () => {
+            hideScoresToggle.checked = hideScoresEnabled();
+            renderGames(lastGames);
+        });
+    }
+
+    hideScoresToggle.checked = hideScoresEnabled();
+
+    fetchScores();
+    startPolling();
+})();
+</script>
+{% endblock %}
