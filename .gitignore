@@ -1,0 +1,13 @@
+DD_app/modules/__pycache__/__init__.cpython-313.pyc
+DD_app/modules/__pycache__/api_client.cpython-313.pyc
+DD_app/modules/__pycache__/backup.cpython-313.pyc
+DD_app/modules/__pycache__/cards.cpython-313.pyc
+DD_app/modules/__pycache__/database.cpython-313.pyc
+DD_app/modules/__pycache__/logger.cpython-313.pyc
+DD_app/modules/__pycache__/missions.cpython-313.pyc
+DD_app/modules/__pycache__/scores.cpython-313.pyc
+DD_app/modules/__pycache__/settings.cpython-313.pyc
+DD_app/__pycache__/config.cpython-313.pyc
+DD_app/logs/app.log
+DD_app/data/missions.db
+DD_app/data/missions.db
