@@ -1042,6 +1042,14 @@ progress::-moz-progress-bar {
     margin-bottom: var(--spacing-md);
 }
 
+.home-hero-logo {
+    display: block;
+    width: min(560px, 92%);
+    height: auto;
+    margin: 0 auto var(--spacing-md);
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
+}
+
 .home-hero-title {
     font-size: 48px;
     font-weight: var(--font-weight-bold);
@@ -1414,6 +1422,10 @@ progress::-moz-progress-bar {
 
     .home-hero-title {
         font-size: 32px;
+    }
+
+    .home-hero-logo {
+        width: min(420px, 96%);
     }
 
     .home-glance-strip {
