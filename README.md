@@ -1,4 +1,4 @@
-﻿# MLB The Show 26 — Diamond Dynasty Tracker - test
+﻿# MLB The Show 26 — Diamond Dynasty Tracker
 
 A comprehensive web-based tracking tool for managing your MLB The Show 26 Diamond Dynasty missions, programs, and card collection.
 
