@@ -9,5 +9,8 @@ DD_app/modules/__pycache__/scores.cpython-313.pyc
 DD_app/modules/__pycache__/settings.cpython-313.pyc
 DD_app/__pycache__/config.cpython-313.pyc
 DD_app/logs/app.log
-DD_app/data/missions.db
-DD_app/data/missions.db
+#DD_app/data/missions.db
+#DD_app/data/missions.db
+DD_app/data/*
+DD_app/__pycache__/*
+*.db
