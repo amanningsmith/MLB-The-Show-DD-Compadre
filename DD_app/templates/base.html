@@ -14,33 +14,44 @@
     <!-- Top Navigation -->
     <nav class="top-nav">
         <div class="nav-logo">
-            <img src="{{ url_for('static', filename='images/mlb_mlb_logo.png') }}" alt="MLB logo">
+            <img src="{{ url_for('static', filename='images/MLB-Logo.png') }}" alt="MLB logo">
             <h1>MLB The Show 26</h1>
         </div>
         <div class="nav-links">
             <a href="{{ url_for('home') }}"
                class="nav-link nav-link-home {% if request.endpoint == 'home' %}active{% endif %}"
-               title="Home">&#8962;</a>
+               title="Home">
+                <img class="nav-home-icon-img" src="{{ url_for('static', filename='images/HomePlate.png') }}" alt="Home">
+            </a>
             <a href="{{ url_for('mission_tracker') }}" 
                class="nav-link {% if request.endpoint == 'mission_tracker' %}active{% endif %}">
-                🎯 Programs Tracker
+                <img class="nav-inline-icon nav-inline-icon-invert" src="{{ url_for('static', filename='images/Tasks.png') }}" alt="Programs"> Programs Tracker
             </a>
             <a href="{{ url_for('card_tracker') }}" 
                class="nav-link {% if request.endpoint in ['card_tracker', 'card_detail'] %}active{% endif %}">
-                🃏 Card Tracker
+                <img class="nav-inline-icon" src="{{ url_for('static', filename='images/judgeCard.png') }}" alt="Card Tracker"> Card Tracker
             </a>
             <a href="{{ url_for('actual_card_tracker') }}"
                class="nav-link {% if request.endpoint == 'actual_card_tracker' %}active{% endif %}">
-                📦 Actual Card Tracker
+                <img class="nav-inline-icon nav-inline-icon-invert" src="{{ url_for('static', filename='images/bag.png') }}" alt="Inventory"> Actual Card Tracker
             </a>
             <a href="{{ url_for('scores_dashboard') }}"
                class="nav-link {% if request.endpoint == 'scores_dashboard' %}active{% endif %}">
-                📈 Live Scores
+                <img class="nav-inline-icon nav-inline-icon-invert" src="{{ url_for('static', filename='images/baseballIcon.png') }}" alt="Scores"> Live Scores
             </a>
-            <a href="{{ url_for('card_search') }}" 
-               class="nav-link {% if request.endpoint == 'card_search' %}active{% endif %}">
-                🔍 Add New Card
-            </a>
+        </div>
+        <div class="global-alerts-wrap">
+            <button id="globalAlertsBtn" class="global-alerts-btn" type="button" title="Alerts inbox">
+                <span aria-hidden="true">🔔</span>
+                <span id="globalAlertsCount" class="global-alerts-count">0</span>
+            </button>
+            <div id="globalAlertsPanel" class="global-alerts-panel" role="dialog" aria-label="Alerts inbox">
+                <div class="global-alerts-panel-header">
+                    <span class="global-alerts-title">Alerts Inbox</span>
+                    <button id="globalAlertsClearBtn" class="global-alerts-clear" type="button">Clear</button>
+                </div>
+                <div id="globalAlertsList" class="global-alerts-list"></div>
+            </div>
         </div>
     </nav>
     
@@ -119,6 +130,14 @@
             const STORAGE_KEY = 'scoresTickerHidden';
             const SPOILER_KEY = 'scoresHideScores';
             const FAVORITES_KEY = 'scoresFavoriteTeamIds';
+            const ALERTS_STORAGE_KEY = 'scoresAlertsInbox';
+            const ALERT_KEYS_STORAGE_KEY = 'scoresAlertKeysSeen';
+            const HR_EVENT_KEYS_STORAGE_KEY = 'scoresHrEventKeysSeen';
+            const PENDING_ALERTS_STORAGE_KEY = 'scoresPendingGlobalAlerts';
+            const ALERTS_MAX = 200;
+            const FAVORITE_ALERT_DELAY_MS = 3 * 60 * 1000;
+            const HR_SOUND_URL = '{{ url_for("static", filename="sounds/ElevenLabs_Baseball_bat_hitting_a_ball,_sharp_crack_sound.mp3") }}';
+            const DEFAULT_SOUND_URL = '{{ url_for("static", filename="sounds/universfield-new-notification-022-370046.mp3") }}';
 
             const dockEl = document.getElementById('scoresTickerDock');
             const showBtn = document.getElementById('scoresTickerShowBtn');
@@ -127,6 +146,11 @@
             const favoritesHintEl = document.getElementById('scoresTickerFavoritesHint');
             const statusEl = document.getElementById('scoresTickerStatus');
             const trackEl = document.getElementById('scoresTickerTrack');
+            const globalAlertsBtn = document.getElementById('globalAlertsBtn');
+            const globalAlertsCount = document.getElementById('globalAlertsCount');
+            const globalAlertsPanel = document.getElementById('globalAlertsPanel');
+            const globalAlertsList = document.getElementById('globalAlertsList');
+            const globalAlertsClearBtn = document.getElementById('globalAlertsClearBtn');
 
             if (!dockEl || !showBtn || !hideBtn || !spoilerBtn || !favoritesHintEl || !statusEl || !trackEl) {
                 return;
@@ -134,6 +158,14 @@
 
             let tickerTimerId = null;
             let lastGames = [];
+            let globalAlertsInbox = [];
+            let globalAlertKeysSeen = new Set();
+            let hrEventKeysSeen = new Set();
+            let pendingAlertKeys = new Set();
+            let pendingAlertTimers = new Map();
+            let pendingAlertPayloads = new Map();
+            let hrAudio = null;
+            let defaultAudio = null;
 
             function escapeHtml(value) {
                 return String(value || '')
@@ -144,17 +176,333 @@
                     .replace(/'/g, '&#39;');
             }
 
+            function safeJsonParse(raw, fallback) {
+                try {
+                    const parsed = JSON.parse(raw || '');
+                    return parsed ?? fallback;
+                } catch (error) {
+                    return fallback;
+                }
+            }
+
+            function readCookieValue(name) {
+                const encodedName = encodeURIComponent(name) + '=';
+                const parts = document.cookie ? document.cookie.split('; ') : [];
+                for (const part of parts) {
+                    if (part.startsWith(encodedName)) {
+                        return decodeURIComponent(part.slice(encodedName.length));
+                    }
+                }
+                return null;
+            }
+
+            function writeCookieValue(name, value, days = 365) {
+                const maxAge = Math.max(1, Math.floor(days * 24 * 60 * 60));
+                document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; samesite=lax`;
+            }
+
+            function getStoredValue(key, fallback = null) {
+                try {
+                    const value = localStorage.getItem(key);
+                    if (value !== null) {
+                        return value;
+                    }
+                } catch (error) {
+                    // localStorage can be blocked in strict privacy modes.
+                }
+                const cookieValue = readCookieValue(key);
+                return cookieValue !== null ? cookieValue : fallback;
+            }
+
+            function setStoredValue(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (error) {
+                    // localStorage can be blocked in strict privacy modes.
+                }
+                writeCookieValue(key, value, 365);
+            }
+
+            function loadGlobalAlertState() {
+                globalAlertsInbox = safeJsonParse(getStoredValue(ALERTS_STORAGE_KEY, '[]'), []);
+                if (!Array.isArray(globalAlertsInbox)) {
+                    globalAlertsInbox = [];
+                }
+                globalAlertKeysSeen = new Set(safeJsonParse(getStoredValue(ALERT_KEYS_STORAGE_KEY, '[]'), []));
+                hrEventKeysSeen = new Set(safeJsonParse(getStoredValue(HR_EVENT_KEYS_STORAGE_KEY, '[]'), []));
+
+                const pendingRaw = safeJsonParse(getStoredValue(PENDING_ALERTS_STORAGE_KEY, '[]'), []);
+                pendingAlertPayloads = new Map();
+                pendingAlertKeys = new Set();
+
+                if (Array.isArray(pendingRaw)) {
+                    pendingRaw.forEach((entry) => {
+                        if (!entry || !entry.key || !entry.dispatch_at) {
+                            return;
+                        }
+                        pendingAlertPayloads.set(entry.key, entry);
+                        pendingAlertKeys.add(entry.key);
+                    });
+                }
+            }
+
+            function persistGlobalAlertState() {
+                setStoredValue(ALERTS_STORAGE_KEY, JSON.stringify(globalAlertsInbox.slice(0, ALERTS_MAX)));
+                setStoredValue(ALERT_KEYS_STORAGE_KEY, JSON.stringify([...globalAlertKeysSeen]));
+                setStoredValue(HR_EVENT_KEYS_STORAGE_KEY, JSON.stringify([...hrEventKeysSeen]));
+                setStoredValue(PENDING_ALERTS_STORAGE_KEY, JSON.stringify([...pendingAlertPayloads.values()]));
+            }
+
+            function clearPendingAlert(key) {
+                if (!key) {
+                    return;
+                }
+                const timerId = pendingAlertTimers.get(key);
+                if (timerId) {
+                    clearTimeout(timerId);
+                }
+                pendingAlertTimers.delete(key);
+                pendingAlertKeys.delete(key);
+                pendingAlertPayloads.delete(key);
+            }
+
+            function formatAlertTime(isoTime) {
+                const dt = isoTime ? new Date(isoTime) : null;
+                if (!dt || Number.isNaN(dt.getTime())) {
+                    return 'Now';
+                }
+                return dt.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+            }
+
+            function renderGlobalAlertsInbox() {
+                if (!globalAlertsCount || !globalAlertsList) {
+                    return;
+                }
+                globalAlertsCount.textContent = String(globalAlertsInbox.length);
+                if (!globalAlertsInbox.length) {
+                    globalAlertsList.innerHTML = '<div class="global-alert-empty">No alerts yet.</div>';
+                    return;
+                }
+
+                globalAlertsList.innerHTML = globalAlertsInbox.map((alert) => `
+                    <article class="global-alert-item is-${escapeHtml(alert.type || 'unknown')}">
+                        <div class="global-alert-head">
+                            <span class="global-alert-type">${escapeHtml(alert.label || 'Alert')}</span>
+                            <span class="global-alert-time">${escapeHtml(formatAlertTime(alert.created_at))}</span>
+                        </div>
+                        <div class="global-alert-message">${escapeHtml(alert.message || '')}</div>
+                    </article>
+                `).join('');
+            }
+
+            function playAlertSound(alertType = 'default') {
+                try {
+                    if (!hrAudio) {
+                        hrAudio = new Audio(HR_SOUND_URL);
+                        hrAudio.preload = 'auto';
+                    }
+                    if (!defaultAudio) {
+                        defaultAudio = new Audio(DEFAULT_SOUND_URL);
+                        defaultAudio.preload = 'auto';
+                    }
+
+                    const targetAudio = alertType === 'home-run' ? hrAudio : defaultAudio;
+                    targetAudio.currentTime = 0;
+                    const playPromise = targetAudio.play();
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(() => {
+                            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                            if (!AudioCtx) {
+                                return;
+                            }
+                            const ctx = new AudioCtx();
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(880, ctx.currentTime);
+                            osc.frequency.setValueAtTime(660, ctx.currentTime + 0.12);
+                            gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+                            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.start();
+                            osc.stop(ctx.currentTime + 0.3);
+                        });
+                    }
+                } catch (error) {
+                    // No-op: browsers may block autoplay audio until interaction.
+                }
+            }
+
+            function pushGlobalAlert(alert) {
+                if (!alert || !alert.key || globalAlertKeysSeen.has(alert.key)) {
+                    return false;
+                }
+
+                globalAlertKeysSeen.add(alert.key);
+                globalAlertsInbox.unshift({
+                    type: alert.type,
+                    label: alert.label,
+                    message: alert.message,
+                    key: alert.key,
+                    created_at: alert.created_at || new Date().toISOString(),
+                });
+                globalAlertsInbox = globalAlertsInbox.slice(0, ALERTS_MAX);
+                return true;
+            }
+
+            function dispatchGlobalAlert(alert) {
+                clearPendingAlert(alert && alert.key);
+                if (!pushGlobalAlert(alert)) {
+                    persistGlobalAlertState();
+                    return false;
+                }
+                showAlert(alert.message, 'info');
+                playAlertSound(alert.type || 'default');
+                persistGlobalAlertState();
+                renderGlobalAlertsInbox();
+                return true;
+            }
+
+            function scheduleGlobalAlert(alert, delayMs) {
+                if (!alert || !alert.key) {
+                    return;
+                }
+                if (globalAlertKeysSeen.has(alert.key) || pendingAlertKeys.has(alert.key)) {
+                    return;
+                }
+
+                if (!delayMs || delayMs <= 0) {
+                    dispatchGlobalAlert(alert);
+                    return;
+                }
+
+                const dispatchAt = new Date(Date.now() + delayMs).toISOString();
+                pendingAlertKeys.add(alert.key);
+                pendingAlertPayloads.set(alert.key, {
+                    ...alert,
+                    dispatch_at: dispatchAt,
+                });
+                const timerId = setTimeout(() => {
+                    dispatchGlobalAlert(alert);
+                }, delayMs);
+                pendingAlertTimers.set(alert.key, timerId);
+                persistGlobalAlertState();
+            }
+
+            function restorePendingAlerts() {
+                const now = Date.now();
+                [...pendingAlertPayloads.values()].forEach((entry) => {
+                    if (!entry || !entry.key) {
+                        return;
+                    }
+
+                    const dispatchAtMs = new Date(entry.dispatch_at).getTime();
+                    if (!Number.isFinite(dispatchAtMs)) {
+                        clearPendingAlert(entry.key);
+                        return;
+                    }
+
+                    if (globalAlertKeysSeen.has(entry.key)) {
+                        clearPendingAlert(entry.key);
+                        return;
+                    }
+
+                    if (dispatchAtMs <= now) {
+                        dispatchGlobalAlert(entry);
+                        return;
+                    }
+
+                    if (pendingAlertTimers.has(entry.key)) {
+                        return;
+                    }
+
+                    const delayMs = dispatchAtMs - now;
+                    const timerId = setTimeout(() => {
+                        dispatchGlobalAlert(entry);
+                    }, delayMs);
+                    pendingAlertTimers.set(entry.key, timerId);
+                });
+                persistGlobalAlertState();
+            }
+
+            async function evaluateHomeRunAlertsGlobal(games) {
+                const liveGames = (games || []).filter((game) => String(game?.state || '').toLowerCase() === 'live' && game?.game_pk);
+                if (!liveGames.length) {
+                    return [];
+                }
+
+                const requests = liveGames.map(async (game) => {
+                    try {
+                        const response = await fetch(`/api/scores/events/home-runs/${encodeURIComponent(game.game_pk)}`, {
+                            headers: {'Accept': 'application/json'}
+                        });
+                        const payload = await response.json();
+                        if (!response.ok || !payload.success) {
+                            return [];
+                        }
+                        return (payload.events || []).map((event) => ({...event, game}));
+                    } catch (error) {
+                        return [];
+                    }
+                });
+
+                const settled = await Promise.all(requests);
+                const events = settled.flat();
+                const alerts = [];
+
+                events.forEach(({event, game, ...rest}) => {
+                    const rawEvent = event || rest;
+                    const eventId = rawEvent?.event_id;
+                    if (!eventId || hrEventKeysSeen.has(eventId)) {
+                        return;
+                    }
+                    hrEventKeysSeen.add(eventId);
+
+                    const batter = rawEvent?.batter || 'A batter';
+                    const teamName = rawEvent?.team_name || 'Team';
+                    const description = rawEvent?.description || 'Home run';
+                    const gameLabel = `${game?.away?.abbr || 'AWAY'} @ ${game?.home?.abbr || 'HOME'}`;
+                    alerts.push({
+                        type: 'home-run',
+                        label: 'Home Run Alert',
+                        key: `home-run:${eventId}`,
+                        message: `${batter} (${teamName}) homered in ${gameLabel}. ${description}`,
+                        related_team_ids: [game?.away?.id, game?.home?.id],
+                    });
+                });
+
+                return alerts;
+            }
+
+            async function processGlobalHomeRunAlerts(games) {
+                const alerts = await evaluateHomeRunAlertsGlobal(games);
+                const favoriteIdsSet = new Set(readFavoriteTeamIds());
+                alerts.forEach((alert) => {
+                    const relatedTeamIds = Array.isArray(alert.related_team_ids) ? alert.related_team_ids : [];
+                    const isFavoriteAlert = relatedTeamIds
+                        .map((value) => Number(value || 0))
+                        .some((teamId) => favoriteIdsSet.has(teamId));
+                    scheduleGlobalAlert(alert, isFavoriteAlert ? FAVORITE_ALERT_DELAY_MS : 0);
+                });
+
+                // Keep storage in sync even when there are no immediate alert insertions.
+                persistGlobalAlertState();
+                renderGlobalAlertsInbox();
+            }
+
             function isHidden() {
-                return localStorage.getItem(STORAGE_KEY) === 'true';
+                return getStoredValue(STORAGE_KEY, 'false') === 'true';
             }
 
             function hideScoresEnabled() {
-                return localStorage.getItem(SPOILER_KEY) === 'true';
+                return getStoredValue(SPOILER_KEY, 'false') === 'true';
             }
 
             function readFavoriteTeamIds() {
                 try {
-                    const raw = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+                    const raw = JSON.parse(getStoredValue(FAVORITES_KEY, '[]') || '[]');
                     if (!Array.isArray(raw)) {
                         return [];
                     }
@@ -169,7 +517,7 @@
             }
 
             function setHideScores(hidden) {
-                localStorage.setItem(SPOILER_KEY, hidden ? 'true' : 'false');
+                setStoredValue(SPOILER_KEY, hidden ? 'true' : 'false');
                 updateSpoilerButton();
                 renderGames(lastGames);
             }
@@ -202,19 +550,8 @@
             }
 
             function weightedGames(games) {
-                const favoriteIdsSet = new Set(readFavoriteTeamIds());
-                if (!favoriteIdsSet.size) {
-                    return games;
-                }
-
-                const list = [];
-                games.forEach((game) => {
-                    list.push(game);
-                    if (isFavoriteGame(game, favoriteIdsSet)) {
-                        list.push(game, game);
-                    }
-                });
-                return list;
+                // Preserve server ordering left-to-right in ticker.
+                return Array.isArray(games) ? games : [];
             }
 
             function buildTickerLabel(game) {
@@ -236,19 +573,27 @@
                 return game?.ticker_display || `${away} ${game?.away?.runs ?? 0} - ${game?.home?.runs ?? 0} ${home} | ${state}`;
             }
 
+            function tickerStateClass(game) {
+                const state = String(game?.state || '').toLowerCase();
+                if (state === 'live') {
+                    return 'is-live';
+                }
+                if (state === 'pre-game') {
+                    return 'is-pregame';
+                }
+                if (state === 'final') {
+                    return 'is-final';
+                }
+                return 'is-unknown';
+            }
+
             function setHidden(hidden) {
-                localStorage.setItem(STORAGE_KEY, hidden ? 'true' : 'false');
+                setStoredValue(STORAGE_KEY, hidden ? 'true' : 'false');
                 dockEl.classList.toggle('is-hidden', hidden);
                 showBtn.classList.toggle('is-visible', hidden);
 
-                if (hidden) {
-                    if (tickerTimerId) {
-                        clearInterval(tickerTimerId);
-                        tickerTimerId = null;
-                    }
-                } else {
+                if (!hidden) {
                     fetchTickerData();
-                    startPolling();
                 }
             }
 
@@ -267,8 +612,9 @@
                 const items = gameList.map((game) => {
                     const label = buildTickerLabel(game);
                     const href = game && game.mlb_url ? game.mlb_url : '#';
+                    const stateClass = tickerStateClass(game);
                     return `
-                        <a class="scores-ticker-item" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">
+                        <a class="scores-ticker-item ${stateClass}" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">
                             ${escapeHtml(label)}
                         </a>
                     `;
@@ -294,6 +640,7 @@
                     }
 
                     renderGames(payload.games || []);
+                    await processGlobalHomeRunAlerts(payload.games || []);
 
                     if (payload.warning) {
                         statusEl.textContent = `${payload.warning} (${payload.generated_at_et || 'ET'})`;
@@ -320,17 +667,53 @@
             showBtn.addEventListener('click', () => setHidden(false));
             spoilerBtn.addEventListener('click', () => setHideScores(!hideScoresEnabled()));
 
+            if (globalAlertsBtn && globalAlertsPanel) {
+                globalAlertsBtn.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    globalAlertsPanel.classList.toggle('is-open');
+                });
+            }
+
+            if (globalAlertsClearBtn) {
+                globalAlertsClearBtn.addEventListener('click', () => {
+                    globalAlertsInbox = [];
+                    globalAlertKeysSeen = new Set();
+                    hrEventKeysSeen = new Set();
+                    persistGlobalAlertState();
+                    renderGlobalAlertsInbox();
+                });
+            }
+
+            document.addEventListener('click', (event) => {
+                if (!globalAlertsPanel || !globalAlertsBtn) {
+                    return;
+                }
+                if (!globalAlertsPanel.contains(event.target) && !globalAlertsBtn.contains(event.target)) {
+                    globalAlertsPanel.classList.remove('is-open');
+                }
+            });
+
+            window.addEventListener('storage', (event) => {
+                if (![ALERTS_STORAGE_KEY, ALERT_KEYS_STORAGE_KEY, HR_EVENT_KEYS_STORAGE_KEY].includes(event.key)) {
+                    return;
+                }
+                loadGlobalAlertState();
+                renderGlobalAlertsInbox();
+            });
+
             window.addEventListener('scoresPreferencesUpdated', () => {
                 updateSpoilerButton();
                 renderGames(lastGames);
             });
 
             updateSpoilerButton();
+            loadGlobalAlertState();
+            restorePendingAlerts();
+            renderGlobalAlertsInbox();
             setHidden(isHidden());
-            if (!isHidden()) {
-                fetchTickerData();
-                startPolling();
-            }
+            fetchTickerData();
+            startPolling();
         })();
     </script>
     

@@ -526,9 +526,170 @@ def set_mission_players(mission_id, player_ids):
                 'INSERT OR IGNORE INTO mission_players (mission_id, player_id) VALUES (?, ?)',
                 (mission_id, player_id),
             )
+    else:
+        valid_ids = []
+
+    cursor.execute('SELECT acquired FROM missions WHERE id = ?', (mission_id,))
+    mission_row = cursor.fetchone()
+    mission_acquired = (mission_row['acquired'] if mission_row else 'Not Acquired') == 'Acquired'
 
     conn.commit()
     conn.close()
+
+    auto_card_result = _auto_add_linked_players_to_card_tracker(valid_ids)
+    auto_inventory_result = {'added_to_inventory': 0, 'existing_promoted': 0, 'failed': 0}
+    if mission_acquired and valid_ids:
+        auto_inventory_result = _auto_add_players_to_inventory(valid_ids)
+
+    return {
+        **auto_card_result,
+        **auto_inventory_result,
+    }
+
+
+def _auto_add_linked_players_to_card_tracker(player_ids):
+    normalized_ids = list(dict.fromkeys([pid for pid in (player_ids or []) if (pid or '').strip()]))
+    if not normalized_ids:
+        return {'added_to_card_tracker': 0, 'already_in_card_tracker': 0, 'failed_to_add': 0}
+
+    conn = get_missions_connection()
+    cursor = conn.cursor()
+    placeholders = ','.join('?' for _ in normalized_ids)
+    cursor.execute(
+        f'SELECT player_id, source_card_uuid FROM sync_players WHERE player_id IN ({placeholders})',
+        normalized_ids,
+    )
+    rows = cursor.fetchall()
+    conn.close()
+
+    player_to_uuid = {row['player_id']: (row['source_card_uuid'] or '').strip() for row in rows}
+    uuids = list(dict.fromkeys([uuid for uuid in player_to_uuid.values() if uuid]))
+    if not uuids:
+        return {'added_to_card_tracker': 0, 'already_in_card_tracker': 0, 'failed_to_add': len(normalized_ids)}
+
+    cards_conn = _get_cards_connection()
+    cards_cursor = cards_conn.cursor()
+    uuid_placeholders = ','.join('?' for _ in uuids)
+    cards_cursor.execute(
+        f'SELECT uuid FROM cards WHERE uuid IN ({uuid_placeholders})',
+        uuids,
+    )
+    existing_uuids = {row['uuid'] for row in cards_cursor.fetchall()}
+    cards_conn.close()
+
+    added = 0
+    already = len(existing_uuids)
+    failed = 0
+
+    from modules import cards as cards_module
+
+    for uuid in uuids:
+        if uuid in existing_uuids:
+            continue
+        created_uuid = cards_module.create_card(
+            uuid,
+            {
+                'purchased_price': None,
+                'quantity': 1,
+                'on_team': False,
+                'grind_card': False,
+                'pxp': 0,
+                'comments': 'Auto-added from mission player link',
+                'inside_edge': '',
+            },
+        )
+        if created_uuid:
+            added += 1
+        else:
+            failed += 1
+
+    return {
+        'added_to_card_tracker': added,
+        'already_in_card_tracker': already,
+        'failed_to_add': failed,
+    }
+
+
+def _auto_add_players_to_inventory(player_ids):
+    normalized_ids = list(dict.fromkeys([pid for pid in (player_ids or []) if (pid or '').strip()]))
+    if not normalized_ids:
+        return {'added_to_inventory': 0, 'existing_promoted': 0, 'failed': 0}
+
+    # Ensure cards exist first; linking should always seed card tracker.
+    seed_result = _auto_add_linked_players_to_card_tracker(normalized_ids)
+
+    conn = get_missions_connection()
+    cursor = conn.cursor()
+    placeholders = ','.join('?' for _ in normalized_ids)
+    cursor.execute(
+        f'SELECT player_id, source_card_uuid FROM sync_players WHERE player_id IN ({placeholders})',
+        normalized_ids,
+    )
+    rows = cursor.fetchall()
+    conn.close()
+
+    uuids = list(dict.fromkeys([(row['source_card_uuid'] or '').strip() for row in rows if (row['source_card_uuid'] or '').strip()]))
+    if not uuids:
+        return {'added_to_inventory': 0, 'existing_promoted': 0, 'failed': len(normalized_ids)}
+
+    now_iso = datetime.now().isoformat()
+    cards_conn = _get_cards_connection()
+    cards_cursor = cards_conn.cursor()
+    uuid_placeholders = ','.join('?' for _ in uuids)
+    cards_cursor.execute(
+        f'SELECT uuid, quantity, on_team, card_status FROM cards WHERE uuid IN ({uuid_placeholders})',
+        uuids,
+    )
+    existing_rows = {row['uuid']: row for row in cards_cursor.fetchall()}
+
+    added_to_inventory = 0
+    promoted = 0
+    failed = 0
+
+    for uuid in uuids:
+        row = existing_rows.get(uuid)
+        if not row:
+            failed += 1
+            continue
+
+        quantity = _to_int(row['quantity'], 0)
+        on_team = _to_int(row['on_team'], 0)
+        card_status = (row['card_status'] or '').strip().lower()
+
+        if quantity <= 0:
+            cards_cursor.execute(
+                '''
+                UPDATE cards
+                SET quantity = 1,
+                    on_team = 1,
+                    card_status = 'Active',
+                    updated_at = ?
+                WHERE uuid = ?
+                ''',
+                (now_iso, uuid),
+            )
+            added_to_inventory += 1
+        elif on_team != 1 or card_status != 'active':
+            cards_cursor.execute(
+                '''
+                UPDATE cards
+                SET on_team = 1,
+                    card_status = 'Active',
+                    updated_at = ?
+                WHERE uuid = ?
+                ''',
+                (now_iso, uuid),
+            )
+            promoted += 1
+
+    cards_conn.commit()
+    cards_conn.close()
+
+    return {
+        'added_to_inventory': added_to_inventory,
+        'existing_promoted': promoted,
+        'failed': failed + seed_result.get('failed_to_add', 0),
+    }
 
 
 def _row_to_mission(row):
@@ -792,6 +953,11 @@ def update_mission(mission_id, updates):
             player_ids = [p.strip() for p in player_ids.split(',') if p.strip()]
         set_mission_players(mission_id, player_ids)
 
+    if updates.get('acquired') == 'Acquired':
+        linked_players = get_mission_players(mission_id)
+        linked_player_ids = [player.get('player_id') for player in linked_players if player.get('player_id')]
+        _auto_add_players_to_inventory(linked_player_ids)
+
     logger.info('Mission %s updated', mission_id)
     return True
 
@@ -1053,6 +1219,36 @@ def apply_owned_player_sync(owned_player_ids, sync_source='actual_card_tracker')
         'missions_linked': len({r['mission_id'] for r in linked_rows}),
         'missions_updated': len(updated_mission_ids),
         'audit_entries': len(updated_mission_ids),
+    }
+
+
+def backfill_acquired_missions_to_inventory():
+    """One-time/backfill helper: ensure all players on Acquired missions are in inventory."""
+    conn = get_missions_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT DISTINCT mp.player_id
+        FROM mission_players mp
+        JOIN missions m ON m.id = mp.mission_id
+        WHERE m.acquired = 'Acquired'
+        '''
+    )
+    player_ids = [row['player_id'] for row in cursor.fetchall() if row['player_id']]
+    conn.close()
+
+    if not player_ids:
+        return {
+            'acquired_players_found': 0,
+            'added_to_inventory': 0,
+            'existing_promoted': 0,
+            'failed': 0,
+        }
+
+    inventory_result = _auto_add_players_to_inventory(player_ids)
+    return {
+        'acquired_players_found': len(set(player_ids)),
+        **inventory_result,
     }
 
 

@@ -4,51 +4,81 @@ Redesigned Dashboard UI with MLB Ballpark Theme
 */
 
 :root {
-    /* Primary Colors - The Show 26 Branding */
-    --primary-color: #083F78;          /* Show Blue (base navy) */
-    --primary-dark: #051e3d;           /* deep navy */
-    --primary-light: #0B4685;          /* steel-azure */
-    --secondary-color: #FC5C36;        /* tomato orange */
-    --secondary-dark: #D85411;         /* spicy-paprika */
-    --secondary-light: #fd7e5e;
-    /* Accent - Strong Cyan (cover highlight) */
-    --accent-color: #05CFDE;
-    --accent-dark: #039aaa;
-    --accent-light: #5de6ef;
+    /* Brand palette provided by user */
+    --forest-dark: #024638;
+    --forest-tint: #0F4F42;
+    --clay-bright: #E5E1E6;
+    --clay-dark: #E4D5D3;
+
+    --yellow-bright: #FFC600;
+    --blue-bright: #6AD1E3;
+    --green-bright: #00C65E;
+    --red-bright: #E0004D;
+
+    --yellow-mid: #FE5000;
+    --blue-mid: #0047BB;
+    --green-mid: #00966C;
+    --red-mid: #960051;
+
+    --yellow-dark: #CA3604;
+    --blue-dark: #1E22AA;
+    --green-dark: #007041;
+    --red-dark: #621244;
+
+    /* Semantic aliases used across templates */
+    --primary-color: var(--forest-dark);
+    --primary-dark: #01362B;
+    --primary-light: var(--forest-tint);
+    --secondary-color: var(--yellow-mid);
+    --secondary-dark: var(--yellow-dark);
+    --secondary-light: #FF7A3D;
+
+    --accent-color: var(--blue-bright);
+    --accent-dark: var(--blue-mid);
+    --accent-light: #9FE3EF;
+    --accent-rgb: 106, 209, 227;
+    --wbc-magenta: var(--red-bright);
+    --wbc-gold: var(--yellow-bright);
+    --wbc-blue: var(--blue-mid);
+
+    --earth-brown: #8F6F54;
+    --earth-stone: var(--clay-dark);
+    --panel-bg: var(--forest-tint);
+    --panel-elevated: var(--forest-dark);
 
     /* Background & Surfaces */
-    --background-color: #051e3d;
-    --surface-color: rgba(11, 70, 133, 0.3);
-    --surface-hover: rgba(5, 207, 222, 0.1);
-    --surface-active: rgba(5, 207, 222, 0.18);
+    --background-color: var(--forest-dark);
+    --surface-color: rgba(15, 79, 66, 0.72);
+    --surface-hover: rgba(106, 209, 227, 0.1);
+    --surface-active: rgba(106, 209, 227, 0.18);
 
     /* Text Colors */
-    --text-color: #ffffff;
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.75);
-    --text-muted: rgba(255, 255, 255, 0.5);
+    --text-color: var(--clay-bright);
+    --text-primary: var(--clay-bright);
+    --text-secondary: rgba(229, 225, 230, 0.82);
+    --text-muted: rgba(229, 225, 230, 0.62);
 
     /* Border & Divider Colors */
-    --border-color: rgba(5, 207, 222, 0.2);
-    --border-light: rgba(5, 207, 222, 0.35);
+    --border-color: rgba(228, 213, 211, 0.35);
+    --border-light: rgba(228, 213, 211, 0.5);
     
     /* Status Colors */
-    --success-color: #22C55E;
-    --warning-color: #FB923C;
-    --error-color: #EF4444;
-    --info-color: #3B82F6;
+    --success-color: var(--green-bright);
+    --warning-color: var(--yellow-bright);
+    --error-color: var(--red-bright);
+    --info-color: var(--blue-bright);
     
     /* Rarity Colors - MLB The Show */
-    --rarity-diamond: #05CFDE;
-    --rarity-gold: #FFD700;
-    --rarity-silver: #C0C0C0;
-    --rarity-bronze: #CD7F32;
-    --rarity-common: #A0A0A0;
+    --rarity-diamond: var(--blue-bright);
+    --rarity-gold: var(--yellow-bright);
+    --rarity-silver: var(--clay-bright);
+    --rarity-bronze: var(--yellow-dark);
+    --rarity-common: var(--clay-dark);
     
     /* Priority Colors */
-    --priority-at-bat: #E70053;
-    --priority-on-deck: #FC5C36;
-    --priority-in-hole: #22C55E;
+    --priority-at-bat: var(--red-bright);
+    --priority-on-deck: var(--yellow-mid);
+    --priority-in-hole: var(--green-mid);
     
     /* Typography */
     --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -105,7 +135,7 @@ body {
     font-family: var(--font-family);
     font-size: var(--font-size-base);
     color: var(--text-color);
-    background: linear-gradient(160deg, #051e3d 0%, #083F78 50%, #0B4685 100%);
+    background: linear-gradient(160deg, var(--forest-dark) 0%, var(--forest-tint) 54%, var(--green-dark) 100%);
     background-attachment: fixed;
     line-height: 1.6;
     min-height: 100vh;
@@ -120,8 +150,8 @@ body::before {
     right: 0;
     bottom: 0;
     background-image: 
-        repeating-linear-gradient(45deg, transparent, transparent 50px, rgba(5,207,222,0.03) 50px, rgba(5,207,222,0.03) 100px),
-        repeating-linear-gradient(-45deg, transparent, transparent 50px, rgba(5,207,222,0.03) 50px, rgba(5,207,222,0.03) 100px);
+        repeating-linear-gradient(45deg, transparent, transparent 50px, rgba(168,154,140,0.03) 50px, rgba(168,154,140,0.03) 100px),
+        repeating-linear-gradient(-45deg, transparent, transparent 50px, rgba(25,192,205,0.025) 50px, rgba(25,192,205,0.025) 100px);
     pointer-events: none;
     z-index: 0;
 }
@@ -233,7 +263,7 @@ input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--accent-color);
     background-color: var(--surface-hover);
-    box-shadow: 0 0 0 3px rgba(5, 207, 222, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
 }
 
 input::placeholder {
@@ -241,7 +271,7 @@ input::placeholder {
 }
 
 select option {
-    background-color: rgba(5, 30, 61, 0.98);
+    background-color: rgba(10, 34, 29, 0.98);
     color: var(--text-color);
     padding: 8px;
 }
@@ -497,7 +527,7 @@ progress::-moz-progress-bar {
     left: 0;
     right: 0;
     height: 70px;
-    background: linear-gradient(135deg, rgba(5, 30, 61, 0.97), rgba(8, 63, 120, 0.97));
+    background: linear-gradient(135deg, rgba(9, 51, 44, 0.97), rgba(23, 54, 47, 0.97));
     backdrop-filter: blur(10px);
     border-bottom: 2px solid var(--accent-color);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -532,6 +562,141 @@ progress::-moz-progress-bar {
     flex: 1;
 }
 
+.global-alerts-wrap {
+    position: relative;
+    margin-left: var(--spacing-md);
+}
+
+.global-alerts-btn {
+    border: 1px solid var(--border-light);
+    border-radius: 999px;
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--text-color);
+    padding: 7px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.global-alerts-count {
+    min-width: 19px;
+    height: 19px;
+    border-radius: 999px;
+    background: var(--wbc-magenta);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+
+.global-alerts-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: min(540px, 90vw);
+    max-height: 360px;
+    overflow: auto;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 10px;
+    z-index: 1200;
+    display: none;
+}
+
+.global-alerts-panel.is-open {
+    display: block;
+}
+
+.global-alerts-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.global-alerts-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.global-alerts-clear {
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.global-alerts-list {
+    display: grid;
+    gap: 8px;
+}
+
+.global-alert-item {
+    border: 1px solid var(--border-color);
+    border-left: 4px solid transparent;
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 10px;
+}
+
+.global-alert-item.is-home-run {
+    border-left-color: var(--wbc-magenta);
+}
+
+.global-alert-item.is-no-hitter {
+    border-left-color: var(--wbc-blue);
+}
+
+.global-alert-item.is-close-game {
+    border-left-color: var(--secondary-color);
+}
+
+.global-alert-item.is-watchlist {
+    border-left-color: #22c55e;
+}
+
+.global-alert-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.global-alert-type {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-color);
+}
+
+.global-alert-time {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.global-alert-message {
+    font-size: 13px;
+    color: var(--text-color);
+    line-height: 1.35;
+}
+
+.global-alert-empty {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 8px 2px;
+}
+
 .nav-link {
     padding: 12px 24px;
     border-radius: var(--border-radius);
@@ -549,8 +714,8 @@ progress::-moz-progress-bar {
 }
 
 .nav-link.active {
-    background-color: var(--accent-color);
-    color: #000;
+    background-color: var(--green-mid);
+    color: var(--text-color);
 }
 
 .nav-link.active::after {
@@ -560,7 +725,7 @@ progress::-moz-progress-bar {
     left: 0;
     right: 0;
     height: 2px;
-    background-color: var(--accent-color);
+    background-color: var(--green-bright);
 }
 
 /* ===========================
@@ -585,7 +750,7 @@ progress::-moz-progress-bar {
     right: 0;
     bottom: 0;
     z-index: 1100;
-    background: linear-gradient(135deg, rgba(5, 30, 61, 0.97), rgba(8, 63, 120, 0.97));
+    background: linear-gradient(135deg, rgba(9, 51, 44, 0.97), rgba(23, 54, 47, 0.97));
     border-top: 2px solid var(--accent-color);
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(8px);
@@ -633,7 +798,7 @@ progress::-moz-progress-bar {
 .scores-ticker-show-btn {
     border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
-    background: rgba(5, 207, 222, 0.08);
+    background: rgba(var(--accent-rgb), 0.08);
     color: var(--text-color);
     padding: 6px 10px;
     font-size: 12px;
@@ -645,7 +810,7 @@ progress::-moz-progress-bar {
 .scores-ticker-dashboard-link:hover,
 .scores-ticker-toggle-btn:hover,
 .scores-ticker-show-btn:hover {
-    color: #001a2c;
+    color: var(--primary-dark);
     background: var(--accent-color);
 }
 
@@ -685,14 +850,32 @@ progress::-moz-progress-bar {
     border: 1px solid var(--border-color);
     border-radius: 999px;
     padding: 8px 14px;
-    background: rgba(5, 207, 222, 0.08);
+    background: rgba(var(--accent-rgb), 0.08);
     font-size: 13px;
     font-weight: var(--font-weight-semibold);
     flex-shrink: 0;
 }
 
+.scores-ticker-item.is-live {
+    color: #dcfce7;
+    border-color: rgba(101, 246, 172, 0.55);
+    background: rgba(34, 197, 94, 0.24);
+}
+
+.scores-ticker-item.is-pregame {
+    color: #e9f6f3;
+    border-color: rgba(168, 154, 140, 0.55);
+    background: rgba(107, 79, 59, 0.28);
+}
+
+.scores-ticker-item.is-final {
+    color: #ffedd5;
+    border-color: rgba(245, 158, 11, 0.55);
+    background: rgba(217, 119, 6, 0.24);
+}
+
 .scores-ticker-item:hover {
-    color: #001a2c;
+    color: var(--primary-dark);
     background: var(--accent-color);
     border-color: var(--accent-color);
 }
@@ -815,7 +998,7 @@ progress::-moz-progress-bar {
 }
 
 .modal {
-    background: linear-gradient(135deg, rgba(5, 30, 61, 0.99), rgba(11, 70, 133, 0.99));
+    background: linear-gradient(135deg, rgba(9, 51, 44, 0.99), rgba(23, 54, 47, 0.99));
     border: 2px solid var(--border-light);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-xxl);
@@ -1010,16 +1193,38 @@ progress::-moz-progress-bar {
 
 /* Nav home icon */
 .nav-link-home {
-    padding: 10px 14px;
-    font-size: 22px;
+    padding: 8px 12px;
     line-height: 1;
     display: flex;
+    justify-content: center;
     align-items: center;
+}
+
+.nav-home-icon-img {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid var(--border-light);
+    display: block;
+}
+
+.nav-inline-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.nav-inline-icon-invert {
+    filter: brightness(0) invert(1);
 }
 
 /* Hero */
 .home-hero {
-    background: linear-gradient(135deg, rgba(5, 30, 61, 0.9) 0%, rgba(8, 63, 120, 0.85) 60%, rgba(5, 207, 222, 0.12) 100%);
+    background: linear-gradient(135deg, rgba(9, 51, 44, 0.92) 0%, rgba(23, 54, 47, 0.9) 62%, rgba(252, 92, 54, 0.18) 100%);
     border: 1px solid var(--border-light);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-xxl) var(--spacing-xl);
@@ -1031,8 +1236,8 @@ progress::-moz-progress-bar {
 
 .home-hero-badge {
     display: inline-block;
-    background: rgba(5, 207, 222, 0.15);
-    border: 1px solid rgba(5, 207, 222, 0.4);
+    background: rgba(var(--accent-rgb), 0.15);
+    border: 1px solid rgba(var(--accent-rgb), 0.4);
     color: var(--accent-color);
     border-radius: 20px;
     padding: 4px 16px;
@@ -1082,7 +1287,7 @@ progress::-moz-progress-bar {
 .home-glance-strip {
     display: flex;
     align-items: center;
-    background: rgba(11, 70, 133, 0.3);
+    background: rgba(17, 49, 42, 0.72);
     border: 1px solid var(--border-light);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg) var(--spacing-xl);
@@ -1164,11 +1369,24 @@ progress::-moz-progress-bar {
 }
 
 .home-feature-card-icon {
-    font-size: 36px;
-    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
     width: 52px;
+    min-width: 52px;
     text-align: center;
+}
+
+.home-feature-card-icon-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    display: block;
+}
+
+.home-feature-card-icon-img-invert {
+    filter: brightness(0) invert(1);
 }
 
 .home-feature-card-body {
@@ -1227,14 +1445,14 @@ progress::-moz-progress-bar {
 .home-feature-info-btn:hover {
     color: var(--accent-color);
     border-color: var(--accent-color);
-    background: rgba(5, 207, 222, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
 }
 
 /* Feature info modal */
 .home-info-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(5, 30, 61, 0.85);
+    background: rgba(6, 31, 26, 0.85);
     backdrop-filter: blur(6px);
     z-index: 2000;
     display: flex;
@@ -1244,7 +1462,7 @@ progress::-moz-progress-bar {
 }
 
 .home-info-modal {
-    background: linear-gradient(160deg, rgba(5, 30, 61, 0.98) 0%, rgba(8, 63, 120, 0.98) 100%);
+    background: linear-gradient(160deg, rgba(9, 51, 44, 0.98) 0%, rgba(23, 54, 47, 0.98) 100%);
     border: 1px solid var(--border-light);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-lg);
@@ -1266,8 +1484,22 @@ progress::-moz-progress-bar {
 }
 
 .home-info-modal-icon {
-    font-size: 28px;
-    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-info-modal-icon-img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    display: block;
+}
+
+.home-info-modal-icon-img-invert {
+    filter: brightness(0) invert(1);
 }
 
 .home-info-modal-title {
@@ -1332,8 +1564,8 @@ progress::-moz-progress-bar {
 }
 
 .home-info-modal-body code {
-    background: rgba(5, 207, 222, 0.12);
-    border: 1px solid rgba(5, 207, 222, 0.25);
+    background: rgba(var(--accent-rgb), 0.12);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
     border-radius: 4px;
     padding: 1px 6px;
     font-size: 13px;

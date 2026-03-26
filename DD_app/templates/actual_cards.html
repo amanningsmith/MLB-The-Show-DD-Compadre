@@ -4,6 +4,19 @@
 
 {% block extra_css %}
 <style>
+    .page-title {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .page-title-icon {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+
     .sync-panel {
         display: flex;
         align-items: center;
@@ -77,7 +90,7 @@
         text-decoration: underline;
     }
 
-    .modal {
+    .inventory-modal-overlay {
         position: fixed;
         inset: 0;
         background-color: rgba(0, 0, 0, 0.7);
@@ -88,7 +101,7 @@
         padding: 20px;
     }
 
-    .modal-content {
+    .inventory-modal-content {
         background-color: var(--surface-color);
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius-lg);
@@ -96,6 +109,7 @@
         max-height: 90vh;
         overflow-y: auto;
         padding: var(--spacing-lg);
+        margin: 0 auto;
     }
 
     .settings-grid {
@@ -136,6 +150,73 @@
         border-bottom: none;
     }
 
+    .dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
+    }
+
+    .sell-modal-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-md);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+
+    .sell-summary {
+        margin-top: var(--spacing-sm);
+        color: var(--text-secondary);
+        font-size: var(--font-size-small);
+    }
+
+    .transactions-table-wrap {
+        overflow-x: auto;
+        margin-top: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+    }
+
+    .transactions-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 720px;
+    }
+
+    .transactions-table th,
+    .transactions-table td {
+        padding: 10px;
+        border-bottom: 1px solid var(--border-color);
+        text-align: left;
+        white-space: nowrap;
+        font-size: var(--font-size-small);
+    }
+
+    .transactions-table th {
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.4px;
+    }
+
+    .transactions-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
     @media (max-width: 768px) {
         .quick-card {
             grid-template-columns: 1fr;
@@ -146,18 +227,16 @@
 
 {% block content %}
 <div class="dashboard-header">
-    <h1>📦 Actual Card Tracker</h1>
+    <h1 class="page-title">
+        <img class="page-title-icon" src="{{ url_for('static', filename='images/bag.png') }}" alt="Actual Card Tracker">
+        <span>Actual Card Tracker</span>
+    </h1>
+    <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" type="button" onclick="openTransactionsModal()">📒 Transactions</button>
+    </div>
 </div>
 
 <div class="filters-container">
-    <div class="sync-panel">
-        <button id="syncButton" class="btn btn-primary" onclick="syncRoster()">Sync My Roster</button>
-        <button class="btn btn-secondary" onclick="openSettingsModal()">API Settings</button>
-        <span class="sync-note">Manual sync is auth-ready and will fall back to local tracked inventory if auth is unavailable.</span>
-    </div>
-
-    <div id="syncResult" class="text-muted" style="margin-bottom: var(--spacing-md);"></div>
-
     <div class="filters-grid">
         <div class="filter-group">
             <label>Team</label>
@@ -232,6 +311,7 @@
                     <th>Position</th>
                     <th>Qty</th>
                     <th>Roster</th>
+                    <th>Sell</th>
                     <th>Quick View</th>
                 </tr>
             </thead>
@@ -250,6 +330,16 @@
                         {% else %}
                         <span class="badge-bench">IN INVENTORY</span>
                         {% endif %}
+                    </td>
+                    <td>
+                        <button
+                            class="btn btn-secondary btn-sm"
+                            type="button"
+                            data-uuid="{{ card.uuid }}"
+                            data-player="{{ card.player_name or '' }}"
+                            data-quantity="{{ card.quantity or 0 }}"
+                            onclick="openSellModalFromButton(this)"
+                        >Sell</button>
                     </td>
                     <td>
                         <span
@@ -311,12 +401,75 @@
     </div>
 </div>
 
-<div id="quickViewModal" class="modal" onclick="closeQuickView(event)">
-    <div class="modal-content" id="quickViewContent"></div>
+<div id="quickViewModal" class="inventory-modal-overlay" onclick="closeQuickView(event)">
+    <div class="inventory-modal-content" id="quickViewContent"></div>
 </div>
 
-<div id="settingsModal" class="modal" onclick="closeSettingsModal(event)">
-    <div class="modal-content" id="settingsModalContent">
+<div id="sellModal" class="inventory-modal-overlay" onclick="closeSellModal(event)">
+    <div class="inventory-modal-content">
+        <h2>Sell Card</h2>
+        <p id="sellModalLabel" class="text-muted"></p>
+
+        <form id="sellForm" onsubmit="submitSellForm(event)">
+            <input id="sellUuid" type="hidden">
+            <input id="sellCurrentQty" type="hidden">
+
+            <div class="sell-modal-grid">
+                <div class="filter-group">
+                    <label>Quantity to Sell</label>
+                    <input id="sellQuantity" type="number" min="1" step="1" required>
+                </div>
+                <div class="filter-group">
+                    <label>Stubs per Card</label>
+                    <input id="sellStubsPerCard" type="number" min="1" step="1" required>
+                </div>
+            </div>
+
+            <p class="sell-summary">Marketplace tax is applied automatically at 10%.</p>
+            <p id="sellModalResult" class="text-muted"></p>
+
+            <div class="modal-actions">
+                <button id="sellSubmitBtn" class="btn btn-primary btn-sm" type="submit">Confirm Sale</button>
+                <button class="btn btn-secondary btn-sm" type="button" onclick="closeSellModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="transactionsModal" class="inventory-modal-overlay" onclick="closeTransactionsModal(event)">
+    <div class="inventory-modal-content">
+        <h2>Sell Transactions</h2>
+        <p class="text-muted">Most recent inventory sales with net stubs and profit.</p>
+
+        <div class="transactions-table-wrap">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Player</th>
+                        <th>Team</th>
+                        <th>Series</th>
+                        <th>Qty</th>
+                        <th>Stubs/Card</th>
+                        <th>Profit</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTableBody">
+                    <tr>
+                        <td colspan="7" class="text-muted">Loading transactions...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="closeTransactionsModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="settingsModal" class="inventory-modal-overlay" onclick="closeSettingsModal(event)">
+    <div class="inventory-modal-content" id="settingsModalContent">
         <h2>API Settings</h2>
         <p class="text-muted">These values are saved to a local untracked file and used for roster sync authentication.</p>
 
@@ -561,6 +714,154 @@ async function syncRoster() {
     } finally {
         button.disabled = false;
         button.textContent = 'Sync My Roster';
+    }
+}
+
+function openSellModalFromButton(button) {
+    const uuid = button.dataset.uuid || '';
+    const playerName = button.dataset.player || 'Unknown Player';
+    const currentQty = Number(button.dataset.quantity || 0);
+    openSellModal(uuid, playerName, currentQty);
+}
+
+function openSellModal(uuid, playerName, currentQty) {
+    document.getElementById('sellUuid').value = uuid;
+    document.getElementById('sellCurrentQty').value = String(currentQty);
+    document.getElementById('sellQuantity').value = '1';
+    document.getElementById('sellQuantity').max = String(currentQty);
+    document.getElementById('sellStubsPerCard').value = '';
+    document.getElementById('sellModalLabel').textContent = `${playerName} | Available: ${currentQty}`;
+    document.getElementById('sellModalResult').textContent = '';
+    document.getElementById('sellModal').style.display = 'flex';
+}
+
+function closeSellModal(event) {
+    if (event && event.target && event.target.id !== 'sellModal') {
+        return;
+    }
+    document.getElementById('sellModal').style.display = 'none';
+}
+
+async function submitSellForm(event) {
+    event.preventDefault();
+
+    const output = document.getElementById('sellModalResult');
+    const submitBtn = document.getElementById('sellSubmitBtn');
+
+    const uuid = document.getElementById('sellUuid').value;
+    const currentQty = Number(document.getElementById('sellCurrentQty').value || 0);
+    const quantitySold = Number(document.getElementById('sellQuantity').value || 0);
+    const stubsPerCard = Number(document.getElementById('sellStubsPerCard').value || 0);
+
+    if (!Number.isInteger(quantitySold) || quantitySold <= 0) {
+        output.textContent = 'Please enter a valid whole number for quantity.';
+        return;
+    }
+    if (!Number.isInteger(stubsPerCard) || stubsPerCard <= 0) {
+        output.textContent = 'Please enter a valid whole number for stubs per card.';
+        return;
+    }
+    if (quantitySold > currentQty) {
+        output.textContent = `Cannot sell ${quantitySold}. Only ${currentQty} available.`;
+        return;
+    }
+
+    try {
+        submitBtn.disabled = true;
+        output.textContent = 'Submitting sale...';
+
+        const response = await fetch('/api/cards/actual/sell', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                uuid,
+                quantity_sold: quantitySold,
+                stubs_per_card: stubsPerCard,
+            }),
+        });
+        const result = await response.json();
+
+        if (!result.success) {
+            output.textContent = result.error || 'Sell action failed.';
+            return;
+        }
+
+        output.textContent = `Sold ${result.quantity_sold} ${result.player_name} card(s). Net/card: ${Number(result.net_stubs_per_card || 0).toLocaleString()} | Net total: ${Number(result.net_stubs_total || 0).toLocaleString()} | Profit: ${Number(result.profit || 0).toLocaleString()}`;
+        setTimeout(() => {
+            window.location.reload();
+        }, 700);
+    } catch (error) {
+        output.textContent = `Sell action failed: ${error.message}`;
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
+
+function openTransactionsModal() {
+    document.getElementById('transactionsModal').style.display = 'flex';
+    loadTransactions();
+}
+
+function closeTransactionsModal(event) {
+    if (event && event.target && event.target.id !== 'transactionsModal') {
+        return;
+    }
+    document.getElementById('transactionsModal').style.display = 'none';
+}
+
+function formatDate(value) {
+    if (!value) {
+        return '-';
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+    return parsed.toLocaleString();
+}
+
+async function loadTransactions() {
+    const body = document.getElementById('transactionsTableBody');
+    body.innerHTML = '<tr><td colspan="7" class="text-muted">Loading transactions...</td></tr>';
+
+    try {
+        const response = await fetch('/api/cards/actual/transactions?limit=300');
+        const result = await response.json();
+
+        if (!result.success) {
+            body.innerHTML = `<tr><td colspan="7" class="text-muted">${result.error || 'Failed to load transactions.'}</td></tr>`;
+            return;
+        }
+
+        const entries = result.entries || [];
+        if (!entries.length) {
+            body.innerHTML = '<tr><td colspan="7" class="text-muted">No transactions found yet.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = entries.map((entry) => {
+            const dateText = formatDate(entry.sold_at);
+            const player = entry.player_name || 'Unknown';
+            const team = entry.team || '-';
+            const series = entry.series || '-';
+            const qty = Number(entry.quantity_sold || 0).toLocaleString();
+            const sold = Number(entry.sold_price_per_card || 0).toLocaleString();
+            const profit = Number(entry.profit || 0).toLocaleString();
+
+            return `
+                <tr>
+                    <td>${dateText}</td>
+                    <td>${player}</td>
+                    <td>${team}</td>
+                    <td>${series}</td>
+                    <td>${qty}</td>
+                    <td>${sold}</td>
+                    <td>${profit}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        body.innerHTML = `<tr><td colspan="7" class="text-muted">Failed to load transactions: ${error.message}</td></tr>`;
     }
 }
 

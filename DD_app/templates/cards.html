@@ -4,6 +4,19 @@
 
 {% block extra_css %}
 <style>
+    .page-title {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .page-title-icon {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+
     .cards-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -30,7 +43,7 @@
     .card-header {
         position: relative;
         height: 200px;
-        background: linear-gradient(135deg, rgba(8, 63, 120, 0.8), rgba(10, 76, 143, 0.8));
+        background: linear-gradient(135deg, rgba(9, 51, 44, 0.85), rgba(107, 79, 59, 0.65));
         display: flex;
         align-items: center;
         justify-content: center;
@@ -145,7 +158,10 @@
 
 {% block content %}
 <div class="dashboard-header">
-    <h1>🃏 Card Tracker</h1>
+    <h1 class="page-title">
+        <img class="page-title-icon" src="{{ url_for('static', filename='images/judgeCard.png') }}" alt="Card Tracker">
+        <span>Card Tracker</span>
+    </h1>
     <a href="{{ url_for('card_search') }}" class="btn btn-primary">+ Add Card</a>
 </div>
 

@@ -553,6 +553,107 @@ def delete_cards(uuids):
         return 0
 
 
+def sell_inventory_card(uuid, quantity_sold, sold_price_per_card):
+    """Sell quantity of an inventory card and record sell history.
+
+    Returns a result payload with updated quantity and stubs/profit details.
+    """
+    try:
+        qty_sold = _to_int(quantity_sold, 0)
+        stubs_per_card = _to_int(sold_price_per_card, 0)
+        if qty_sold <= 0:
+            return {'success': False, 'error': 'Quantity sold must be greater than 0.'}
+        if stubs_per_card <= 0:
+            return {'success': False, 'error': 'Stubs per card must be greater than 0.'}
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT uuid, player_name, quantity, purchased_price, profit_generated, on_team FROM cards WHERE uuid = ?',
+            (uuid,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            conn.close()
+            return {'success': False, 'error': 'Card not found.'}
+
+        current_qty = _to_int(row['quantity'], 0)
+        if current_qty <= 0:
+            conn.close()
+            return {'success': False, 'error': 'Card has no available inventory to sell.'}
+        if qty_sold > current_qty:
+            conn.close()
+            return {'success': False, 'error': f'Cannot sell {qty_sold}; only {current_qty} in inventory.'}
+
+        purchased_price = _to_int(row['purchased_price'], 0)
+        previous_profit = float(row['profit_generated'] or 0)
+
+        gross_stubs_total = stubs_per_card * qty_sold
+        net_stubs_total = gross_stubs_total * 0.9
+        net_stubs_per_card = stubs_per_card * 0.9
+        profit = net_stubs_total - (purchased_price * qty_sold)
+
+        new_qty = current_qty - qty_sold
+        new_on_team = 0 if new_qty == 0 else _to_int(row['on_team'], 0)
+        now_iso = datetime.now().isoformat()
+
+        cursor.execute(
+            '''
+            UPDATE cards
+            SET quantity = ?,
+                sold_price = ?,
+                profit_generated = ?,
+                on_team = ?,
+                updated_at = ?
+            WHERE uuid = ?
+            ''',
+            (
+                new_qty,
+                stubs_per_card,
+                previous_profit + profit,
+                new_on_team,
+                now_iso,
+                uuid,
+            ),
+        )
+
+        cursor.execute(
+            '''
+            INSERT INTO sell_history (card_uuid, quantity_sold, sold_price_per_card, profit)
+            VALUES (?, ?, ?, ?)
+            ''',
+            (uuid, qty_sold, stubs_per_card, profit),
+        )
+
+        conn.commit()
+        conn.close()
+
+        logger.info(
+            'Sold inventory card %s: qty=%s stubs_per_card=%s net_total=%.2f profit=%.2f',
+            uuid,
+            qty_sold,
+            stubs_per_card,
+            net_stubs_total,
+            profit,
+        )
+
+        return {
+            'success': True,
+            'uuid': uuid,
+            'player_name': row['player_name'],
+            'quantity_sold': qty_sold,
+            'stubs_per_card': stubs_per_card,
+            'gross_stubs_total': gross_stubs_total,
+            'net_stubs_total': round(net_stubs_total, 2),
+            'net_stubs_per_card': round(net_stubs_per_card, 2),
+            'profit': round(profit, 2),
+            'quantity_remaining': new_qty,
+        }
+    except Exception as e:
+        logger.error(f'Failed to sell inventory card {uuid}: {e}')
+        return {'success': False, 'error': str(e)}
+
+
 def get_actual_inventory_cards(filters=None, sort_by='ovr', sort_order='desc', page=1, per_page=20):
     """Read owned inventory cards for the Actual Card Tracker page."""
     try:
@@ -652,6 +753,39 @@ def get_actual_inventory_filter_options():
     except Exception as e:
         logger.error(f'Failed to get actual inventory filter options: {e}')
         return {'teams': [], 'series': [], 'positions': []}
+
+
+def get_actual_inventory_transactions(limit=300):
+    """Return recent inventory sell transactions with card context."""
+    try:
+        capped_limit = max(1, min(_to_int(limit, 300), 2000))
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            SELECT
+                sh.id,
+                sh.card_uuid,
+                c.player_name,
+                c.team_short_name,
+                c.series,
+                sh.quantity_sold,
+                sh.sold_price_per_card,
+                sh.profit,
+                sh.sold_at
+            FROM sell_history sh
+            LEFT JOIN cards c ON c.uuid = sh.card_uuid
+            ORDER BY sh.sold_at DESC, sh.id DESC
+            LIMIT ?
+            ''',
+            (capped_limit,),
+        )
+        rows = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return rows
+    except Exception as e:
+        logger.error(f'Failed to get actual inventory transactions: {e}')
+        return []
 
 
 def sync_actual_inventory(sync_source='actual_card_tracker'):

@@ -54,40 +54,48 @@
     <div class="home-feature-grid">
 
         <a href="{{ url_for('mission_tracker') }}" class="home-feature-card">
-            <div class="home-feature-card-icon">🎯</div>
+            <div class="home-feature-card-icon">
+                <img class="home-feature-card-icon-img home-feature-card-icon-img-invert" src="{{ url_for('static', filename='images/Tasks.png') }}" alt="Programs Tracker">
+            </div>
             <div class="home-feature-card-body">
                 <h3 class="home-feature-card-title">Programs Tracker</h3>
-                <p class="home-feature-card-desc">Organise missions by program, track completion progress, and use the Auto Grind diamond to plan your grinding sessions.</p>
+                <p class="home-feature-card-desc">Track programs by weighted completion, link players to missions, recalculate priorities, and build lineups from the Auto Grind diamond.</p>
             </div>
             <button class="home-feature-info-btn" data-feature="programs" title="How it works" aria-label="Programs Tracker info">ℹ</button>
             <div class="home-feature-card-arrow">→</div>
         </a>
 
         <a href="{{ url_for('card_tracker') }}" class="home-feature-card">
-            <div class="home-feature-card-icon">🃏</div>
+            <div class="home-feature-card-icon">
+                <img class="home-feature-card-icon-img" src="{{ url_for('static', filename='images/judgeCard.png') }}" alt="Card Tracker">
+            </div>
             <div class="home-feature-card-body">
                 <h3 class="home-feature-card-title">Card Tracker</h3>
-                <p class="home-feature-card-desc">Browse your full Diamond Dynasty card catalog. Filter by rarity, position, team, and series. Track on-team and grind status.</p>
+                <p class="home-feature-card-desc">Manage your tracked catalog with filters, team and grind flags, full detail pages, and mission-linked cards that can be added automatically.</p>
             </div>
             <button class="home-feature-info-btn" data-feature="cards" title="How it works" aria-label="Card Tracker info">ℹ</button>
             <div class="home-feature-card-arrow">→</div>
         </a>
 
         <a href="{{ url_for('actual_card_tracker') }}" class="home-feature-card">
-            <div class="home-feature-card-icon">📦</div>
+            <div class="home-feature-card-icon">
+                <img class="home-feature-card-icon-img home-feature-card-icon-img-invert" src="{{ url_for('static', filename='images/bag.png') }}" alt="Actual Card Tracker">
+            </div>
             <div class="home-feature-card-body">
                 <h3 class="home-feature-card-title">Actual Card Tracker</h3>
-                <p class="home-feature-card-desc">See exactly what you own. Sync directly from your inventory and let the tracker auto-update mission progress for acquired cards.</p>
+                <p class="home-feature-card-desc">Review owned inventory, sell cards with a popup workflow, inspect transaction history, and auto-update linked missions for acquired players.</p>
             </div>
             <button class="home-feature-info-btn" data-feature="actual" title="How it works" aria-label="Actual Card Tracker info">ℹ</button>
             <div class="home-feature-card-arrow">→</div>
         </a>
 
         <a href="{{ url_for('scores_dashboard') }}" class="home-feature-card">
-            <div class="home-feature-card-icon">📈</div>
+            <div class="home-feature-card-icon">
+                <img class="home-feature-card-icon-img home-feature-card-icon-img-invert" src="{{ url_for('static', filename='images/baseballIcon.png') }}" alt="Live Scores">
+            </div>
             <div class="home-feature-card-body">
                 <h3 class="home-feature-card-title">Live Scores</h3>
-                <p class="home-feature-card-desc">Follow every MLB game with a persistent live score ticker. Open the dashboard for full game details, innings, Gameday links, and one-click MLB.TV access.</p>
+                <p class="home-feature-card-desc">Track every MLB game with app-wide HR alerts, a separate silent watchlist feed, standings, lineups, grouped at-bat popups, and a persistent ticker.</p>
             </div>
             <button class="home-feature-info-btn" data-feature="scores" title="How it works" aria-label="Live Scores info">ℹ</button>
             <div class="home-feature-card-arrow">→</div>
@@ -114,11 +122,11 @@
 (function initFeatureInfoModals() {
     var FEATURES = {
         programs: {
-            icon: '🎯',
+            iconHtml: '<img class="home-info-modal-icon-img home-info-modal-icon-img-invert" src="{{ url_for("static", filename="images/Tasks.png") }}" alt="Programs Tracker">',
             title: 'Programs Tracker',
             html: [
                 '<h4>Overview</h4>',
-                '<p>The Programs Tracker organises all your Diamond Dynasty missions into programs — named groups like TA (Team Affinity), WBC, Topps Now, Moments, and more. The main view shows a grid of <strong>program cards</strong>, each displaying the program name, status, and a weighted completion percentage.</p>',
+                '<p>The Programs Tracker organises Diamond Dynasty missions into program groups and gives you weighted completion, mission editing, linked players, and priority management in one place.</p>',
 
                 '<h4>Program Cards &amp; Completion</h4>',
                 '<ul>',
@@ -132,6 +140,7 @@
                 '<li>Click any program card to open a popup showing all missions for that program.</li>',
                 '<li>Every mission row is fully editable inline: Priority, Mission Name, Type, Tracking Mode, Mission Total, Current Status, and Acquired state.</li>',
                 '<li>Save all edits in one action per row.</li>',
+                '<li>Linked players can be added directly from the synced card catalog search.</li>',
                 '</ul>',
 
                 '<h4>Mission Priority System</h4>',
@@ -155,6 +164,7 @@
                 '<li>Any mission can have multiple players linked to it (many-to-many).</li>',
                 '<li>Player picker searches the full synced DD card catalog — not just cards you own.</li>',
                 '<li>Each linked player shows an ownership label (Owned / Not Owned) for quick reference.</li>',
+                '<li>Linking a player can auto-add that card to the Card Tracker, and acquired mission backfill can promote linked cards into inventory.</li>',
                 '</ul>',
 
                 '<h4>View All Missions</h4>',
@@ -163,11 +173,11 @@
         },
 
         cards: {
-            icon: '🃏',
+            iconHtml: '<img class="home-info-modal-icon-img" src="{{ url_for("static", filename="images/judgeCard.png") }}" alt="Card Tracker">',
             title: 'Card Tracker',
             html: [
                 '<h4>Overview</h4>',
-                '<p>The Card Tracker is your local Diamond Dynasty card catalog. It stores detailed card data pulled from The Show API and lets you track which cards you are targeting, grinding for stubs, or keeping on your team.</p>',
+                '<p>The Card Tracker is your working Diamond Dynasty catalog. It stores detailed card data, supports local filtering and sorting, and tracks which cards belong on your team or in your grind plan.</p>',
 
                 '<h4>Card Data</h4>',
                 '<p>Each card stores two types of fields:</p>',
@@ -183,9 +193,15 @@
                 '<li>Results are paginated at 20 cards per page.</li>',
                 '</ul>',
 
+                '<h4>Mission Integration</h4>',
+                '<ul>',
+                '<li>Mission-linked players can be auto-added into the Card Tracker so your planning view stays aligned with active program work.</li>',
+                '<li>Grind and roster flags give you a clean split between cards for active use versus cards being tracked for future work.</li>',
+                '</ul>',
+
                 '<h4>Adding Cards</h4>',
                 '<ul>',
-                '<li>Use the <strong>Add New Card</strong> search to find any card from The Show marketplace or the full items catalog.</li>',
+                '<li>Use the card search flow to find cards from marketplace results or the synced items catalog.</li>',
                 '<li>Cards with marketplace listings show live buy/sell prices.</li>',
                 '<li>Reward and earned cards (non-sellable) are found via the synced local catalog or a live Items API fallback.</li>',
                 '<li>Cards can also be added manually for cards not available via the API.</li>',
@@ -204,17 +220,11 @@
         },
 
         actual: {
-            icon: '📦',
+            iconHtml: '<img class="home-info-modal-icon-img home-info-modal-icon-img-invert" src="{{ url_for("static", filename="images/bag.png") }}" alt="Actual Card Tracker">',
             title: 'Actual Card Tracker',
             html: [
                 '<h4>Overview</h4>',
-                '<p>The Actual Card Tracker surfaces exactly which Diamond Dynasty cards you currently own. It works from a local inventory that you control, and it can automatically update your missions when new cards are synced.</p>',
-
-                '<h4>Syncing Your Inventory</h4>',
-                '<ul>',
-                '<li>Sync is <strong>manual</strong> — click <strong>Sync My Roster</strong> on the Actual Card Tracker page to trigger an inventory import.</li>',
-                '<li>The sync reads your owned card data and updates the local database with current quantities and active/inactive status.</li>',
-                '</ul>',
+                '<p>The Actual Card Tracker surfaces the cards you currently own, including quantities, roster status, mission automation, and sale history.</p>',
 
                 '<h4>Inventory View</h4>',
                 '<ul>',
@@ -222,6 +232,7 @@
                 '<li>Sort by: Overall Rating, Team, Series, or Position.</li>',
                 '<li>Filter by: Team, Series, Position, OVR range, and player name search.</li>',
                 '<li>Paginated and supports quick card detail view.</li>',
+                '<li>Each row includes a sell action with popup inputs for quantity and stubs per card.</li>',
                 '</ul>',
 
                 '<h4>Mission Automation</h4>',
@@ -229,7 +240,14 @@
                 '<ul>',
                 '<li>Sets the mission <strong>Acquired</strong> field to <em>Acquired</em>.</li>',
                 '<li>Sets the mission <strong>Priority</strong> to <em>At-Bat</em>.</li>',
+                '<li>Can backfill existing acquired missions into inventory and keep linked card records aligned.</li>',
                 '<li>Writes an <strong>audit log entry</strong> recording the automated update for traceability.</li>',
+                '</ul>',
+
+                '<h4>Transactions</h4>',
+                '<ul>',
+                '<li>A Transactions popup shows recent inventory sales with date, player, team, series, quantity, stubs per card, and profit.</li>',
+                '<li>Selling inventory updates quantities and logs the result in sale history.</li>',
                 '</ul>',
 
                 '<h4>Matching Rule</h4>',
@@ -244,47 +262,69 @@
         },
 
         scores: {
-            icon: '📈',
+            iconHtml: '<img class="home-info-modal-icon-img home-info-modal-icon-img-invert" src="{{ url_for("static", filename="images/baseballIcon.png") }}" alt="Live Scores">',
             title: 'Live Scores',
             html: [
                 '<h4>Overview</h4>',
-                '<p>The Live Scores feature keeps you up to date on every MLB game happening today — without leaving your missions or cards workflow. It has two surfaces: a persistent bottom ticker on every page and a dedicated Scores dashboard.</p>',
+                '<p>The Live Scores feature now has three connected layers: an app-wide ticker, a shared global home run alert inbox in the header, and a full Scores dashboard with standings, lineups, at-bat feeds, favorites, and watchlist tools.</p>',
 
                 '<h4>Bottom Ticker</h4>',
                 '<ul>',
-                '<li>Scrolls across the bottom of every page in the app.</li>',
-                '<li>Shows all games for today (ET): Pre-Game, Live, and Final.</li>',
-                '<li>Each ticker item shows: Away team, Home team, current score (or scheduled start time for pre-game), game state, and inning context for live games.</li>',
-                '<li>Auto-refreshes every <strong>30 seconds</strong> in the background without interrupting your workflow.</li>',
-                '<li>Can be hidden or revealed at any time using the Hide/Show Ticker button.</li>',
+                '<li>Runs across every page in the app, not just the Scores dashboard.</li>',
+                '<li>Shows today\'s MLB slate in ET, including Pre-Game, Live, and Final states.</li>',
+                '<li>Each ticker item includes matchup, score or start time, state, and live inning context.</li>',
+                '<li>Auto-refreshes every <strong>30 seconds</strong> in the background.</li>',
+                '<li>Can be hidden or revealed at any time without turning off the alert pipeline.</li>',
                 '</ul>',
 
                 '<h4>Spoiler Mode</h4>',
-                '<p>Enable <strong>Spoiler Mode</strong> (Hide Scores button) to keep team matchups and game state visible while hiding all score values — useful if you are watching a game on delay.</p>',
+                '<p>Enable <strong>Spoiler Mode</strong> to keep team matchups and game state visible while hiding score values in the ticker and dashboard.</p>',
 
-                '<h4>Favorite Teams</h4>',
-                '<p>Mark favorite teams in the ticker settings. Favorites scroll more frequently in the ticker so your key games are always front and centre.</p>',
-
-                '<h4>Click Behavior</h4>',
+                '<h4>Global Alerts</h4>',
                 '<ul>',
-                '<li><strong>Pre-Game games</strong> → opens MLB preview / lineups page in a new tab.</li>',
-                '<li><strong>Live / Final games</strong> → opens MLB Gameday for that game in a new tab.</li>',
+                '<li>Home run alerts are processed globally and appear in the shared header inbox on every screen.</li>',
+                '<li>Home run alerts use dedicated audio unless the browser blocks autoplay.</li>',
+                '<li>Favorite-team home run alerts are delayed by about <strong>3 minutes</strong> to reduce instant spoilers.</li>',
+                '<li>Alerts and seen-event state are persisted locally so preferences survive across sessions.</li>',
+                '</ul>',
+
+                '<h4>Favorites &amp; Watchlist</h4>',
+                '<ul>',
+                '<li>You can mark favorite teams directly in the Scores dashboard.</li>',
+                '<li>Favorites are weighted higher in the ticker so they appear more often.</li>',
+                '<li>The custom watchlist supports both team abbreviations and player names.</li>',
+                '<li>Watchlist notifications go to a <strong>separate feed</strong> and are intentionally <strong>silent</strong> with no alert audio.</li>',
+                '<li>Favorites and watchlist entries are saved locally across sessions.</li>',
                 '</ul>',
 
                 '<h4>Scores Dashboard</h4>',
                 '<ul>',
-                '<li>Dedicated full-page view with expanded game cards.</li>',
-                '<li>Each game card shows: Runs, Hits, Errors, inning/half and out count (live), probable pitchers (pre-game), and team logos.</li>',
-                '<li>Each game card includes a <strong>📺 TV button</strong> — click it to open the MLB.TV watch page for that game in a new tab without leaving the dashboard.</li>',
-                '<li>Date selector to view any day\'s games.</li>',
-                '<li>Manual <strong>Refresh</strong> button for immediate updates.</li>',
+                '<li>Dedicated full-page dashboard with expanded game cards and live refresh.</li>',
+                '<li>Game cards show Runs, Hits, Errors, live inning/half/out state, probable pitchers, and team logos.</li>',
+                '<li>The dashboard includes a date selector, manual refresh, and an MLB standings modal.</li>',
+                '<li>Each game card supports quick links to MLB Gameday and MLB.TV.</li>',
+                '</ul>',
+
+                '<h4>Lineups &amp; At-Bat Feed</h4>',
+                '<ul>',
+                '<li>Lineup popups show away and home batting orders plus probable starters.</li>',
+                '<li>At-bat popups are grouped by half inning for easier reading.</li>',
+                '<li>At-bat entries are color-accented using team colors and watchlist highlighting.</li>',
+                '<li>The live feed gives you quick context without leaving the dashboard.</li>',
+                '</ul>',
+
+                '<h4>Open Behavior</h4>',
+                '<ul>',
+                '<li><strong>Pre-Game games</strong> open MLB preview / lineup pages.</li>',
+                '<li><strong>Live and Final games</strong> open MLB Gameday.</li>',
+                '<li>The TV button opens MLB.TV in a new tab.</li>',
                 '</ul>',
 
                 '<h4>Failure Handling</h4>',
                 '<ul>',
-                '<li>If the MLB stats API is temporarily unavailable, the last successful scores payload remains displayed.</li>',
-                '<li>A non-blocking warning appears in the ticker/dashboard indicating scores may be stale.</li>',
-                '<li>Normal updates resume automatically on the next polling interval.</li>',
+                '<li>If MLB data is temporarily unavailable, the UI shows a warning instead of hard-failing the page.</li>',
+                '<li>Normal updates resume automatically on the next polling cycle.</li>',
+                '<li>The alert and ticker systems continue trying again in the background.</li>',
                 '</ul>',
             ].join('')
         }
@@ -299,7 +339,7 @@
     function openModal(featureKey) {
         var data = FEATURES[featureKey];
         if (!data) return;
-        iconEl.textContent  = data.icon;
+        iconEl.innerHTML = data.iconHtml || '';
         titleEl.textContent = data.title;
         bodyEl.innerHTML    = data.html;
         overlay.style.display = 'flex';

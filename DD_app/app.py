@@ -159,6 +159,17 @@ def recalculate_priority_api():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/missions/backfill-acquired-inventory', methods=['POST'])
+def backfill_acquired_inventory_api():
+    """Backfill inventory for all players linked to Acquired missions."""
+    try:
+        result = missions.backfill_acquired_missions_to_inventory()
+        return jsonify({'success': True, **result})
+    except Exception as e:
+        logger.error(f"Backfill acquired inventory API error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/missions/program-progress', methods=['GET'])
 def get_program_progress_api():
     """API endpoint to get weighted mission progress cards."""
@@ -529,6 +540,38 @@ def actual_inventory_audit_api():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/cards/actual/sell', methods=['POST'])
+def sell_actual_inventory_card_api():
+    """Sell quantity from a card in Actual Card Tracker inventory."""
+    try:
+        data = request.json or {}
+        uuid = (data.get('uuid') or '').strip()
+        quantity_sold = data.get('quantity_sold')
+        stubs_per_card = data.get('stubs_per_card')
+
+        if not uuid:
+            return jsonify({'success': False, 'error': 'uuid is required'}), 400
+
+        result = cards.sell_inventory_card(uuid, quantity_sold, stubs_per_card)
+        status_code = 200 if result.get('success') else 400
+        return jsonify(result), status_code
+    except Exception as e:
+        logger.error(f"Sell actual inventory card API error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/cards/actual/transactions', methods=['GET'])
+def actual_inventory_transactions_api():
+    """Read sell transactions history for Actual Card Tracker."""
+    try:
+        limit = int(request.args.get('limit', 300))
+        entries = cards.get_actual_inventory_transactions(limit=limit)
+        return jsonify({'success': True, 'entries': entries})
+    except Exception as e:
+        logger.error(f"Actual inventory transactions API error: {e}")
+        return jsonify({'success': False, 'error': str(e), 'entries': []}), 500
+
+
 @app.route('/api/settings/api-auth', methods=['GET'])
 def get_api_auth_settings_api():
     """Get masked API auth settings for local UI management."""
@@ -861,6 +904,69 @@ def scores_dashboard_api():
     except Exception as e:
         logger.error(f"Scores dashboard API error: {e}")
         return jsonify({'success': False, 'error': str(e), 'games': []}), 500
+
+
+@app.route('/api/scores/standings', methods=['GET'])
+def scores_standings_api():
+    """Current MLB standings by league and division."""
+    try:
+        payload = scores.get_standings_payload()
+        status_code = 200 if payload.get('success') else 502
+        return jsonify(payload), status_code
+    except Exception as e:
+        logger.error(f"Scores standings API error: {e}")
+        return jsonify({'success': False, 'error': str(e), 'standings': None}), 500
+
+
+@app.route('/api/scores/lineups/<int:game_pk>', methods=['GET'])
+def scores_lineups_api(game_pk):
+    """Away/home lineup payload for a specific game PK."""
+    try:
+        payload = scores.get_game_lineups_payload(game_pk)
+        status_code = 200 if payload.get('success') else 502
+        return jsonify(payload), status_code
+    except Exception as e:
+        logger.error(f"Scores lineups API error: {e}")
+        return jsonify({'success': False, 'error': str(e), 'game_pk': game_pk}), 500
+
+
+@app.route('/api/scores/events/home-runs/<int:game_pk>', methods=['GET'])
+def scores_home_run_events_api(game_pk):
+    """Home run event feed for alerting on a specific game."""
+    try:
+        payload = scores.get_game_home_run_events_payload(game_pk)
+        status_code = 200 if payload.get('success') else 502
+        return jsonify(payload), status_code
+    except Exception as e:
+        logger.error(f"Scores home run events API error: {e}")
+        return jsonify({'success': False, 'error': str(e), 'game_pk': game_pk, 'events': []}), 500
+
+
+@app.route('/api/scores/at-bats', methods=['GET'])
+def scores_at_bats_api():
+    """Recent at-bat feed aggregated across live games."""
+    try:
+        date_str = request.args.get('date', '').strip() or None
+        limit = int(request.args.get('limit', 80))
+        payload = scores.get_at_bat_feed_payload(date_str=date_str, limit=limit)
+        status_code = 200 if payload.get('success') else 502
+        return jsonify(payload), status_code
+    except Exception as e:
+        logger.error(f"Scores at-bats API error: {e}")
+        return jsonify({'success': False, 'error': str(e), 'entries': []}), 500
+
+
+@app.route('/api/scores/at-bats/<int:game_pk>', methods=['GET'])
+def scores_game_at_bats_api(game_pk):
+    """Recent at-bat feed for a specific game."""
+    try:
+        limit = int(request.args.get('limit', 40))
+        payload = scores.get_game_at_bat_feed_payload(game_pk=game_pk, limit=limit)
+        status_code = 200 if payload.get('success') else 502
+        return jsonify(payload), status_code
+    except Exception as e:
+        logger.error(f"Scores game at-bats API error: {e}")
+        return jsonify({'success': False, 'error': str(e), 'game_pk': game_pk, 'entries': []}), 500
 
 # ========================
 # Error Handlers

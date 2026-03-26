@@ -12,12 +12,409 @@
         margin-bottom: 16px;
     }
 
+    .scores-density-controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .scores-density-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .scores-density-btn {
+        border: 1px solid var(--border-light);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        padding: 4px 9px;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .scores-density-btn.is-active {
+        background: rgba(var(--accent-rgb), 0.22);
+        border-color: rgba(var(--accent-rgb), 0.55);
+        color: var(--text-color);
+    }
+
+    .scores-alerts-wrap {
+        margin-left: 0;
+        position: relative;
+    }
+
+    .scores-alerts-wrap-primary {
+        margin-left: auto;
+    }
+
+    .scores-alerts-btn {
+        border: 1px solid var(--border-light);
+        border-radius: 999px;
+        background: rgba(var(--accent-rgb), 0.1);
+        color: var(--text-color);
+        padding: 6px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .scores-alerts-count {
+        min-width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        background: var(--wbc-magenta);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
+    }
+
+    .scores-alerts-panel {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        width: min(560px, 92vw);
+        max-height: 360px;
+        overflow: auto;
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-lg);
+        padding: 10px;
+        z-index: 50;
+        display: none;
+    }
+
+    .scores-alerts-panel.is-open {
+        display: block;
+    }
+
+    .scores-alerts-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .scores-alerts-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .scores-alerts-clear {
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-sm);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        font-size: 12px;
+        padding: 4px 8px;
+        cursor: pointer;
+    }
+
+    .scores-alerts-list {
+        display: grid;
+        gap: 8px;
+    }
+
+    .scores-alert-item {
+        border: 1px solid var(--border-color);
+        border-left: 4px solid transparent;
+        border-radius: var(--border-radius-sm);
+        background: rgba(255, 255, 255, 0.03);
+        padding: 8px 10px;
+    }
+
+    .scores-alert-item.is-home-run {
+        border-left-color: var(--wbc-magenta);
+    }
+
+    .scores-alert-item.is-no-hitter {
+        border-left-color: var(--wbc-blue);
+    }
+
+    .scores-alert-item.is-close-game {
+        border-left-color: var(--secondary-color);
+    }
+
+    .scores-alert-item.is-watchlist {
+        border-left-color: #22c55e;
+    }
+
+    .scores-alert-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .scores-alert-type {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--accent-color);
+    }
+
+    .scores-alert-time {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .scores-alert-message {
+        font-size: 13px;
+        color: var(--text-color);
+        line-height: 1.35;
+    }
+
+    .scores-alert-empty {
+        font-size: 13px;
+        color: var(--text-muted);
+        padding: 8px 2px;
+    }
+
     .scores-preferences {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
         align-items: center;
         margin-bottom: 12px;
+    }
+
+    .scores-watchlist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+        margin-top: 6px;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        background: rgba(var(--accent-rgb), 0.05);
+    }
+
+    .watchlist-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-secondary);
+    }
+
+    .watchlist-input {
+        min-width: 130px;
+        max-width: 180px;
+        padding: 5px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-color);
+        font-size: 12px;
+    }
+
+    .watchlist-add-btn {
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-sm);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        font-size: 12px;
+        padding: 5px 8px;
+        cursor: pointer;
+    }
+
+    .watchlist-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .watchlist-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--border-light);
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 12px;
+        color: var(--text-color);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .watchlist-chip-remove {
+        border: none;
+        background: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+        padding: 0;
+    }
+
+    .atbat-btn {
+        border: none;
+        background: none;
+        padding: 2px 4px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        opacity: 1;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .atbat-btn:hover {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    .atbat-btn-icon {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+        display: block;
+    }
+
+    .atbat-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.82);
+        z-index: 1125;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 12px;
+    }
+
+    .atbat-modal-overlay.is-open {
+        display: flex;
+    }
+
+    .atbat-modal {
+        width: 100%;
+        max-width: 840px;
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .atbat-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .atbat-modal-title {
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .atbat-modal-close {
+        border: none;
+        background: none;
+        color: var(--text-secondary);
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 2px 8px;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .atbat-modal-close:hover {
+        color: var(--text-color);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .atbat-modal-body {
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: block;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .atbat-group {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.02);
+        margin-bottom: 10px;
+    }
+
+    .atbat-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .atbat-group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        padding: 7px 10px;
+        background: rgba(var(--accent-rgb), 0.12);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .atbat-group-count {
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .atbat-item {
+        padding: 8px 10px;
+        background: var(--surface-color);
+        border-left: 4px solid var(--team-color, transparent);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .atbat-group .atbat-item:last-child {
+        border-bottom: none;
+    }
+
+    .atbat-item.has-team-color {
+        background: linear-gradient(90deg, color-mix(in srgb, var(--team-color, #2dd4bf) 12%, transparent), rgba(255, 255, 255, 0.01) 42%);
+    }
+
+    .atbat-item.is-watch {
+        border-left-color: var(--secondary-color);
+    }
+
+    .atbat-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 3px;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .atbat-desc {
+        font-size: 13px;
+        color: var(--text-color);
+        line-height: 1.35;
+    }
+
+    .atbat-empty {
+        padding: 12px;
+        color: var(--text-muted);
+        font-size: 13px;
+        background: var(--surface-color);
     }
 
     .scores-toggle {
@@ -60,21 +457,46 @@
 
     .scores-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+    }
+
+    body.scores-density-compact .scores-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 10px;
+    }
+
+    body.scores-density-large .scores-grid {
+        grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+        gap: 18px;
     }
 
     .score-card {
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius-lg);
         background: var(--surface-color);
-        padding: 14px;
+        padding: 15px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 11px;
         text-decoration: none;
         color: var(--text-color);
         transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    body.scores-density-compact .score-card {
+        padding: 11px;
+        gap: 8px;
+    }
+
+    body.scores-density-large .score-card {
+        padding: 18px;
+        gap: 13px;
+    }
+
+    .score-card.is-redzone {
+        border-color: rgba(245, 158, 11, 0.6);
+        box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25) inset;
     }
 
     .score-card:hover {
@@ -90,16 +512,68 @@
     }
 
     .score-state {
-        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 13px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         color: var(--accent-color);
     }
 
+    body.scores-density-compact .score-state {
+        font-size: 11px;
+        padding: 2px 7px;
+    }
+
+    body.scores-density-large .score-state {
+        font-size: 14px;
+        padding: 5px 10px;
+    }
+
+    .score-state.is-live {
+        color: #65f6ac;
+        border-color: rgba(101, 246, 172, 0.45);
+        background: rgba(34, 197, 94, 0.18);
+    }
+
+    .score-state.is-pregame {
+        color: #e9f6f3;
+        border-color: rgba(168, 154, 140, 0.55);
+        background: rgba(107, 79, 59, 0.24);
+    }
+
+    .score-state.is-final {
+        color: #ffd08a;
+        border-color: rgba(245, 158, 11, 0.45);
+        background: rgba(217, 119, 6, 0.18);
+    }
+
+    .red-zone-pill {
+        font-size: 10px;
+        font-weight: 700;
+        color: #1a140a;
+        background: var(--wbc-gold);
+        border-radius: 999px;
+        padding: 2px 7px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
     .score-time {
         color: var(--text-muted);
-        font-size: 12px;
+        font-size: 13px;
+    }
+
+    body.scores-density-compact .score-time {
+        font-size: 11px;
+    }
+
+    body.scores-density-large .score-time {
+        font-size: 14px;
     }
 
     .score-matchup {
@@ -120,6 +594,37 @@
         white-space: nowrap;
     }
 
+    body.scores-density-compact .team-name,
+    body.scores-density-compact .team-roster-link {
+        font-size: 12px;
+    }
+
+    body.scores-density-large .team-name,
+    body.scores-density-large .team-roster-link {
+        font-size: 15px;
+    }
+
+    .team-roster-link {
+        border: none;
+        background: none;
+        color: var(--text-color);
+        font: inherit;
+        font-weight: 600;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    .team-roster-link:hover {
+        color: var(--accent-color);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
     .team-main {
         display: inline-flex;
         align-items: center;
@@ -132,7 +637,7 @@
         height: 20px;
         object-fit: contain;
         flex-shrink: 0;
-        background: rgba(5, 207, 222, 0.08);
+        background: rgba(var(--accent-rgb), 0.08);
         border-radius: 50%;
         padding: 2px;
     }
@@ -140,7 +645,7 @@
     .team-favorite-btn {
         border: 1px solid var(--border-light);
         border-radius: 999px;
-        background: rgba(5, 207, 222, 0.08);
+        background: rgba(var(--accent-rgb), 0.08);
         color: var(--text-secondary);
         font-size: 11px;
         line-height: 1;
@@ -151,7 +656,7 @@
     }
 
     .team-favorite-btn.is-favorited {
-        color: #001a2c;
+        color: var(--primary-dark);
         background: var(--accent-color);
         border-color: var(--accent-color);
     }
@@ -159,6 +664,15 @@
     .team-score {
         font-weight: 700;
         color: var(--accent-color);
+        font-size: 15px;
+    }
+
+    body.scores-density-compact .team-score {
+        font-size: 13px;
+    }
+
+    body.scores-density-large .team-score {
+        font-size: 18px;
     }
 
     .score-context {
@@ -174,10 +688,81 @@
         margin-top: 4px;
     }
 
-    .score-stat {
-        border: 1px solid rgba(5, 207, 222, 0.15);
+    .inning-box-wrap {
+        overflow: hidden;
+        border: 1px solid rgba(var(--accent-rgb), 0.15);
         border-radius: var(--border-radius-sm);
-        background: rgba(5, 207, 222, 0.06);
+        background: rgba(var(--accent-rgb), 0.06);
+    }
+
+    .inning-box {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 11px;
+        color: var(--text-color);
+    }
+
+    body.scores-density-compact .inning-box {
+        font-size: 8px;
+    }
+
+    body.scores-density-large .inning-box {
+        font-size: 12px;
+    }
+
+    .inning-box th,
+    .inning-box td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 4px 2px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .inning-box thead th {
+        color: var(--text-secondary);
+        font-weight: 700;
+        background: rgba(0, 0, 0, 0.12);
+    }
+
+    .inning-box tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .inning-box .inning-team-label {
+        text-align: center;
+        font-weight: 700;
+        color: var(--text-secondary);
+        background: rgba(var(--accent-rgb), 0.14);
+    }
+
+    .inning-box .inning-total {
+        font-weight: 700;
+        color: var(--accent-color);
+    }
+
+    .inning-box.is-compact {
+        font-size: 9px;
+    }
+
+    .inning-box.is-compact th,
+    .inning-box.is-compact td {
+        padding: 3px 1px;
+    }
+
+    .inning-box.is-ultra-compact {
+        font-size: 8px;
+    }
+
+    .inning-box.is-ultra-compact th,
+    .inning-box.is-ultra-compact td {
+        padding: 2px 1px;
+    }
+
+    .score-stat {
+        border: 1px solid rgba(var(--accent-rgb), 0.15);
+        border-radius: var(--border-radius-sm);
+        background: rgba(var(--accent-rgb), 0.06);
         padding: 6px;
         text-align: center;
         font-size: 12px;
@@ -190,14 +775,34 @@
 
     .probables {
         color: var(--text-secondary);
-        font-size: 12px;
+        font-size: 13px;
         line-height: 1.4;
+    }
+
+    body.scores-density-compact .probables {
+        font-size: 11px;
+    }
+
+    body.scores-density-large .probables {
+        font-size: 14px;
     }
 
     .score-card-header-right {
         display: flex;
         align-items: center;
         gap: 6px;
+        padding: 3px 7px;
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), rgba(228, 213, 211, 0.08));
+    }
+
+    body.scores-density-compact .score-card-header-right {
+        padding: 2px 6px;
+    }
+
+    body.scores-density-large .score-card-header-right {
+        padding: 4px 8px;
     }
 
     .tv-btn {
@@ -207,7 +812,7 @@
         cursor: pointer;
         font-size: 14px;
         line-height: 1;
-        opacity: 0.65;
+        opacity: 1;
         transition: opacity 0.15s ease, transform 0.15s ease;
         border-radius: var(--border-radius-sm);
     }
@@ -215,6 +820,345 @@
     .tv-btn:hover {
         opacity: 1;
         transform: scale(1.2);
+    }
+
+    .lineup-btn {
+        border: none;
+        background: none;
+        padding: 2px 4px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        opacity: 1;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .lineup-btn:hover {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    .lineup-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.82);
+        z-index: 1120;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 12px;
+    }
+
+    .lineup-modal-overlay.is-open {
+        display: flex;
+    }
+
+    .lineup-modal {
+        width: 100%;
+        max-width: 840px;
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .lineup-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .lineup-modal-title {
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .lineup-modal-close {
+        border: none;
+        background: none;
+        color: var(--text-secondary);
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 2px 8px;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .lineup-modal-close:hover {
+        color: var(--text-color);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .lineup-modal-body {
+        padding: 14px;
+        overflow: auto;
+    }
+
+    .lineup-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .lineup-team {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 10px;
+        background: rgba(var(--accent-rgb), 0.14);
+    }
+
+    .lineup-team-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--accent-color);
+    }
+
+    .lineup-probable {
+        color: var(--text-secondary);
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .lineup-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+    }
+
+    .lineup-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--border-radius-sm);
+        padding: 6px 8px;
+        font-size: 13px;
+    }
+
+    .lineup-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-secondary);
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .lineup-player-link {
+        color: var(--text-color);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .lineup-player-link:hover {
+        color: var(--accent-color);
+        text-decoration: underline;
+    }
+
+    .lineup-player-na {
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .lineup-position {
+        color: inherit;
+        font-weight: inherit;
+    }
+
+    .lineup-avg {
+        color: inherit;
+        font-weight: inherit;
+    }
+
+    .lineup-modal-loading,
+    .lineup-modal-error {
+        color: var(--text-secondary);
+        font-size: 14px;
+        padding: 6px 2px;
+    }
+
+    @media (max-width: 900px) {
+        .lineup-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ---- Standings Modal ---- */
+    .standings-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        z-index: 1100;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 24px 12px;
+        overflow-y: auto;
+    }
+
+    .standings-overlay.is-open {
+        display: flex;
+    }
+
+    .standings-modal {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        width: 100%;
+        max-width: 860px;
+        padding: 20px 24px 24px;
+        position: relative;
+    }
+
+    .standings-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .standings-modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .standings-close-btn {
+        border: none;
+        background: none;
+        color: var(--text-secondary);
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .standings-close-btn:hover {
+        color: var(--text-color);
+        background: rgba(255,255,255,0.08);
+    }
+
+    .standings-league-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 18px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0;
+    }
+
+    .standings-tab-btn {
+        border: none;
+        background: none;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        padding: 8px 18px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -1px;
+        transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .standings-tab-btn.is-active {
+        color: var(--accent-color);
+        border-bottom-color: var(--accent-color);
+    }
+
+    .standings-league-panel {
+        display: none;
+    }
+
+    .standings-league-panel.is-active {
+        display: block;
+    }
+
+    .standings-division {
+        margin-bottom: 20px;
+    }
+
+    .standings-division-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--accent-color);
+        margin-bottom: 8px;
+    }
+
+    .standings-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .standings-table th {
+        text-align: right;
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 4px 8px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .standings-table th:first-child {
+        text-align: left;
+    }
+
+    .standings-table td {
+        text-align: right;
+        padding: 6px 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        color: var(--text-color);
+    }
+
+    .standings-table td:first-child {
+        text-align: left;
+    }
+
+    .standings-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .standings-team-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-width: 0;
+    }
+
+    .standings-team-logo {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        flex-shrink: 0;
+        background: rgba(var(--accent-rgb), 0.08);
+        border-radius: 50%;
+        padding: 2px;
+    }
+
+    .standings-error {
+        padding: 18px;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+
+    .standings-loading {
+        padding: 18px;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 14px;
     }
 
     .empty-state {
@@ -237,7 +1181,40 @@
     <div class="scores-toolbar">
         <input id="scoresDateInput" class="date-input" type="date" value="{{ default_date }}">
         <button id="scoresRefreshBtn" class="btn btn-primary btn-sm">Refresh Now</button>
+        <button id="standingsBtn" class="btn btn-secondary btn-sm">Standings</button>
+        <div class="scores-density-controls">
+            <span class="scores-density-label">View:</span>
+            <button class="scores-density-btn" type="button" data-density="compact">Compact</button>
+            <button class="scores-density-btn" type="button" data-density="default">Default</button>
+            <button class="scores-density-btn" type="button" data-density="large">Large</button>
+        </div>
         <span id="scoresUpdatedAt" class="text-muted">Loading...</span>
+        <div class="scores-alerts-wrap scores-alerts-wrap-primary">
+            <button id="scoresAlertsBtn" class="scores-alerts-btn" type="button" title="Game alerts">
+                <span aria-hidden="true">🔔</span>
+                <span id="scoresAlertsCount" class="scores-alerts-count">0</span>
+            </button>
+            <div id="scoresAlertsPanel" class="scores-alerts-panel" role="dialog" aria-label="Alerts inbox">
+                <div class="scores-alerts-panel-header">
+                    <span class="scores-alerts-title">Alerts Inbox</span>
+                    <button id="scoresAlertsClearBtn" class="scores-alerts-clear" type="button">Clear</button>
+                </div>
+                <div id="scoresAlertsList" class="scores-alerts-list"></div>
+            </div>
+        </div>
+        <div class="scores-alerts-wrap">
+            <button id="scoresWatchAlertsBtn" class="scores-alerts-btn" type="button" title="Watchlist feed">
+                <span aria-hidden="true">👀</span>
+                <span id="scoresWatchAlertsCount" class="scores-alerts-count">0</span>
+            </button>
+            <div id="scoresWatchAlertsPanel" class="scores-alerts-panel" role="dialog" aria-label="Watchlist feed inbox">
+                <div class="scores-alerts-panel-header">
+                    <span class="scores-alerts-title">Watchlist Feed</span>
+                    <button id="scoresWatchAlertsClearBtn" class="scores-alerts-clear" type="button">Clear</button>
+                </div>
+                <div id="scoresWatchAlertsList" class="scores-alerts-list"></div>
+            </div>
+        </div>
     </div>
 
     <div class="scores-preferences">
@@ -245,14 +1222,64 @@
             <input id="scoresHideScoresToggle" type="checkbox">
             Hide Scores (No Spoilers)
         </label>
+        <label class="scores-toggle">
+            <input id="scoresRedZoneToggle" type="checkbox">
+            Red Zone Mode
+        </label>
         <button id="scoresClearFavoritesBtn" class="btn btn-secondary btn-sm">Clear Favorites</button>
         <span id="scoresFavoritesInfo" class="text-muted">Favorites: none</span>
+
+        <div class="scores-watchlist">
+            <span class="watchlist-label">Custom Watchlist</span>
+            <input id="watchTeamInput" class="watchlist-input" type="text" placeholder="Team abbr (NYY)">
+            <button id="watchTeamAddBtn" class="watchlist-add-btn" type="button">Add Team</button>
+            <input id="watchPlayerInput" class="watchlist-input" type="text" placeholder="Player name">
+            <button id="watchPlayerAddBtn" class="watchlist-add-btn" type="button">Add Player</button>
+            <div id="watchlistChips" class="watchlist-chips"></div>
+        </div>
     </div>
 
     <div id="scoresSummary" class="scores-summary"></div>
     <div id="scoresWarning" class="scores-warning" style="display: none;"></div>
     <div id="scoresGrid" class="scores-grid"></div>
 </section>
+
+<div id="atbatModalOverlay" class="atbat-modal-overlay" role="dialog" aria-modal="true" aria-label="Game at-bats">
+    <div class="atbat-modal">
+        <div class="atbat-modal-header">
+            <span id="atbatModalTitle" class="atbat-modal-title">Live At-Bat Feed</span>
+            <button id="atbatModalClose" class="atbat-modal-close" aria-label="Close at-bat feed">&times;</button>
+        </div>
+        <div id="atbatModalBody" class="atbat-modal-body"></div>
+    </div>
+</div>
+
+<div id="lineupModalOverlay" class="lineup-modal-overlay" role="dialog" aria-modal="true" aria-label="Game lineups">
+    <div class="lineup-modal">
+        <div class="lineup-modal-header">
+            <span id="lineupModalTitle" class="lineup-modal-title">Game Lineups</span>
+            <button id="lineupModalClose" class="lineup-modal-close" aria-label="Close lineups">&times;</button>
+        </div>
+        <div id="lineupModalBody" class="lineup-modal-body"></div>
+    </div>
+</div>
+
+<!-- Standings Modal -->
+<div id="standingsOverlay" class="standings-overlay" role="dialog" aria-modal="true" aria-label="MLB Standings">
+    <div class="standings-modal">
+        <div class="standings-modal-header">
+            <span class="standings-modal-title">MLB Standings</span>
+            <button id="standingsCloseBtn" class="standings-close-btn" aria-label="Close standings">&times;</button>
+        </div>
+        <div class="standings-league-tabs">
+            <button class="standings-tab-btn is-active" data-league="AL">American League</button>
+            <button class="standings-tab-btn" data-league="NL">National League</button>
+        </div>
+        <div id="standingsBody">
+            <div class="standings-loading">Loading standings...</div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -261,26 +1288,764 @@
     const POLL_MS = 30000;
     const FAVORITES_KEY = 'scoresFavoriteTeamIds';
     const SPOILER_KEY = 'scoresHideScores';
+    const RED_ZONE_KEY = 'scoresRedZoneMode';
+    const DENSITY_KEY = 'scoresDensityPreset';
+    const WATCHLIST_TEAMS_KEY = 'scoresWatchlistTeams';
+    const WATCHLIST_PLAYERS_KEY = 'scoresWatchlistPlayers';
+    const ALERTS_STORAGE_KEY = 'scoresAlertsInbox';
+    const ALERT_KEYS_STORAGE_KEY = 'scoresAlertKeysSeen';
+    const WATCH_ALERTS_STORAGE_KEY = 'scoresWatchAlertsInbox';
+    const WATCH_ALERT_KEYS_STORAGE_KEY = 'scoresWatchAlertKeysSeen';
+    const HR_EVENT_KEYS_STORAGE_KEY = 'scoresHrEventKeysSeen';
+    const ALERTS_MAX = 200;
+    const FAVORITE_ALERT_DELAY_MS = 3 * 60 * 1000;
+    const DEFAULT_SOUND_URL = '{{ url_for("static", filename="sounds/universfield-new-notification-022-370046.mp3") }}';
     let timerId = null;
     let lastGames = [];
+    let alertsInbox = [];
+    let alertKeysSeen = new Set();
+    let watchAlertsInbox = [];
+    let watchAlertKeysSeen = new Set();
+    let hrEventKeysSeen = new Set();
+    let pendingAlertKeys = new Set();
+    let pendingAlertTimers = new Map();
+    let pendingWatchAlertKeys = new Set();
+    let pendingWatchAlertTimers = new Map();
+    let redZoneEnabled = false;
+    let watchTeams = [];
+    let watchPlayers = [];
+    let lastFeedEntries = [];
+    let densityPreset = 'default';
+    let defaultAlertAudio = null;
 
     const dateInput = document.getElementById('scoresDateInput');
     const refreshBtn = document.getElementById('scoresRefreshBtn');
+    const densityButtons = document.querySelectorAll('.scores-density-btn');
     const hideScoresToggle = document.getElementById('scoresHideScoresToggle');
+    const redZoneToggle = document.getElementById('scoresRedZoneToggle');
     const clearFavoritesBtn = document.getElementById('scoresClearFavoritesBtn');
+    const watchTeamInput = document.getElementById('watchTeamInput');
+    const watchPlayerInput = document.getElementById('watchPlayerInput');
+    const watchTeamAddBtn = document.getElementById('watchTeamAddBtn');
+    const watchPlayerAddBtn = document.getElementById('watchPlayerAddBtn');
+    const watchlistChipsEl = document.getElementById('watchlistChips');
+    const atbatModalOverlay = document.getElementById('atbatModalOverlay');
+    const atbatModalCloseBtn = document.getElementById('atbatModalClose');
+    const atbatModalTitleEl = document.getElementById('atbatModalTitle');
+    const atbatModalBodyEl = document.getElementById('atbatModalBody');
     const favoritesInfoEl = document.getElementById('scoresFavoritesInfo');
     const updatedAt = document.getElementById('scoresUpdatedAt');
     const warningEl = document.getElementById('scoresWarning');
     const gridEl = document.getElementById('scoresGrid');
     const summaryEl = document.getElementById('scoresSummary');
+    const alertsBtn = document.getElementById('scoresAlertsBtn');
+    const alertsCountEl = document.getElementById('scoresAlertsCount');
+    const alertsPanelEl = document.getElementById('scoresAlertsPanel');
+    const alertsListEl = document.getElementById('scoresAlertsList');
+    const alertsClearBtn = document.getElementById('scoresAlertsClearBtn');
+    const watchAlertsBtn = document.getElementById('scoresWatchAlertsBtn');
+    const watchAlertsCountEl = document.getElementById('scoresWatchAlertsCount');
+    const watchAlertsPanelEl = document.getElementById('scoresWatchAlertsPanel');
+    const watchAlertsListEl = document.getElementById('scoresWatchAlertsList');
+    const watchAlertsClearBtn = document.getElementById('scoresWatchAlertsClearBtn');
+    const lineupOverlay = document.getElementById('lineupModalOverlay');
+    const lineupCloseBtn = document.getElementById('lineupModalClose');
+    const lineupTitleEl = document.getElementById('lineupModalTitle');
+    const lineupBodyEl = document.getElementById('lineupModalBody');
 
     function escapeHtml(value) {
-        return String(value || '')
+        const normalized = value === null || value === undefined ? '' : String(value);
+        return normalized
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/\"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    }
+
+    function safeJsonParse(raw, fallback) {
+        try {
+            const parsed = JSON.parse(raw || '');
+            return parsed ?? fallback;
+        } catch (error) {
+            return fallback;
+        }
+    }
+
+    function readCookieValue(name) {
+        const encodedName = encodeURIComponent(name) + '=';
+        const parts = document.cookie ? document.cookie.split('; ') : [];
+        for (const part of parts) {
+            if (part.startsWith(encodedName)) {
+                return decodeURIComponent(part.slice(encodedName.length));
+            }
+        }
+        return null;
+    }
+
+    function writeCookieValue(name, value, days = 365) {
+        const maxAge = Math.max(1, Math.floor(days * 24 * 60 * 60));
+        document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; samesite=lax`;
+    }
+
+    function getStoredValue(key, fallback = null) {
+        try {
+            const value = localStorage.getItem(key);
+            if (value !== null) {
+                return value;
+            }
+        } catch (error) {
+            // localStorage can be blocked in strict privacy modes.
+        }
+        const cookieValue = readCookieValue(key);
+        return cookieValue !== null ? cookieValue : fallback;
+    }
+
+    function setStoredValue(key, value) {
+        try {
+            localStorage.setItem(key, value);
+        } catch (error) {
+            // localStorage can be blocked in strict privacy modes.
+        }
+        writeCookieValue(key, value, 365);
+    }
+
+    function loadAlertState() {
+        alertsInbox = safeJsonParse(getStoredValue(ALERTS_STORAGE_KEY, '[]'), []);
+        if (!Array.isArray(alertsInbox)) {
+            alertsInbox = [];
+        }
+        alertKeysSeen = new Set(safeJsonParse(getStoredValue(ALERT_KEYS_STORAGE_KEY, '[]'), []));
+
+        watchAlertsInbox = safeJsonParse(getStoredValue(WATCH_ALERTS_STORAGE_KEY, '[]'), []);
+        if (!Array.isArray(watchAlertsInbox)) {
+            watchAlertsInbox = [];
+        }
+        watchAlertKeysSeen = new Set(safeJsonParse(getStoredValue(WATCH_ALERT_KEYS_STORAGE_KEY, '[]'), []));
+
+        hrEventKeysSeen = new Set(safeJsonParse(getStoredValue(HR_EVENT_KEYS_STORAGE_KEY, '[]'), []));
+    }
+
+    function loadWatchlistState() {
+        watchTeams = safeJsonParse(getStoredValue(WATCHLIST_TEAMS_KEY, '[]'), []);
+        if (!Array.isArray(watchTeams)) {
+            watchTeams = [];
+        }
+        watchTeams = [...new Set(watchTeams.map((value) => String(value || '').trim().toUpperCase()).filter(Boolean))];
+
+        watchPlayers = safeJsonParse(getStoredValue(WATCHLIST_PLAYERS_KEY, '[]'), []);
+        if (!Array.isArray(watchPlayers)) {
+            watchPlayers = [];
+        }
+        watchPlayers = [...new Set(watchPlayers.map((value) => String(value || '').trim().toLowerCase()).filter(Boolean))];
+
+        redZoneEnabled = getStoredValue(RED_ZONE_KEY, 'false') === 'true';
+        redZoneToggle.checked = redZoneEnabled;
+    }
+
+    function applyDensityPreset(preset, persist = true) {
+        const allowed = new Set(['compact', 'default', 'large']);
+        densityPreset = allowed.has(preset) ? preset : 'default';
+
+        document.body.classList.remove('scores-density-compact', 'scores-density-large');
+        if (densityPreset === 'compact') {
+            document.body.classList.add('scores-density-compact');
+        } else if (densityPreset === 'large') {
+            document.body.classList.add('scores-density-large');
+        }
+
+        densityButtons.forEach((btn) => {
+            const isActive = btn.getAttribute('data-density') === densityPreset;
+            btn.classList.toggle('is-active', isActive);
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        if (persist) {
+            setStoredValue(DENSITY_KEY, densityPreset);
+        }
+    }
+
+    function loadDensityState() {
+        const stored = getStoredValue(DENSITY_KEY, 'default') || 'default';
+        applyDensityPreset(stored, false);
+    }
+
+    function persistWatchlistState() {
+        setStoredValue(WATCHLIST_TEAMS_KEY, JSON.stringify(watchTeams));
+        setStoredValue(WATCHLIST_PLAYERS_KEY, JSON.stringify(watchPlayers));
+        setStoredValue(RED_ZONE_KEY, redZoneEnabled ? 'true' : 'false');
+    }
+
+    function persistAlertState() {
+        setStoredValue(ALERTS_STORAGE_KEY, JSON.stringify(alertsInbox.slice(0, ALERTS_MAX)));
+        setStoredValue(ALERT_KEYS_STORAGE_KEY, JSON.stringify([...alertKeysSeen]));
+        setStoredValue(WATCH_ALERTS_STORAGE_KEY, JSON.stringify(watchAlertsInbox.slice(0, ALERTS_MAX)));
+        setStoredValue(WATCH_ALERT_KEYS_STORAGE_KEY, JSON.stringify([...watchAlertKeysSeen]));
+        setStoredValue(HR_EVENT_KEYS_STORAGE_KEY, JSON.stringify([...hrEventKeysSeen]));
+    }
+
+    function renderWatchlistChips() {
+        const teamChips = watchTeams.map((abbr) => `
+            <span class="watchlist-chip">
+                Team: ${escapeHtml(abbr)}
+                <button class="watchlist-chip-remove" type="button" data-watch-type="team" data-watch-value="${escapeHtml(abbr)}">x</button>
+            </span>
+        `);
+        const playerChips = watchPlayers.map((name) => `
+            <span class="watchlist-chip">
+                Player: ${escapeHtml(name)}
+                <button class="watchlist-chip-remove" type="button" data-watch-type="player" data-watch-value="${escapeHtml(name)}">x</button>
+            </span>
+        `);
+
+        const combined = [...teamChips, ...playerChips];
+        watchlistChipsEl.innerHTML = combined.length
+            ? combined.join('')
+            : '<span class="text-muted" style="font-size:12px;">No watchlist entries yet.</span>';
+    }
+
+    function addWatchTeam(value) {
+        const normalized = String(value || '').trim().toUpperCase();
+        if (!normalized) {
+            return;
+        }
+        if (!watchTeams.includes(normalized)) {
+            watchTeams.push(normalized);
+            persistWatchlistState();
+            renderWatchlistChips();
+        }
+        watchTeamInput.value = '';
+    }
+
+    function addWatchPlayer(value) {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (!normalized) {
+            return;
+        }
+        if (!watchPlayers.includes(normalized)) {
+            watchPlayers.push(normalized);
+            persistWatchlistState();
+            renderWatchlistChips();
+        }
+        watchPlayerInput.value = '';
+    }
+
+    function isWatchlistMatchFeedEntry(entry) {
+        const teamAbbr = String(entry?.team_abbr || '').toUpperCase();
+        const batter = String(entry?.batter || '').toLowerCase();
+        const pitcher = String(entry?.pitcher || '').toLowerCase();
+        const desc = String(entry?.description || '').toLowerCase();
+
+        if (watchTeams.includes(teamAbbr)) {
+            return true;
+        }
+
+        return watchPlayers.some((name) => batter.includes(name) || pitcher.includes(name) || desc.includes(name));
+    }
+
+    function redZoneScore(game) {
+        const state = String(game?.state || '').toLowerCase();
+        if (state !== 'live') {
+            return -1;
+        }
+
+        const inning = Number(game?.current_inning || 0);
+        const awayRuns = Number(game?.away?.runs || 0);
+        const homeRuns = Number(game?.home?.runs || 0);
+        const diff = Math.abs(awayRuns - homeRuns);
+        const runnersOn = Number(game?.runners_on || 0);
+        const risp = Boolean(game?.runners_in_scoring_position);
+        const outs = Number(game?.outs || 0);
+
+        let score = 0;
+        if (inning >= 7) score += 3;
+        if (diff <= 2) score += 3;
+        if (diff <= 1) score += 2;
+        if (runnersOn >= 2) score += 2;
+        if (risp) score += 2;
+        if (outs === 2 && runnersOn > 0) score += 1;
+        return score;
+    }
+
+    function formatAlertTime(isoTime) {
+        const dt = isoTime ? new Date(isoTime) : null;
+        if (!dt || Number.isNaN(dt.getTime())) {
+            return 'Now';
+        }
+        return dt.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+    }
+
+    function renderAlertsInbox() {
+        alertsCountEl.textContent = String(alertsInbox.length);
+        if (!alertsInbox.length) {
+            alertsListEl.innerHTML = '<div class="scores-alert-empty">No alerts yet.</div>';
+            return;
+        }
+
+        alertsListEl.innerHTML = alertsInbox.map((alert) => `
+            <article class="scores-alert-item is-${escapeHtml(alert.type || 'unknown')}">
+                <div class="scores-alert-head">
+                    <span class="scores-alert-type">${escapeHtml(alert.label || 'Alert')}</span>
+                    <span class="scores-alert-time">${escapeHtml(formatAlertTime(alert.created_at))}</span>
+                </div>
+                <div class="scores-alert-message">${escapeHtml(alert.message || '')}</div>
+            </article>
+        `).join('');
+    }
+
+    function renderWatchAlertsInbox() {
+        watchAlertsCountEl.textContent = String(watchAlertsInbox.length);
+        if (!watchAlertsInbox.length) {
+            watchAlertsListEl.innerHTML = '<div class="scores-alert-empty">No watchlist alerts yet.</div>';
+            return;
+        }
+
+        watchAlertsListEl.innerHTML = watchAlertsInbox.map((alert) => `
+            <article class="scores-alert-item is-${escapeHtml(alert.type || 'unknown')}">
+                <div class="scores-alert-head">
+                    <span class="scores-alert-type">${escapeHtml(alert.label || 'Watchlist Alert')}</span>
+                    <span class="scores-alert-time">${escapeHtml(formatAlertTime(alert.created_at))}</span>
+                </div>
+                <div class="scores-alert-message">${escapeHtml(alert.message || '')}</div>
+            </article>
+        `).join('');
+    }
+
+    function playAlertSound() {
+        try {
+            if (!defaultAlertAudio) {
+                defaultAlertAudio = new Audio(DEFAULT_SOUND_URL);
+                defaultAlertAudio.preload = 'auto';
+            }
+
+            defaultAlertAudio.currentTime = 0;
+            const playPromise = defaultAlertAudio.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(() => {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) {
+                        return;
+                    }
+                    const ctx = new AudioCtx();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
+                    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                });
+            }
+        } catch (error) {
+            // No-op: browsers may block autoplay audio until user interaction.
+        }
+    }
+
+    function pushAlert(alert) {
+        if (!alert || !alert.key || alertKeysSeen.has(alert.key)) {
+            return false;
+        }
+
+        alertKeysSeen.add(alert.key);
+        alertsInbox.unshift({
+            type: alert.type,
+            label: alert.label,
+            message: alert.message,
+            key: alert.key,
+            created_at: alert.created_at || new Date().toISOString(),
+        });
+        alertsInbox = alertsInbox.slice(0, ALERTS_MAX);
+        return true;
+    }
+
+    function pushWatchAlert(alert) {
+        if (!alert || !alert.key || watchAlertKeysSeen.has(alert.key)) {
+            return false;
+        }
+
+        watchAlertKeysSeen.add(alert.key);
+        watchAlertsInbox.unshift({
+            type: alert.type,
+            label: alert.label,
+            message: alert.message,
+            key: alert.key,
+            created_at: alert.created_at || new Date().toISOString(),
+        });
+        watchAlertsInbox = watchAlertsInbox.slice(0, ALERTS_MAX);
+        return true;
+    }
+
+    function dispatchAlert(alert) {
+        if (!pushAlert(alert)) {
+            return false;
+        }
+        playAlertSound();
+        persistAlertState();
+        renderAlertsInbox();
+        return true;
+    }
+
+    function scheduleAlert(alert, delayMs) {
+        if (!alert || !alert.key) {
+            return;
+        }
+        if (alertKeysSeen.has(alert.key) || pendingAlertKeys.has(alert.key)) {
+            return;
+        }
+
+        if (!delayMs || delayMs <= 0) {
+            dispatchAlert(alert);
+            return;
+        }
+
+        pendingAlertKeys.add(alert.key);
+        const timerId = setTimeout(() => {
+            pendingAlertKeys.delete(alert.key);
+            pendingAlertTimers.delete(alert.key);
+            dispatchAlert(alert);
+        }, delayMs);
+        pendingAlertTimers.set(alert.key, timerId);
+    }
+
+    function dispatchWatchAlert(alert) {
+        if (!pushWatchAlert(alert)) {
+            return false;
+        }
+        persistAlertState();
+        renderWatchAlertsInbox();
+        return true;
+    }
+
+    function scheduleWatchAlert(alert, delayMs) {
+        if (!alert || !alert.key) {
+            return;
+        }
+        if (watchAlertKeysSeen.has(alert.key) || pendingWatchAlertKeys.has(alert.key)) {
+            return;
+        }
+
+        if (!delayMs || delayMs <= 0) {
+            dispatchWatchAlert(alert);
+            return;
+        }
+
+        pendingWatchAlertKeys.add(alert.key);
+        const timerId = setTimeout(() => {
+            pendingWatchAlertKeys.delete(alert.key);
+            pendingWatchAlertTimers.delete(alert.key);
+            dispatchWatchAlert(alert);
+        }, delayMs);
+        pendingWatchAlertTimers.set(alert.key, timerId);
+    }
+
+    function gameInningGate(game, minCompletedInning) {
+        const state = String(game?.state || '').toLowerCase();
+        const inning = Number(game?.current_inning || 0);
+        if (state === 'final') {
+            return true;
+        }
+        return inning >= (minCompletedInning + 1);
+    }
+
+    function evaluateNoHitterAlerts(games) {
+        const alerts = [];
+        (games || []).forEach((game) => {
+            const state = String(game?.state || '').toLowerCase();
+            if (state !== 'live' && state !== 'final') {
+                return;
+            }
+            if (!gameInningGate(game, 6)) {
+                return;
+            }
+
+            const awayHits = Number(game?.away?.hits ?? -1);
+            const homeHits = Number(game?.home?.hits ?? -1);
+            const awayName = game?.away?.name || game?.away?.abbr || 'Away';
+            const homeName = game?.home?.name || game?.home?.abbr || 'Home';
+
+            if (awayHits === 0) {
+                alerts.push({
+                    type: 'no-hitter',
+                    label: 'No-Hitter Alert',
+                    key: `no-hitter:${game.game_pk}:away`,
+                    message: `${homeName} has a no-hitter bid through 6+ innings vs ${awayName}.`,
+                    related_team_ids: [game?.away?.id, game?.home?.id],
+                });
+            }
+
+            if (homeHits === 0) {
+                alerts.push({
+                    type: 'no-hitter',
+                    label: 'No-Hitter Alert',
+                    key: `no-hitter:${game.game_pk}:home`,
+                    message: `${awayName} has a no-hitter bid through 6+ innings vs ${homeName}.`,
+                    related_team_ids: [game?.away?.id, game?.home?.id],
+                });
+            }
+        });
+        return alerts;
+    }
+
+    function evaluateCloseGameAlerts(games) {
+        const alerts = [];
+        (games || []).forEach((game) => {
+            const state = String(game?.state || '').toLowerCase();
+            if (state !== 'live' && state !== 'final') {
+                return;
+            }
+            if (!gameInningGate(game, 7)) {
+                return;
+            }
+
+            const awayRuns = Number(game?.away?.runs ?? 0);
+            const homeRuns = Number(game?.home?.runs ?? 0);
+            const diff = Math.abs(awayRuns - homeRuns);
+            if (diff > 2) {
+                return;
+            }
+
+            const awayAbbr = game?.away?.abbr || 'AWAY';
+            const homeAbbr = game?.home?.abbr || 'HOME';
+            alerts.push({
+                type: 'close-game',
+                label: 'Close Game Alert',
+                key: `close-game:${game.game_pk}`,
+                message: `${awayAbbr} ${awayRuns} - ${homeRuns} ${homeAbbr} is within 2 runs after 7 innings.`,
+                related_team_ids: [game?.away?.id, game?.home?.id],
+            });
+        });
+        return alerts;
+    }
+
+    async function evaluateHomeRunAlerts(games) {
+        // HR alerts are handled globally in base.html so they can fire on every screen.
+        return [];
+    }
+
+    async function processAlerts(games) {
+        const generated = [];
+        generated.push(...evaluateNoHitterAlerts(games));
+        generated.push(...evaluateCloseGameAlerts(games));
+        generated.push(...(await evaluateHomeRunAlerts(games)));
+
+        const favoriteSet = new Set(readFavoriteTeamIds());
+        generated.forEach((alert) => {
+            const relatedTeamIds = Array.isArray(alert.related_team_ids) ? alert.related_team_ids : [];
+            const favoriteMatch = relatedTeamIds
+                .map((value) => Number(value || 0))
+                .some((teamId) => favoriteSet.has(teamId));
+            scheduleAlert(alert, favoriteMatch ? FAVORITE_ALERT_DELAY_MS : 0);
+        });
+
+        // Keep storage consistent even when only delayed alerts were queued.
+        persistAlertState();
+    }
+
+    function processWatchlistFeedAlerts(feedEntries) {
+        const generated = evaluateWatchlistAlerts(feedEntries);
+        const favoriteSet = new Set(readFavoriteTeamIds());
+        generated.forEach((alert) => {
+            const relatedTeamIds = Array.isArray(alert.related_team_ids) ? alert.related_team_ids : [];
+            const favoriteMatch = relatedTeamIds
+                .map((value) => Number(value || 0))
+                .some((teamId) => favoriteSet.has(teamId));
+            scheduleWatchAlert(alert, favoriteMatch ? FAVORITE_ALERT_DELAY_MS : 0);
+        });
+        persistAlertState();
+    }
+
+    function evaluateWatchlistAlerts(feedEntries) {
+        if (!watchTeams.length && !watchPlayers.length) {
+            return [];
+        }
+
+        const gameByPk = new Map((lastGames || []).map((game) => [String(game?.game_pk || ''), game]));
+        const alerts = [];
+        (feedEntries || []).forEach((entry) => {
+            if (!isWatchlistMatchFeedEntry(entry)) {
+                return;
+            }
+
+            const game = gameByPk.get(String(entry?.game_pk || ''));
+
+            alerts.push({
+                type: 'watchlist',
+                label: 'Watchlist Alert',
+                key: `watchlist:${entry.play_id}`,
+                message: `${entry.game_label || 'Game'} - ${entry.description || 'Play update'}`,
+                related_team_ids: [game?.away?.id, game?.home?.id],
+            });
+        });
+        return alerts;
+    }
+
+    function getTeamColor(abbr) {
+        const normalized = String(abbr || '').toUpperCase().trim();
+        if (!normalized) {
+            return null;
+        }
+
+        const TEAM_PRIMARY_COLORS = {
+            ARI: '#A71930',
+            ATL: '#CE1141',
+            BAL: '#DF4601',
+            BOS: '#BD3039',
+            CHC: '#0E3386',
+            CWS: '#27251F',
+            CIN: '#C6011F',
+            CLE: '#0C2340',
+            COL: '#33006F',
+            DET: '#0C2340',
+            HOU: '#002D62',
+            KC: '#004687',
+            KCR: '#004687',
+            LAA: '#BA0021',
+            LAD: '#005A9C',
+            MIA: '#00A3E0',
+            MIL: '#12284B',
+            MIN: '#002B5C',
+            NYM: '#002D72',
+            NYY: '#132448',
+            OAK: '#003831',
+            ATH: '#003831',
+            PHI: '#E81828',
+            PIT: '#FDB827',
+            SD: '#2F241D',
+            SDP: '#2F241D',
+            SF: '#FD5A1E',
+            SFG: '#FD5A1E',
+            SEA: '#0C2C56',
+            STL: '#C41E3A',
+            TB: '#092C5C',
+            TBR: '#092C5C',
+            TEX: '#003278',
+            TOR: '#134A8E',
+            WSH: '#AB0003',
+            WAS: '#AB0003',
+        };
+
+        return TEAM_PRIMARY_COLORS[normalized] || null;
+    }
+
+    function halfInningLabel(half, inning) {
+        const normalizedHalf = String(half || '').toLowerCase();
+        const inningText = Number.isFinite(Number(inning)) && Number(inning) > 0 ? String(inning) : String(inning || '?');
+        if (normalizedHalf.startsWith('top')) {
+            return `Top ${inningText}`;
+        }
+        if (normalizedHalf.startsWith('bottom')) {
+            return `Bottom ${inningText}`;
+        }
+        const shortHalf = normalizedHalf ? normalizedHalf[0].toUpperCase() : '-';
+        return `${shortHalf}${inningText}`;
+    }
+
+    function renderAtBatFeed(entries, targetEl) {
+        const incoming = Array.isArray(entries) ? entries : [];
+        lastFeedEntries = incoming.filter((entry) => String(entry?.description || '').trim().length > 0);
+        const destination = targetEl || atbatModalBodyEl;
+        if (!lastFeedEntries.length) {
+            destination.innerHTML = '<div class="atbat-empty">No live at-bat events right now.</div>';
+            return;
+        }
+
+        const grouped = [];
+        const groupedByKey = new Map();
+        lastFeedEntries.forEach((entry) => {
+            const groupKey = `${String(entry?.inning_half || '').toLowerCase()}:${String(entry?.inning || '')}`;
+            if (!groupedByKey.has(groupKey)) {
+                const newGroup = {
+                    key: groupKey,
+                    half: entry?.inning_half || '',
+                    inning: entry?.inning || '',
+                    entries: [],
+                };
+                groupedByKey.set(groupKey, newGroup);
+                grouped.push(newGroup);
+            }
+            groupedByKey.get(groupKey).entries.push(entry);
+        });
+
+        destination.innerHTML = grouped.map((group) => {
+            const header = halfInningLabel(group.half, group.inning);
+            const plays = group.entries.map((entry) => {
+            const watchHit = isWatchlistMatchFeedEntry(entry);
+            const teamAbbr = String(entry?.team_abbr || '').toUpperCase();
+            const teamColor = getTeamColor(teamAbbr);
+            const colorStyle = teamColor ? ` style="--team-color:${escapeHtml(teamColor)};"` : '';
+            return `
+                <article class="atbat-item ${teamColor ? 'has-team-color' : ''} ${watchHit ? 'is-watch' : ''}"${colorStyle}>
+                    <div class="atbat-meta">
+                        <span>${escapeHtml(entry.game_label || 'Game')}</span>
+                        <span>${escapeHtml(teamAbbr)}</span>
+                    </div>
+                    <div class="atbat-desc">${escapeHtml(entry.description || '')}</div>
+                </article>
+            `;
+            }).join('');
+
+            return `
+                <section class="atbat-group">
+                    <div class="atbat-group-header">
+                        <span>${escapeHtml(header)}</span>
+                        <span class="atbat-group-count">${group.entries.length} plays</span>
+                    </div>
+                    ${plays}
+                </section>
+            `;
+        }).join('');
+    }
+
+    async function fetchAtBatFeed(dateValue) {
+        const queryParts = [];
+        if (dateValue) {
+            queryParts.push(`date=${encodeURIComponent(dateValue)}`);
+        }
+        queryParts.push('limit=80');
+        const query = queryParts.length ? `?${queryParts.join('&')}` : '';
+
+        try {
+            const response = await fetch(`/api/scores/at-bats${query}`, {
+                headers: {'Accept': 'application/json'}
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.error || 'At-bat feed unavailable.');
+            }
+
+            renderAtBatFeed(payload.entries || [], document.createElement('div'));
+        } catch (error) {
+            lastFeedEntries = [];
+        }
+    }
+
+    async function showGameAtBatModal(gamePk, titleText) {
+        atbatModalTitleEl.textContent = titleText || 'Live At-Bat Feed';
+        atbatModalBodyEl.innerHTML = '<div class="atbat-empty">Loading at-bats...</div>';
+        atbatModalOverlay.classList.add('is-open');
+
+        try {
+            const response = await fetch(`/api/scores/at-bats/${encodeURIComponent(gamePk)}?limit=60`, {
+                headers: {'Accept': 'application/json'}
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.error || 'At-bat feed unavailable.');
+            }
+
+            renderAtBatFeed(payload.entries || [], atbatModalBodyEl);
+        } catch (error) {
+            atbatModalBodyEl.innerHTML = `<div class="atbat-empty">${escapeHtml(error.message || 'At-bat feed unavailable.')}</div>`;
+        }
+    }
+
+    function closeGameAtBatModal() {
+        atbatModalOverlay.classList.remove('is-open');
     }
 
     function renderSummary(counts, totalGames) {
@@ -299,7 +2064,7 @@
 
     function readFavoriteTeamIds() {
         try {
-            const raw = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+            const raw = JSON.parse(getStoredValue(FAVORITES_KEY, '[]') || '[]');
             if (!Array.isArray(raw)) {
                 return [];
             }
@@ -311,16 +2076,16 @@
 
     function writeFavoriteTeamIds(teamIds) {
         const unique = [...new Set(teamIds.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify(unique));
+        setStoredValue(FAVORITES_KEY, JSON.stringify(unique));
         window.dispatchEvent(new Event('scoresPreferencesUpdated'));
     }
 
     function hideScoresEnabled() {
-        return localStorage.getItem(SPOILER_KEY) === 'true';
+        return getStoredValue(SPOILER_KEY, 'false') === 'true';
     }
 
     function setHideScores(enabled) {
-        localStorage.setItem(SPOILER_KEY, enabled ? 'true' : 'false');
+        setStoredValue(SPOILER_KEY, enabled ? 'true' : 'false');
         hideScoresToggle.checked = enabled;
         window.dispatchEvent(new Event('scoresPreferencesUpdated'));
         renderGames(lastGames);
@@ -335,14 +2100,24 @@
     }
 
     function sortGamesByFavorite(games, favoriteSet) {
-        return [...games].sort((a, b) => {
-            const aFav = gameHasFavorite(a, favoriteSet) ? 1 : 0;
-            const bFav = gameHasFavorite(b, favoriteSet) ? 1 : 0;
-            if (aFav !== bFav) {
-                return bFav - aFav;
-            }
-            return String(a.start_time_et || '').localeCompare(String(b.start_time_et || ''));
-        });
+        const baseList = Array.isArray(games) ? [...games] : [];
+        if (!redZoneEnabled) {
+            return baseList;
+        }
+
+        const liveGames = baseList.filter((game) => String(game?.state || '').toLowerCase() === 'live');
+        const ranked = liveGames
+            .map((game) => ({game, redZoneScore: redZoneScore(game)}))
+            .filter((entry) => entry.redZoneScore >= 6)
+            .sort((a, b) => b.redZoneScore - a.redZoneScore);
+
+        if (ranked.length) {
+            return ranked.map((entry) => ({...entry.game, _red_zone_score: entry.redZoneScore}));
+        }
+
+        return liveGames
+            .map((game) => ({...game, _red_zone_score: redZoneScore(game)}))
+            .sort((a, b) => (b._red_zone_score || 0) - (a._red_zone_score || 0));
     }
 
     function updateFavoritesInfo(games) {
@@ -375,19 +2150,134 @@
         const homeErrors = game?.home?.errors ?? 0;
         const awayFavorite = isFavoriteTeam(game?.away?.id, favoriteSet);
         const homeFavorite = isFavoriteTeam(game?.home?.id, favoriteSet);
+        const awayRosterUrl = game?.away?.roster_url || '';
+        const homeRosterUrl = game?.home?.roster_url || '';
+        const stateLower = String(game?.state || '').toLowerCase();
+        let stateClass = 'is-unknown';
+        if (stateLower === 'live') {
+            stateClass = 'is-live';
+        } else if (stateLower === 'pre-game') {
+            stateClass = 'is-pregame';
+        } else if (stateLower === 'final') {
+            stateClass = 'is-final';
+        }
 
         const awayScoreDisplay = hideScores ? '-' : awayRuns;
         const homeScoreDisplay = hideScores ? '-' : homeRuns;
         const runsDisplay = hideScores ? '- -' : `${awayRuns}-${homeRuns}`;
         const hitsDisplay = hideScores ? '- -' : `${awayHits}-${homeHits}`;
         const errorsDisplay = hideScores ? '- -' : `${awayErrors}-${homeErrors}`;
+        const lineupTitle = `${game.away.abbr} at ${game.home.abbr}`;
+        const redZoneValue = Number(game?._red_zone_score || redZoneScore(game));
+        const redZoneClass = redZoneEnabled && redZoneValue >= 6 ? 'is-redzone' : '';
+        const redZonePill = redZoneEnabled && redZoneValue >= 6
+            ? '<span class="red-zone-pill">Red Zone</span>'
+            : '';
+
+        const inningsRaw = Array.isArray(game?.linescore_innings) ? game.linescore_innings : [];
+        const inningMap = new Map();
+        inningsRaw.forEach((entry) => {
+            const inningNum = Number(entry?.inning || 0);
+            if (inningNum > 0) {
+                inningMap.set(inningNum, entry);
+            }
+        });
+
+        const inningCount = Math.max(9, ...[...inningMap.keys(), 0]);
+        const inningNumbers = Array.from({length: inningCount}, (_, idx) => idx + 1);
+        const inningBoxClass = inningCount >= 13
+            ? 'inning-box is-ultra-compact'
+            : inningCount >= 11
+                ? 'inning-box is-compact'
+                : 'inning-box';
+        const inningColWidthPct = 65 / inningCount;
+        const boxColGroup = `
+            <colgroup>
+                <col style="width: 11%;">
+                ${inningNumbers.map(() => `<col style="width: ${inningColWidthPct}%;">`).join('')}
+                <col style="width: 8%;">
+                <col style="width: 8%;">
+                <col style="width: 8%;">
+            </colgroup>
+        `;
+
+        const inningHeaderCells = inningNumbers.map((inningNum) => `<th>${inningNum}</th>`).join('');
+        const gameStateLower = String(game?.state || '').toLowerCase();
+        const currentInning = Number(game?.current_inning || 0);
+        const inningHalf = String(game?.inning_half || '').toLowerCase();
+
+        function hasInningSideStarted(side, inningNum) {
+            if (gameStateLower === 'pre-game') {
+                return false;
+            }
+
+            if (gameStateLower === 'final') {
+                // For final games, only trust explicit inning data; do not infer zeros.
+                return false;
+            }
+
+            if (!currentInning || inningNum > currentInning) {
+                return false;
+            }
+
+            if (inningNum < currentInning) {
+                return true;
+            }
+
+            // Current inning: top has only away started, bottom has both sides started.
+            if (inningHalf === 'top') {
+                return side === 'away';
+            }
+            if (inningHalf === 'bottom') {
+                return true;
+            }
+
+            return false;
+        }
+
+        const awayInningCells = inningNumbers.map((inningNum) => {
+            const value = inningMap.get(inningNum)?.away_runs;
+            let display = '';
+            if (hideScores) {
+                display = '-';
+            } else if (value !== null && value !== undefined) {
+                display = value;
+            } else if (hasInningSideStarted('away', inningNum)) {
+                display = 0;
+            }
+            return `<td>${escapeHtml(display)}</td>`;
+        }).join('');
+        const homeInningCells = inningNumbers.map((inningNum) => {
+            const value = inningMap.get(inningNum)?.home_runs;
+            let display = '';
+            if (hideScores) {
+                display = '-';
+            } else if (value !== null && value !== undefined) {
+                display = value;
+            } else if (hasInningSideStarted('home', inningNum)) {
+                display = 0;
+            }
+            return `<td>${escapeHtml(display)}</td>`;
+        }).join('');
+
+        const awayRunsTotal = hideScores ? '-' : awayRuns;
+        const awayHitsTotal = hideScores ? '-' : awayHits;
+        const awayErrorsTotal = hideScores ? '-' : awayErrors;
+        const homeRunsTotal = hideScores ? '-' : homeRuns;
+        const homeHitsTotal = hideScores ? '-' : homeHits;
+        const homeErrorsTotal = hideScores ? '-' : homeErrors;
 
         return `
-            <a class="score-card" href="${escapeHtml(game.mlb_url)}" target="_blank" rel="noopener noreferrer">
+            <a class="score-card ${redZoneClass}" href="${escapeHtml(game.mlb_url)}" target="_blank" rel="noopener noreferrer">
                 <div class="score-card-header">
-                    <span class="score-state">${escapeHtml(game.state)}</span>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span class="score-state ${stateClass}">${escapeHtml(game.state)}</span>
+                        ${redZonePill}
+                    </div>
                     <div class="score-card-header-right">
                         <span class="score-time">${escapeHtml(game.start_time_et)}</span>
+                        ${game.game_pk ? `<button class="atbat-btn" type="button" data-atbat-game-pk="${escapeHtml(game.game_pk)}" data-atbat-title="${escapeHtml(lineupTitle)} At-Bats" title="View live at-bats"><img class="atbat-btn-icon" src="{{ url_for('static', filename='images/1222716.png') }}" alt="At-Bat"></button>` : ''}
+                        ${game.game_pk ? `<button class="lineup-btn" type="button" data-lineup-game-pk="${escapeHtml(game.game_pk)}" data-lineup-title="${escapeHtml(lineupTitle)}" title="View lineups">📋</button>` : ''}
                         ${game.game_pk ? `<button class="tv-btn" type="button" data-tv-url="https://www.mlb.com/tv/g${game.game_pk}" title="Watch on MLB.TV">📺</button>` : ''}
                     </div>
                 </div>
@@ -396,7 +2286,12 @@
                     <div class="team-row">
                         <span class="team-main">
                             <img class="team-logo" src="${escapeHtml(game?.away?.logo_url || '')}" alt="${escapeHtml(game?.away?.abbr || 'Away')} logo" loading="lazy" onerror="this.style.display='none'">
-                            <span class="team-name">${escapeHtml(game.away.name)} (${escapeHtml(game.away.abbr)})</span>
+                            <button
+                                class="team-roster-link"
+                                type="button"
+                                data-team-roster-url="${escapeHtml(awayRosterUrl || '')}"
+                                title="Open ${escapeHtml(game.away.name)} roster"
+                            >${escapeHtml(game.away.name)} (${escapeHtml(game.away.abbr)})</button>
                             <button
                                 class="team-favorite-btn ${awayFavorite ? 'is-favorited' : ''}"
                                 type="button"
@@ -408,7 +2303,12 @@
                     <div class="team-row">
                         <span class="team-main">
                             <img class="team-logo" src="${escapeHtml(game?.home?.logo_url || '')}" alt="${escapeHtml(game?.home?.abbr || 'Home')} logo" loading="lazy" onerror="this.style.display='none'">
-                            <span class="team-name">${escapeHtml(game.home.name)} (${escapeHtml(game.home.abbr)})</span>
+                            <button
+                                class="team-roster-link"
+                                type="button"
+                                data-team-roster-url="${escapeHtml(homeRosterUrl || '')}"
+                                title="Open ${escapeHtml(game.home.name)} roster"
+                            >${escapeHtml(game.home.name)} (${escapeHtml(game.home.abbr)})</button>
                             <button
                                 class="team-favorite-btn ${homeFavorite ? 'is-favorited' : ''}"
                                 type="button"
@@ -421,19 +2321,35 @@
 
                 <div class="score-context">${escapeHtml(game.live_context || game.detailed_state || '')}</div>
 
-                <div class="score-stats">
-                    <div class="score-stat">
-                        <strong>R</strong>
-                        <span>${runsDisplay}</span>
-                    </div>
-                    <div class="score-stat">
-                        <strong>H</strong>
-                        <span>${hitsDisplay}</span>
-                    </div>
-                    <div class="score-stat">
-                        <strong>E</strong>
-                        <span>${errorsDisplay}</span>
-                    </div>
+                <div class="inning-box-wrap" aria-label="Inning-by-inning box score">
+                    <table class="${inningBoxClass}">
+                        ${boxColGroup}
+                        <thead>
+                            <tr>
+                                <th>T</th>
+                                ${inningHeaderCells}
+                                <th>R</th>
+                                <th>H</th>
+                                <th>E</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="inning-team-label">${escapeHtml(game?.away?.abbr || 'AWY')}</td>
+                                ${awayInningCells}
+                                <td class="inning-total">${escapeHtml(awayRunsTotal)}</td>
+                                <td class="inning-total">${escapeHtml(awayHitsTotal)}</td>
+                                <td class="inning-total">${escapeHtml(awayErrorsTotal)}</td>
+                            </tr>
+                            <tr>
+                                <td class="inning-team-label">${escapeHtml(game?.home?.abbr || 'HME')}</td>
+                                ${homeInningCells}
+                                <td class="inning-total">${escapeHtml(homeRunsTotal)}</td>
+                                <td class="inning-total">${escapeHtml(homeHitsTotal)}</td>
+                                <td class="inning-total">${escapeHtml(homeErrorsTotal)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div class="probables">
@@ -470,6 +2386,75 @@
         warningEl.textContent = message;
     }
 
+    function openLineupModal(titleText) {
+        lineupTitleEl.textContent = titleText || 'Game Lineups';
+        lineupOverlay.classList.add('is-open');
+    }
+
+    function closeLineupModal() {
+        lineupOverlay.classList.remove('is-open');
+    }
+
+    function renderLineupTeam(team) {
+        const teamName = team?.team_name || team?.team_abbr || 'Team';
+        const probableStarter = team?.probable_starter || 'NA';
+        const lineup = Array.isArray(team?.lineup) ? team.lineup : [];
+
+        const rows = lineup.map((player) => {
+            const name = player?.name || 'NA';
+            const pos = player?.position || 'NA';
+            const avg = player?.batting_avg || 'NA';
+            const brefUrl = player?.baseball_reference_url || '';
+            const nameHtml = brefUrl
+                ? `<a class="lineup-player-link" href="${escapeHtml(brefUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`
+                : `<span class="lineup-player-na">${escapeHtml(name)}</span>`;
+            return `
+                <li class="lineup-row">
+                    ${nameHtml}
+                    <span class="lineup-meta">
+                        <span class="lineup-position">${escapeHtml(pos)}</span>
+                        <span class="lineup-avg">AVG ${escapeHtml(avg)}</span>
+                    </span>
+                </li>
+            `;
+        }).join('');
+
+        return `
+            <section class="lineup-team">
+                <h3 class="lineup-team-title">${escapeHtml(teamName)}</h3>
+                <div class="lineup-probable">Probable Starter: ${escapeHtml(probableStarter)}</div>
+                <ul class="lineup-list">
+                    ${rows || '<li class="lineup-row"><span class="lineup-player-na">NA</span><span class="lineup-position">NA</span></li>'}
+                </ul>
+            </section>
+        `;
+    }
+
+    async function showGameLineups(gamePk, titleText) {
+        openLineupModal(titleText);
+        lineupBodyEl.innerHTML = '<div class="lineup-modal-loading">Loading lineups...</div>';
+
+        try {
+            const response = await fetch(`/api/scores/lineups/${encodeURIComponent(gamePk)}`, {
+                headers: {'Accept': 'application/json'}
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.error || 'Unable to load lineups for this game.');
+            }
+
+            lineupBodyEl.innerHTML = `
+                <div class="lineup-grid">
+                    ${renderLineupTeam(payload.away)}
+                    ${renderLineupTeam(payload.home)}
+                </div>
+            `;
+        } catch (error) {
+            lineupBodyEl.innerHTML = `<div class="lineup-modal-error">${escapeHtml(error.message || 'Unable to load lineups.')}</div>`;
+        }
+    }
+
     async function fetchScores() {
         const selectedDate = dateInput.value;
         const query = selectedDate ? `?date=${encodeURIComponent(selectedDate)}` : '';
@@ -486,11 +2471,15 @@
 
             renderSummary(payload.counts, payload.total_games);
             renderGames(payload.games || []);
+            await fetchAtBatFeed(selectedDate);
+            await processAlerts(payload.games || []);
+            processWatchlistFeedAlerts(lastFeedEntries);
             renderWarning(payload.warning || null);
             updatedAt.textContent = `Updated: ${payload.generated_at_et || 'N/A'}`;
         } catch (error) {
             renderSummary({live: 0, pregame: 0, final: 0}, 0);
             renderGames([]);
+            lastFeedEntries = [];
             renderWarning(error.message || 'Unable to load score data right now.');
             updatedAt.textContent = 'Update failed';
         }
@@ -520,6 +2509,12 @@
     }
 
     refreshBtn.addEventListener('click', fetchScores);
+    densityButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const preset = btn.getAttribute('data-density') || 'default';
+            applyDensityPreset(preset, true);
+        });
+    });
     dateInput.addEventListener('change', fetchScores);
     hideScoresToggle.addEventListener('change', () => setHideScores(hideScoresToggle.checked));
 
@@ -528,7 +2523,113 @@
         renderGames(lastGames);
     });
 
+    redZoneToggle.addEventListener('change', () => {
+        redZoneEnabled = redZoneToggle.checked;
+        persistWatchlistState();
+        renderGames(lastGames);
+    });
+
+    watchTeamAddBtn.addEventListener('click', () => addWatchTeam(watchTeamInput.value));
+    watchPlayerAddBtn.addEventListener('click', () => addWatchPlayer(watchPlayerInput.value));
+    watchTeamInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addWatchTeam(watchTeamInput.value);
+        }
+    });
+    watchPlayerInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addWatchPlayer(watchPlayerInput.value);
+        }
+    });
+    watchlistChipsEl.addEventListener('click', (event) => {
+        const removeBtn = event.target.closest('.watchlist-chip-remove');
+        if (!removeBtn) {
+            return;
+        }
+
+        const type = removeBtn.getAttribute('data-watch-type');
+        const value = removeBtn.getAttribute('data-watch-value') || '';
+        if (type === 'team') {
+            watchTeams = watchTeams.filter((team) => team !== value.toUpperCase());
+        } else if (type === 'player') {
+            watchPlayers = watchPlayers.filter((name) => name !== value.toLowerCase());
+        }
+        persistWatchlistState();
+        renderWatchlistChips();
+        renderAtBatFeed(lastFeedEntries);
+    });
+
+    alertsBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        watchAlertsPanelEl.classList.remove('is-open');
+        alertsPanelEl.classList.toggle('is-open');
+    });
+
+    watchAlertsBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        alertsPanelEl.classList.remove('is-open');
+        watchAlertsPanelEl.classList.toggle('is-open');
+    });
+
+    alertsClearBtn.addEventListener('click', () => {
+        alertsInbox = [];
+        alertKeysSeen = new Set();
+        hrEventKeysSeen = new Set();
+        pendingAlertTimers.forEach((timerId) => clearTimeout(timerId));
+        pendingAlertTimers = new Map();
+        pendingAlertKeys = new Set();
+        persistAlertState();
+        renderAlertsInbox();
+    });
+
+    watchAlertsClearBtn.addEventListener('click', () => {
+        watchAlertsInbox = [];
+        watchAlertKeysSeen = new Set();
+        pendingWatchAlertTimers.forEach((timerId) => clearTimeout(timerId));
+        pendingWatchAlertTimers = new Map();
+        pendingWatchAlertKeys = new Set();
+        persistAlertState();
+        renderWatchAlertsInbox();
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!alertsPanelEl.contains(event.target) && !alertsBtn.contains(event.target)) {
+            alertsPanelEl.classList.remove('is-open');
+        }
+        if (!watchAlertsPanelEl.contains(event.target) && !watchAlertsBtn.contains(event.target)) {
+            watchAlertsPanelEl.classList.remove('is-open');
+        }
+    });
+
     gridEl.addEventListener('click', (event) => {
+        const atbatBtn = event.target.closest('.atbat-btn');
+        if (atbatBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            const gamePk = atbatBtn.getAttribute('data-atbat-game-pk');
+            const titleText = atbatBtn.getAttribute('data-atbat-title') || 'Live At-Bat Feed';
+            if (gamePk) {
+                showGameAtBatModal(gamePk, titleText);
+            }
+            return;
+        }
+
+        const lineupBtn = event.target.closest('.lineup-btn');
+        if (lineupBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            const gamePk = lineupBtn.getAttribute('data-lineup-game-pk');
+            const titleText = lineupBtn.getAttribute('data-lineup-title') || 'Game Lineups';
+            if (gamePk) {
+                showGameLineups(gamePk, titleText);
+            }
+            return;
+        }
+
         const tvBtn = event.target.closest('.tv-btn');
         if (tvBtn) {
             event.preventDefault();
@@ -536,6 +2637,17 @@
             const url = tvBtn.getAttribute('data-tv-url');
             if (url) {
                 window.open(url, '_blank', 'noopener,noreferrer');
+            }
+            return;
+        }
+
+        const rosterBtn = event.target.closest('.team-roster-link');
+        if (rosterBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            const rosterUrl = rosterBtn.getAttribute('data-team-roster-url');
+            if (rosterUrl) {
+                window.open(rosterUrl, '_blank', 'noopener,noreferrer');
             }
             return;
         }
@@ -549,6 +2661,29 @@
         toggleFavoriteTeam(button.getAttribute('data-team-id'));
     });
 
+    lineupCloseBtn.addEventListener('click', closeLineupModal);
+    lineupOverlay.addEventListener('click', (event) => {
+        if (event.target === lineupOverlay) {
+            closeLineupModal();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && lineupOverlay.classList.contains('is-open')) {
+            closeLineupModal();
+        }
+        if (event.key === 'Escape' && atbatModalOverlay.classList.contains('is-open')) {
+            closeGameAtBatModal();
+        }
+    });
+
+    atbatModalCloseBtn.addEventListener('click', closeGameAtBatModal);
+    atbatModalOverlay.addEventListener('click', (event) => {
+        if (event.target === atbatModalOverlay) {
+            closeGameAtBatModal();
+        }
+    });
+
     const tickerSpoilerBtn = document.getElementById('scoresTickerSpoilerBtn');
     if (tickerSpoilerBtn) {
         tickerSpoilerBtn.addEventListener('click', () => {
@@ -558,9 +2693,114 @@
     }
 
     hideScoresToggle.checked = hideScoresEnabled();
+    loadAlertState();
+    loadWatchlistState();
+    loadDensityState();
+    renderAlertsInbox();
+    renderWatchAlertsInbox();
+    renderWatchlistChips();
 
     fetchScores();
     startPolling();
+})();
+
+// ---- Standings modal ----
+(() => {
+    const overlay     = document.getElementById('standingsOverlay');
+    const closeBtn    = document.getElementById('standingsCloseBtn');
+    const standingsBtn = document.getElementById('standingsBtn');
+    const bodyEl      = document.getElementById('standingsBody');
+    const tabBtns     = document.querySelectorAll('.standings-tab-btn');
+
+    let activeLeague = 'AL';
+    let standingsData = null;
+    let fetchStarted  = false;
+
+    function escHtml(v) {
+        return String(v || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function divisionTableHtml(teams) {
+        if (!teams || !teams.length) {
+            return '<p class="standings-error">No data available.</p>';
+        }
+        const rows = teams.map(t => `
+            <tr>
+                <td>
+                    <span class="standings-team-cell">
+                        <img class="standings-team-logo" src="${escHtml(t.logo_url)}" alt="${escHtml(t.team_abbr)}" loading="lazy" onerror="this.style.display='none'">
+                        ${escHtml(t.team_name)}
+                    </span>
+                </td>
+                <td>${escHtml(t.wins)}</td>
+                <td>${escHtml(t.losses)}</td>
+                <td>${escHtml(t.pct)}</td>
+                <td>${escHtml(t.gb)}</td>
+                <td>${escHtml(t.streak)}</td>
+                <td>${escHtml(t.last_ten)}</td>
+            </tr>`).join('');
+        return `
+            <table class="standings-table">
+                <thead><tr>
+                    <th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>Streak</th><th>L10</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+    }
+
+    function renderLeague(leagueKey) {
+        if (!standingsData) return;
+        const league = standingsData[leagueKey] || {};
+        const divisions = ['East', 'Central', 'West'];
+        bodyEl.innerHTML = divisions.map(div => `
+            <div class="standings-division">
+                <div class="standings-division-title">${escHtml(leagueKey)} ${escHtml(div)}</div>
+                ${divisionTableHtml(league[div] || [])}
+            </div>`).join('');
+    }
+
+    function setActiveTab(leagueKey) {
+        activeLeague = leagueKey;
+        tabBtns.forEach(btn => btn.classList.toggle('is-active', btn.getAttribute('data-league') === leagueKey));
+        if (standingsData) renderLeague(leagueKey);
+    }
+
+    function openModal() {
+        overlay.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+        if (!fetchStarted) {
+            fetchStarted = true;
+            fetchStandings();
+        } else if (standingsData) {
+            renderLeague(activeLeague);
+        }
+    }
+
+    function closeModal() {
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    async function fetchStandings() {
+        bodyEl.innerHTML = '<div class="standings-loading">Loading standings...</div>';
+        try {
+            const response = await fetch('/api/scores/standings', { headers: { 'Accept': 'application/json' } });
+            const payload = await response.json();
+            if (!payload.success || !payload.standings) {
+                throw new Error(payload.error || 'Failed to load standings.');
+            }
+            standingsData = payload.standings;
+            renderLeague(activeLeague);
+        } catch (err) {
+            bodyEl.innerHTML = `<div class="standings-error">⚠ ${escHtml(err.message)}</div>`;
+        }
+    }
+
+    standingsBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal(); });
+    tabBtns.forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.getAttribute('data-league'))));
 })();
 </script>
 {% endblock %}
