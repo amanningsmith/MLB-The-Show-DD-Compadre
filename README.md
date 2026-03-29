@@ -2,7 +2,9 @@
 
 A comprehensive web-based tracking tool for managing your MLB The Show 26 Diamond Dynasty missions, programs, and card collection.
 
-> **Version:** Beta 4.0 · **Last Updated:** March 17, 2026 · **Status:** Finalized ✅
+> **Version:** PROD 1.0 · **Last Updated:** March 28, 2026 · **Status:** Final Production Release ✅
+
+> **Release Policy:** This is the final baseline production release (PROD 1.0). All future feature additions and improvements will ship as incremental production releases (PROD 1.x).
 
 ---
 
@@ -89,8 +91,14 @@ Navigate to [http://127.0.0.1:5000](http://127.0.0.1:5000)
 - Focused view for cards you actually own vs. targeting
 
 ### 📊 Live Scores
-- Live MLB scores ticker integrated into the app
-- Keeps you up to date without leaving the tracker
+- Real-time MLB Scores dashboard with date-based slate selection and manual refresh
+- Adaptive polling cadence: 10s when live games exist, 60m when idle
+- Rolling 9-inning box score window for extra-inning games
+- Dedicated alert feeds: General, Watchlist (silent), and ABS Challenges
+- ABS challenge alerts include original call and review result when available
+- Live game card quick actions for at-bats, lineups, and MLB.TV
+- Player links in lineup and leaders route to Baseball Savant
+- Spoiler controls and watchlist preferences persist across sessions
 
 ---
 
