@@ -121,7 +121,6 @@ MLB_TheShow26_Tracker/
 │   ├── static/                     # CSS, JS, images
 │   ├── data/                       # SQLite databases (missions.db, cards.db)
 │   └── logs/                       # Application logs (auto-generated)
-├── requirements/                   # Project requirements docs
 ├── requirements.txt                # Python dependencies
 └── README.md                       # This file
 ```
