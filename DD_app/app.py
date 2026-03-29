@@ -968,6 +968,30 @@ def scores_game_at_bats_api(game_pk):
         logger.error(f"Scores game at-bats API error: {e}")
         return jsonify({'success': False, 'error': str(e), 'game_pk': game_pk, 'entries': []}), 500
 
+
+@app.route('/api/scores/leaders', methods=['GET'])
+def scores_leaders_api():
+    """MLB league leaders for hitters and pitchers."""
+    try:
+        stat_group = (request.args.get('stat_group', 'hitting') or 'hitting').strip().lower()
+        stat_type = (request.args.get('stat_type', '') or '').strip() or None
+        date_str = (request.args.get('date', '') or '').strip() or None
+        refresh_value = (request.args.get('refresh', 'false') or '').strip().lower()
+        force_refresh = refresh_value in {'1', 'true', 'yes'}
+        limit = int(request.args.get('limit', 15))
+        payload = scores.get_leaders_payload(
+            stat_group=stat_group,
+            stat_type=stat_type,
+            limit=limit,
+            date_str=date_str,
+            force_refresh=force_refresh,
+        )
+        status_code = 200 if payload.get('success') else 502
+        return jsonify(payload), status_code
+    except Exception as e:
+        logger.error(f"Scores leaders API error: {e}")
+        return jsonify({'success': False, 'error': str(e), 'leaders': []}), 500
+
 # ========================
 # Error Handlers
 # ========================

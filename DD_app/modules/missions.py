@@ -1117,7 +1117,7 @@ def recalculate_mission_priorities(program_category=None, mission_ids=None):
         )
 
         new_priority = None
-        if status == 'In-Progress':
+        if status in ('In-Progress', 'Completed'):
             new_priority = 'At-Bat'
         elif status == 'Not Started':
             linked_ids = mission_to_players.get(row['id'], [])

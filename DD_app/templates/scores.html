@@ -12,10 +12,49 @@
         margin-bottom: 16px;
     }
 
+    .scores-refresh-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 8px;
+        line-height: 1;
+    }
+
+    .scores-updated-footer {
+        margin-top: 12px;
+        font-size: 12px;
+        text-align: center;
+        opacity: 0.6;
+    }
+
     .scores-density-controls {
         display: inline-flex;
         align-items: center;
         gap: 6px;
+    }
+
+    .scores-toggle-inline {
+        margin-left: 8px;
+        padding-left: 10px;
+        border-left: 1px solid var(--border-light);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .scores-stack-actions {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .scores-stack-actions .btn {
+        line-height: 1;
+        padding-top: 6px;
+        padding-bottom: 6px;
     }
 
     .scores-density-label {
@@ -39,6 +78,12 @@
         background: rgba(var(--accent-rgb), 0.22);
         border-color: rgba(var(--accent-rgb), 0.55);
         color: var(--text-color);
+    }
+
+    .scores-alert-icons-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
     }
 
     .scores-alerts-wrap {
@@ -149,6 +194,10 @@
         border-left-color: #22c55e;
     }
 
+    .scores-alert-item.is-abs-challenge {
+        border-left-color: #f59e0b;
+    }
+
     .scores-alert-head {
         display: flex;
         justify-content: space-between;
@@ -161,6 +210,18 @@
         font-weight: 700;
         text-transform: uppercase;
         color: var(--accent-color);
+    }
+
+    .scores-alert-type-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .scores-alert-icon {
+        font-size: 12px;
+        line-height: 1;
+        opacity: 0.95;
     }
 
     .scores-alert-time {
@@ -188,8 +249,39 @@
         margin-bottom: 12px;
     }
 
-    .scores-watchlist {
-        display: flex;
+    .scores-watchlist-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-sm);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 10px;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s;
+    }
+
+    .scores-watchlist-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+    }
+
+    .scores-watchlist-toggle-arrow {
+        font-size: 10px;
+        transition: transform 0.2s ease;
+        display: inline-block;
+    }
+
+    .scores-watchlist-toggle.is-open .scores-watchlist-toggle-arrow {
+        transform: rotate(180deg);
+    }
+
+    .scores-watchlist-drawer {
+        display: none;
         flex-wrap: wrap;
         gap: 8px;
         align-items: center;
@@ -199,6 +291,14 @@
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius-sm);
         background: rgba(var(--accent-rgb), 0.05);
+    }
+
+    .scores-watchlist-drawer.is-open {
+        display: flex;
+    }
+
+    .scores-watchlist {
+        width: 100%;
     }
 
     .watchlist-label {
@@ -1168,80 +1268,531 @@
         text-align: center;
         color: var(--text-muted);
     }
+
+    /* ---- Decision Pitchers (Final games) ---- */
+    .decision-pitchers {
+        font-size: 12px;
+        color: var(--text-secondary);
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    body.scores-density-compact .decision-pitchers { font-size: 10px; }
+    body.scores-density-large .decision-pitchers { font-size: 13px; }
+
+    .decision-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .decision-label {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 1px 5px;
+        border-radius: 3px;
+        letter-spacing: 0.04em;
+        flex-shrink: 0;
+    }
+
+    .decision-win { background: rgba(34,197,94,0.22); color: #65f6ac; }
+    .decision-loss { background: rgba(239,68,68,0.22); color: #f87171; }
+    .decision-save { background: rgba(99,102,241,0.22); color: #a5b4fc; }
+
+    /* ---- Live Game Info (pitcher + batter + runners) ---- */
+    .live-game-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    body.scores-density-compact .live-game-info { font-size: 10px; }
+    body.scores-density-large .live-game-info { font-size: 13px; }
+
+    .live-scorebug-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .live-basebug {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        flex-shrink: 0;
+    }
+
+    .live-count-bug {
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+        min-height: 36px;
+        min-width: 62px;
+    }
+
+    .live-inning-text {
+        font-size: 11px;
+        color: var(--text-color);
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .live-outs-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .live-batter-count {
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1;
+        font-weight: 600;
+    }
+
+    .live-names-stack {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .live-name-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .live-name-label {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 1px 5px;
+        border-radius: 3px;
+        background: rgba(var(--accent-rgb), 0.18);
+        color: var(--accent-color);
+        flex-shrink: 0;
+        letter-spacing: 0.04em;
+    }
+
+    .live-pitch-count {
+        border: 1px solid rgba(var(--accent-rgb), 0.3);
+        border-radius: 999px;
+        background: rgba(var(--accent-rgb), 0.1);
+        color: var(--text-secondary);
+        font-size: 10px;
+        padding: 1px 6px;
+        line-height: 1.1;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .outs-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .outs-dot.is-on {
+        background: #f97316;
+        border-color: #ea580c;
+        box-shadow: 0 0 5px rgba(249, 115, 22, 0.45);
+    }
+
+    body.scores-density-compact .live-inning-text {
+        font-size: 10px;
+    }
+
+    body.scores-density-compact .live-batter-count,
+    body.scores-density-compact .live-pitch-count {
+        font-size: 9px;
+    }
+
+    body.scores-density-large .live-inning-text {
+        font-size: 12px;
+    }
+
+    body.scores-density-large .live-batter-count,
+    body.scores-density-large .live-pitch-count {
+        font-size: 11px;
+    }
+
+    .live-info-label {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 1px 5px;
+        border-radius: 3px;
+        background: rgba(var(--accent-rgb), 0.18);
+        color: var(--accent-color);
+        flex-shrink: 0;
+        letter-spacing: 0.04em;
+    }
+
+    .live-pitcher-name,
+    .live-batter-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-color);
+        font-weight: 500;
+    }
+
+    /* ---- Runners on Base Diamond ---- */
+    .runners-diamond {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+    }
+
+    .base-indicator {
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        border: 1.5px solid rgba(255,255,255,0.22);
+        background: rgba(255,255,255,0.06);
+        transform: rotate(45deg);
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .base-indicator.has-runner {
+        background: #ffd700;
+        border-color: #c9a800;
+        box-shadow: 0 0 5px rgba(255,215,0,0.55);
+    }
+
+    /* Positions within 36x36 container: second=top-center, third=left-mid, first=right-mid */
+    .base-second { top: 1px;  left: 12px; }
+    .base-third  { top: 12px; left: 1px;  }
+    .base-first  { top: 12px; right: 1px; }
+
+    .diamond-inning {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: var(--text-secondary);
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.02em;
+    }
+
+    /* ---- League Leaders Modal ---- */
+    .leaders-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 1400;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 72px 12px 24px;
+        overflow-y: auto;
+    }
+
+    .leaders-overlay.is-open { display: flex; }
+
+    .leaders-modal {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        width: 100%;
+        max-width: 640px;
+        padding: 18px 20px 24px;
+        position: relative;
+    }
+
+    .leaders-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--surface-color);
+        padding-bottom: 4px;
+    }
+
+    .leaders-modal-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .leaders-close-btn {
+        border: 1px solid var(--border-light);
+        background: rgba(255,255,255,0.06);
+        color: var(--text-color);
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px 10px;
+        border-radius: var(--border-radius-sm);
+        font-weight: 700;
+    }
+
+    .leaders-close-btn:hover {
+        color: #fff;
+        background: rgba(255,255,255,0.14);
+        border-color: var(--border-color);
+    }
+
+    .leaders-header-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .leaders-refresh-btn {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #ea580c;
+        background: #f97316;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 0;
+        border-radius: var(--border-radius-sm);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    .leaders-refresh-btn:hover {
+        background: #ea580c;
+        border-color: #c2410c;
+    }
+
+    .leaders-refresh-btn.is-loading {
+        opacity: 0.75;
+    }
+
+    .leaders-refresh-btn.is-loading .leaders-refresh-icon {
+        display: inline-block;
+        animation: leaders-spin 0.9s linear infinite;
+    }
+
+    @keyframes leaders-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .leaders-player-link {
+        color: var(--text-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .leaders-player-link:hover {
+        color: var(--accent-color);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .leaders-toggle-wrap {
+        display: inline-flex;
+        gap: 0;
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+
+    .leaders-stat-group-btn {
+        border: none;
+        background: rgba(255,255,255,0.04);
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 6px 16px;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .leaders-stat-group-btn.is-active {
+        background: rgba(var(--accent-rgb), 0.25);
+        color: var(--accent-color);
+    }
+
+    .leaders-tab-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+
+    .leaders-tab-btn {
+        border: 1px solid var(--border-light);
+        border-radius: 999px;
+        background: rgba(255,255,255,0.04);
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .leaders-tab-btn.is-active {
+        background: rgba(var(--accent-rgb), 0.22);
+        border-color: rgba(var(--accent-rgb), 0.55);
+        color: var(--text-color);
+    }
+
+    .leaders-body {
+        min-height: 80px;
+    }
+
+    .leaders-loading,
+    .leaders-error {
+        color: var(--text-muted);
+        font-size: 13px;
+        padding: 10px 0;
+    }
+
+    .leaders-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .leaders-table th {
+        text-align: left;
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 5px 8px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .leaders-table th:last-child { text-align: right; }
+
+    .leaders-table td {
+        padding: 7px 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        color: var(--text-color);
+    }
+
+    .leaders-table td:last-child { text-align: right; font-weight: 700; color: var(--accent-color); }
+
+    .leaders-table tr:last-child td { border-bottom: none; }
+
+    .leaders-rank { color: var(--text-muted); font-weight: 600; width: 28px; }
+    .leaders-team { color: var(--text-muted); font-size: 11px; }
+
+    /* ---- Current batter highlight in lineup ---- */
+    .lineup-row.is-current-batter {
+        background: rgba(var(--accent-rgb), 0.12);
+        border-color: rgba(var(--accent-rgb), 0.4);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-header">
     <h1>Real Time MLB Scores</h1>
-    <p class="text-muted">All games shown in Eastern Time. Dashboard refreshes every 30 seconds.</p>
 </div>
 
 <section class="content-section">
     <div class="scores-toolbar">
         <input id="scoresDateInput" class="date-input" type="date" value="{{ default_date }}">
-        <button id="scoresRefreshBtn" class="btn btn-primary btn-sm">Refresh Now</button>
-        <button id="standingsBtn" class="btn btn-secondary btn-sm">Standings</button>
+        <button id="scoresRefreshBtn" class="btn btn-primary btn-sm scores-refresh-icon-btn" title="Refresh now" aria-label="Refresh scores">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+        </button>
         <div class="scores-density-controls">
             <span class="scores-density-label">View:</span>
             <button class="scores-density-btn" type="button" data-density="compact">Compact</button>
             <button class="scores-density-btn" type="button" data-density="default">Default</button>
             <button class="scores-density-btn" type="button" data-density="large">Large</button>
+            <label class="scores-toggle scores-toggle-inline">
+                <input id="scoresHideScoresToggle" type="checkbox">
+                Hide Scores
+            </label>
         </div>
-        <span id="scoresUpdatedAt" class="text-muted">Loading...</span>
-        <div class="scores-alerts-wrap scores-alerts-wrap-primary">
-            <button id="scoresAlertsBtn" class="scores-alerts-btn" type="button" title="Game alerts">
-                <span aria-hidden="true">🔔</span>
-                <span id="scoresAlertsCount" class="scores-alerts-count">0</span>
-            </button>
-            <div id="scoresAlertsPanel" class="scores-alerts-panel" role="dialog" aria-label="Alerts inbox">
-                <div class="scores-alerts-panel-header">
-                    <span class="scores-alerts-title">Alerts Inbox</span>
-                    <button id="scoresAlertsClearBtn" class="scores-alerts-clear" type="button">Clear</button>
+        <div class="scores-stack-actions scores-alerts-wrap-primary">
+            <button id="standingsBtn" class="btn btn-secondary btn-sm">Standings</button>
+            <button id="leadersBtn" class="btn btn-secondary btn-sm">&#128202; Leaders</button>
+            <a href="https://baseballsavant.mlb.com/" class="btn btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">&#9889; Savant</a>
+        </div>
+        <div class="scores-alert-icons-stack">
+            <div class="scores-alerts-wrap">
+                <button id="scoresAlertsBtn" class="scores-alerts-btn" type="button" title="Game alerts">
+                    <span aria-hidden="true">🔔</span>
+                    <span id="scoresAlertsCount" class="scores-alerts-count">0</span>
+                </button>
+                <div id="scoresAlertsPanel" class="scores-alerts-panel" role="dialog" aria-label="Alerts inbox">
+                    <div class="scores-alerts-panel-header">
+                        <span class="scores-alerts-title">Alerts Inbox</span>
+                        <button id="scoresAlertsClearBtn" class="scores-alerts-clear" type="button">Clear</button>
+                    </div>
+                    <div id="scoresAlertsList" class="scores-alerts-list"></div>
                 </div>
-                <div id="scoresAlertsList" class="scores-alerts-list"></div>
             </div>
-        </div>
-        <div class="scores-alerts-wrap">
-            <button id="scoresWatchAlertsBtn" class="scores-alerts-btn" type="button" title="Watchlist feed">
-                <span aria-hidden="true">👀</span>
-                <span id="scoresWatchAlertsCount" class="scores-alerts-count">0</span>
-            </button>
-            <div id="scoresWatchAlertsPanel" class="scores-alerts-panel" role="dialog" aria-label="Watchlist feed inbox">
-                <div class="scores-alerts-panel-header">
-                    <span class="scores-alerts-title">Watchlist Feed</span>
-                    <button id="scoresWatchAlertsClearBtn" class="scores-alerts-clear" type="button">Clear</button>
+            <div class="scores-alerts-wrap">
+                <button id="scoresWatchAlertsBtn" class="scores-alerts-btn" type="button" title="Watchlist feed">
+                    <span aria-hidden="true">&#128064;</span>
+                    <span id="scoresWatchAlertsCount" class="scores-alerts-count">0</span>
+                </button>
+                <div id="scoresWatchAlertsPanel" class="scores-alerts-panel" role="dialog" aria-label="Watchlist feed inbox">
+                    <div class="scores-alerts-panel-header">
+                        <span class="scores-alerts-title">Watchlist Feed</span>
+                        <button id="scoresWatchAlertsClearBtn" class="scores-alerts-clear" type="button">Clear</button>
+                    </div>
+                    <div id="scoresWatchAlertsList" class="scores-alerts-list"></div>
                 </div>
-                <div id="scoresWatchAlertsList" class="scores-alerts-list"></div>
+            </div>
+            <div class="scores-alerts-wrap">
+                <button id="scoresAbsAlertsBtn" class="scores-alerts-btn" type="button" title="ABS Challenge alerts">
+                    <span aria-hidden="true">&#9889;</span>
+                    <span id="scoresAbsAlertsCount" class="scores-alerts-count">0</span>
+                </button>
+                <div id="scoresAbsAlertsPanel" class="scores-alerts-panel" role="dialog" aria-label="ABS Challenge alerts">
+                    <div class="scores-alerts-panel-header">
+                        <span class="scores-alerts-title">ABS Challenges</span>
+                        <button id="scoresAbsAlertsClearBtn" class="scores-alerts-clear" type="button">Clear</button>
+                    </div>
+                    <div id="scoresAbsAlertsList" class="scores-alerts-list"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="scores-preferences">
-        <label class="scores-toggle">
-            <input id="scoresHideScoresToggle" type="checkbox">
-            Hide Scores (No Spoilers)
-        </label>
-        <label class="scores-toggle">
-            <input id="scoresRedZoneToggle" type="checkbox">
-            Red Zone Mode
-        </label>
-        <button id="scoresClearFavoritesBtn" class="btn btn-secondary btn-sm">Clear Favorites</button>
-        <span id="scoresFavoritesInfo" class="text-muted">Favorites: none</span>
-
         <div class="scores-watchlist">
-            <span class="watchlist-label">Custom Watchlist</span>
-            <input id="watchTeamInput" class="watchlist-input" type="text" placeholder="Team abbr (NYY)">
-            <button id="watchTeamAddBtn" class="watchlist-add-btn" type="button">Add Team</button>
-            <input id="watchPlayerInput" class="watchlist-input" type="text" placeholder="Player name">
-            <button id="watchPlayerAddBtn" class="watchlist-add-btn" type="button">Add Player</button>
-            <div id="watchlistChips" class="watchlist-chips"></div>
+            <button id="watchlistToggleBtn" class="scores-watchlist-toggle" type="button" aria-expanded="false" aria-controls="watchlistDrawer">
+                👁 Watchlist
+                <span class="scores-watchlist-toggle-arrow" aria-hidden="true">&#9660;</span>
+            </button>
+            <div id="watchlistDrawer" class="scores-watchlist-drawer" role="region" aria-label="Watchlist options">
+                <span class="watchlist-label">Custom Watchlist</span>
+                <input id="watchTeamInput" class="watchlist-input" type="text" placeholder="Team abbr (NYY)">
+                <button id="watchTeamAddBtn" class="watchlist-add-btn" type="button">Add Team</button>
+                <input id="watchPlayerInput" class="watchlist-input" type="text" placeholder="Player name">
+                <button id="watchPlayerAddBtn" class="watchlist-add-btn" type="button">Add Player</button>
+                <div id="watchlistChips" class="watchlist-chips"></div>
+            </div>
         </div>
     </div>
 
     <div id="scoresSummary" class="scores-summary"></div>
     <div id="scoresWarning" class="scores-warning" style="display: none;"></div>
     <div id="scoresGrid" class="scores-grid"></div>
+    <p id="scoresUpdatedAt" class="scores-updated-footer text-muted">Loading...</p>
 </section>
 
 <div id="atbatModalOverlay" class="atbat-modal-overlay" role="dialog" aria-modal="true" aria-label="Game at-bats">
@@ -1261,6 +1812,27 @@
             <button id="lineupModalClose" class="lineup-modal-close" aria-label="Close lineups">&times;</button>
         </div>
         <div id="lineupModalBody" class="lineup-modal-body"></div>
+    </div>
+</div>
+
+<!-- League Leaders Modal -->
+<div id="leadersOverlay" class="leaders-overlay" role="dialog" aria-modal="true" aria-label="MLB League Leaders">
+    <div class="leaders-modal">
+        <div class="leaders-modal-header">
+            <span class="leaders-modal-title">MLB League Leaders</span>
+            <div class="leaders-header-actions">
+                <button id="leadersRefreshBtn" class="leaders-refresh-btn" type="button" title="Refresh leaders cache" aria-label="Refresh leaders cache">
+                    <span class="leaders-refresh-icon" aria-hidden="true">↻</span>
+                </button>
+                <button id="leadersCloseBtn" class="leaders-close-btn" aria-label="Close leaders">&times;</button>
+            </div>
+        </div>
+        <div class="leaders-toggle-wrap">
+            <button class="leaders-stat-group-btn is-active" type="button" data-group="hitting">Hitters</button>
+            <button class="leaders-stat-group-btn" type="button" data-group="pitching">Pitchers</button>
+        </div>
+        <div id="leadersCategoryBar" class="leaders-tab-bar"></div>
+        <div id="leadersBody" class="leaders-body"><div class="leaders-loading">Select a category above.</div></div>
     </div>
 </div>
 
@@ -1285,10 +1857,10 @@
 {% block extra_js %}
 <script>
 (() => {
-    const POLL_MS = 30000;
+    const POLL_LIVE_MS = 10000;        // 10 s when any game is live
+    const POLL_IDLE_MS = 3600000;       // 1 h when all games are final / pre-game
     const FAVORITES_KEY = 'scoresFavoriteTeamIds';
     const SPOILER_KEY = 'scoresHideScores';
-    const RED_ZONE_KEY = 'scoresRedZoneMode';
     const DENSITY_KEY = 'scoresDensityPreset';
     const WATCHLIST_TEAMS_KEY = 'scoresWatchlistTeams';
     const WATCHLIST_PLAYERS_KEY = 'scoresWatchlistPlayers';
@@ -1297,16 +1869,21 @@
     const WATCH_ALERTS_STORAGE_KEY = 'scoresWatchAlertsInbox';
     const WATCH_ALERT_KEYS_STORAGE_KEY = 'scoresWatchAlertKeysSeen';
     const HR_EVENT_KEYS_STORAGE_KEY = 'scoresHrEventKeysSeen';
+    const ABS_ALERTS_STORAGE_KEY = 'scoresAbsAlertsInbox';
+    const ABS_ALERT_KEYS_STORAGE_KEY = 'scoresAbsAlertKeysSeen';
     const ALERTS_MAX = 200;
     const FAVORITE_ALERT_DELAY_MS = 3 * 60 * 1000;
     const DEFAULT_SOUND_URL = '{{ url_for("static", filename="sounds/universfield-new-notification-022-370046.mp3") }}';
     let timerId = null;
     let lastGames = [];
+    let pollActive = false;
     let alertsInbox = [];
     let alertKeysSeen = new Set();
     let watchAlertsInbox = [];
     let watchAlertKeysSeen = new Set();
     let hrEventKeysSeen = new Set();
+    let absAlertsInbox = [];
+    let absAlertKeysSeen = new Set();
     let pendingAlertKeys = new Set();
     let pendingAlertTimers = new Map();
     let pendingWatchAlertKeys = new Set();
@@ -1322,8 +1899,8 @@
     const refreshBtn = document.getElementById('scoresRefreshBtn');
     const densityButtons = document.querySelectorAll('.scores-density-btn');
     const hideScoresToggle = document.getElementById('scoresHideScoresToggle');
-    const redZoneToggle = document.getElementById('scoresRedZoneToggle');
-    const clearFavoritesBtn = document.getElementById('scoresClearFavoritesBtn');
+    const watchlistToggleBtn = document.getElementById('watchlistToggleBtn');
+    const watchlistDrawerEl = document.getElementById('watchlistDrawer');
     const watchTeamInput = document.getElementById('watchTeamInput');
     const watchPlayerInput = document.getElementById('watchPlayerInput');
     const watchTeamAddBtn = document.getElementById('watchTeamAddBtn');
@@ -1333,7 +1910,6 @@
     const atbatModalCloseBtn = document.getElementById('atbatModalClose');
     const atbatModalTitleEl = document.getElementById('atbatModalTitle');
     const atbatModalBodyEl = document.getElementById('atbatModalBody');
-    const favoritesInfoEl = document.getElementById('scoresFavoritesInfo');
     const updatedAt = document.getElementById('scoresUpdatedAt');
     const warningEl = document.getElementById('scoresWarning');
     const gridEl = document.getElementById('scoresGrid');
@@ -1348,6 +1924,11 @@
     const watchAlertsPanelEl = document.getElementById('scoresWatchAlertsPanel');
     const watchAlertsListEl = document.getElementById('scoresWatchAlertsList');
     const watchAlertsClearBtn = document.getElementById('scoresWatchAlertsClearBtn');
+    const absAlertsBtn = document.getElementById('scoresAbsAlertsBtn');
+    const absAlertsCountEl = document.getElementById('scoresAbsAlertsCount');
+    const absAlertsPanelEl = document.getElementById('scoresAbsAlertsPanel');
+    const absAlertsListEl = document.getElementById('scoresAbsAlertsList');
+    const absAlertsClearBtn = document.getElementById('scoresAbsAlertsClearBtn');
     const lineupOverlay = document.getElementById('lineupModalOverlay');
     const lineupCloseBtn = document.getElementById('lineupModalClose');
     const lineupTitleEl = document.getElementById('lineupModalTitle');
@@ -1424,6 +2005,12 @@
         watchAlertKeysSeen = new Set(safeJsonParse(getStoredValue(WATCH_ALERT_KEYS_STORAGE_KEY, '[]'), []));
 
         hrEventKeysSeen = new Set(safeJsonParse(getStoredValue(HR_EVENT_KEYS_STORAGE_KEY, '[]'), []));
+
+        absAlertsInbox = safeJsonParse(getStoredValue(ABS_ALERTS_STORAGE_KEY, '[]'), []);
+        if (!Array.isArray(absAlertsInbox)) {
+            absAlertsInbox = [];
+        }
+        absAlertKeysSeen = new Set(safeJsonParse(getStoredValue(ABS_ALERT_KEYS_STORAGE_KEY, '[]'), []));
     }
 
     function loadWatchlistState() {
@@ -1439,8 +2026,8 @@
         }
         watchPlayers = [...new Set(watchPlayers.map((value) => String(value || '').trim().toLowerCase()).filter(Boolean))];
 
-        redZoneEnabled = getStoredValue(RED_ZONE_KEY, 'false') === 'true';
-        redZoneToggle.checked = redZoneEnabled;
+        // Red Zone mode control removed from UI; keep behavior disabled.
+        redZoneEnabled = false;
     }
 
     function applyDensityPreset(preset, persist = true) {
@@ -1473,7 +2060,6 @@
     function persistWatchlistState() {
         setStoredValue(WATCHLIST_TEAMS_KEY, JSON.stringify(watchTeams));
         setStoredValue(WATCHLIST_PLAYERS_KEY, JSON.stringify(watchPlayers));
-        setStoredValue(RED_ZONE_KEY, redZoneEnabled ? 'true' : 'false');
     }
 
     function persistAlertState() {
@@ -1482,6 +2068,8 @@
         setStoredValue(WATCH_ALERTS_STORAGE_KEY, JSON.stringify(watchAlertsInbox.slice(0, ALERTS_MAX)));
         setStoredValue(WATCH_ALERT_KEYS_STORAGE_KEY, JSON.stringify([...watchAlertKeysSeen]));
         setStoredValue(HR_EVENT_KEYS_STORAGE_KEY, JSON.stringify([...hrEventKeysSeen]));
+        setStoredValue(ABS_ALERTS_STORAGE_KEY, JSON.stringify(absAlertsInbox.slice(0, ALERTS_MAX)));
+        setStoredValue(ABS_ALERT_KEYS_STORAGE_KEY, JSON.stringify([...absAlertKeysSeen]));
     }
 
     function renderWatchlistChips() {
@@ -1585,7 +2173,10 @@
         alertsListEl.innerHTML = alertsInbox.map((alert) => `
             <article class="scores-alert-item is-${escapeHtml(alert.type || 'unknown')}">
                 <div class="scores-alert-head">
-                    <span class="scores-alert-type">${escapeHtml(alert.label || 'Alert')}</span>
+                    <span class="scores-alert-type-wrap">
+                        <span class="scores-alert-icon" aria-hidden="true">${alertTypeIcon(alert.type)}</span>
+                        <span class="scores-alert-type">${escapeHtml(alert.label || 'Alert')}</span>
+                    </span>
                     <span class="scores-alert-time">${escapeHtml(formatAlertTime(alert.created_at))}</span>
                 </div>
                 <div class="scores-alert-message">${escapeHtml(alert.message || '')}</div>
@@ -1603,12 +2194,81 @@
         watchAlertsListEl.innerHTML = watchAlertsInbox.map((alert) => `
             <article class="scores-alert-item is-${escapeHtml(alert.type || 'unknown')}">
                 <div class="scores-alert-head">
-                    <span class="scores-alert-type">${escapeHtml(alert.label || 'Watchlist Alert')}</span>
+                    <span class="scores-alert-type-wrap">
+                        <span class="scores-alert-icon" aria-hidden="true">${alertTypeIcon(alert.type)}</span>
+                        <span class="scores-alert-type">${escapeHtml(alert.label || 'Watchlist Alert')}</span>
+                    </span>
                     <span class="scores-alert-time">${escapeHtml(formatAlertTime(alert.created_at))}</span>
                 </div>
                 <div class="scores-alert-message">${escapeHtml(alert.message || '')}</div>
             </article>
         `).join('');
+    }
+
+    function alertTypeIcon(type) {
+        const normalized = String(type || '').toLowerCase();
+        if (normalized === 'home-run') {
+            return '&#128293;';
+        }
+        if (normalized === 'no-hitter') {
+            return '&#127919;';
+        }
+        if (normalized === 'close-game') {
+            return '&#9201;';
+        }
+        if (normalized === 'watchlist') {
+            return '&#128064;';
+        }
+        if (normalized === 'abs-challenge') {
+            return '&#9889;';
+        }
+        return '&#128276;';
+    }
+
+    function renderAbsAlertsInbox() {
+        absAlertsCountEl.textContent = String(absAlertsInbox.length);
+        if (!absAlertsInbox.length) {
+            absAlertsListEl.innerHTML = '<div class="scores-alert-empty">No ABS challenges yet.</div>';
+            return;
+        }
+        absAlertsListEl.innerHTML = absAlertsInbox.map((alert) => `
+            <article class="scores-alert-item is-abs-challenge">
+                <div class="scores-alert-head">
+                    <span class="scores-alert-type-wrap">
+                        <span class="scores-alert-icon" aria-hidden="true">&#9889;</span>
+                        <span class="scores-alert-type">ABS Challenge</span>
+                    </span>
+                    <span class="scores-alert-time">${escapeHtml(formatAlertTime(alert.created_at))}</span>
+                </div>
+                <div class="scores-alert-message">${escapeHtml(alert.message || '')}</div>
+            </article>
+        `).join('');
+    }
+
+    function pushAbsAlert(alert) {
+        if (!alert || !alert.key || absAlertKeysSeen.has(alert.key)) {
+            return false;
+        }
+        absAlertKeysSeen.add(alert.key);
+        absAlertsInbox.unshift({
+            type: 'abs-challenge',
+            label: 'ABS Challenge',
+            message: alert.message,
+            key: alert.key,
+            created_at: alert.created_at || new Date().toISOString(),
+        });
+        absAlertsInbox = absAlertsInbox.slice(0, ALERTS_MAX);
+        return true;
+    }
+
+    function dispatchAbsAlert(alert) {
+        if (!pushAbsAlert(alert)) {
+            return false;
+        }
+        playAlertSound();
+        persistAlertState();
+        renderAbsAlertsInbox();
+        return true;
     }
 
     function playAlertSound() {
@@ -1833,6 +2493,9 @@
         generated.push(...evaluateCloseGameAlerts(games));
         generated.push(...(await evaluateHomeRunAlerts(games)));
 
+        // ABS challenges go to their own dedicated ⚡ panel.
+        evaluateAbsChallengeAlerts(lastFeedEntries).forEach((alert) => dispatchAbsAlert(alert));
+
         const favoriteSet = new Set(readFavoriteTeamIds());
         generated.forEach((alert) => {
             const relatedTeamIds = Array.isArray(alert.related_team_ids) ? alert.related_team_ids : [];
@@ -1881,6 +2544,35 @@
                 related_team_ids: [game?.away?.id, game?.home?.id],
             });
         });
+        return alerts;
+    }
+
+    function evaluateAbsChallengeAlerts(feedEntries) {
+        const gameByPk = new Map((lastGames || []).map((game) => [String(game?.game_pk || ''), game]));
+        const alerts = [];
+
+        (feedEntries || []).forEach((entry) => {
+            if (!entry?.is_abs_challenge) {
+                return;
+            }
+
+            const originalCall = String(entry?.abs_original_call || '').trim() || 'Unknown';
+            const resultCall = String(entry?.abs_result_call || '').trim() || 'Unknown';
+            const gameLabel = String(entry?.game_label || 'Game');
+            const inningText = halfInningLabel(entry?.inning_half, entry?.inning);
+            const batter = String(entry?.batter || '').trim();
+            const batterPrefix = batter ? `${batter} - ` : '';
+            const game = gameByPk.get(String(entry?.game_pk || ''));
+
+            alerts.push({
+                type: 'abs-challenge',
+                label: 'ABS Challenge',
+                key: `abs:${entry.play_id}`,
+                message: `${gameLabel} ${inningText}: ${batterPrefix}Original: ${originalCall} | Result: ${resultCall}`,
+                related_team_ids: [game?.away?.id, game?.home?.id],
+            });
+        });
+
         return alerts;
     }
 
@@ -2120,27 +2812,6 @@
             .sort((a, b) => (b._red_zone_score || 0) - (a._red_zone_score || 0));
     }
 
-    function updateFavoritesInfo(games) {
-        const favoriteIds = readFavoriteTeamIds();
-        if (!favoriteIds.length) {
-            favoritesInfoEl.textContent = 'Favorites: none';
-            return;
-        }
-
-        const teamMap = {};
-        (games || []).forEach((game) => {
-            if (game?.away?.id) {
-                teamMap[game.away.id] = game.away.abbr || game.away.name || `Team ${game.away.id}`;
-            }
-            if (game?.home?.id) {
-                teamMap[game.home.id] = game.home.abbr || game.home.name || `Team ${game.home.id}`;
-            }
-        });
-
-        const labels = favoriteIds.map((teamId) => teamMap[teamId] || `Team ${teamId}`);
-        favoritesInfoEl.textContent = `Favorites: ${labels.join(', ')}`;
-    }
-
     function gameCardHtml(game, favoriteSet, hideScores) {
         const awayRuns = game?.away?.runs ?? 0;
         const homeRuns = game?.home?.runs ?? 0;
@@ -2173,6 +2844,13 @@
         const redZonePill = redZoneEnabled && redZoneValue >= 6
             ? '<span class="red-zone-pill">Red Zone</span>'
             : '';
+        const liveBatterCount = (game?.current_balls !== null && game?.current_balls !== undefined
+            && game?.current_strikes !== null && game?.current_strikes !== undefined)
+            ? `${Number(game.current_balls)}-${Number(game.current_strikes)}`
+            : '\u2014';
+        const livePitchCount = (game?.current_pitch_count !== null && game?.current_pitch_count !== undefined)
+            ? String(game.current_pitch_count)
+            : '\u2014';
 
         const inningsRaw = Array.isArray(game?.linescore_innings) ? game.linescore_innings : [];
         const inningMap = new Map();
@@ -2183,14 +2861,19 @@
             }
         });
 
-        const inningCount = Math.max(9, ...[...inningMap.keys(), 0]);
-        const inningNumbers = Array.from({length: inningCount}, (_, idx) => idx + 1);
-        const inningBoxClass = inningCount >= 13
+        const gameStateLower = String(game?.state || '').toLowerCase();
+        const currentInning = Number(game?.current_inning || 0);
+        const inningHalf = String(game?.inning_half || '').toLowerCase();
+
+        const totalInningCount = Math.max(9, currentInning || 0, ...[...inningMap.keys(), 0]);
+        const startInning = Math.max(1, totalInningCount - 8);
+        const inningNumbers = Array.from({length: 9}, (_, idx) => startInning + idx);
+        const inningBoxClass = totalInningCount >= 13
             ? 'inning-box is-ultra-compact'
-            : inningCount >= 11
+            : totalInningCount >= 11
                 ? 'inning-box is-compact'
                 : 'inning-box';
-        const inningColWidthPct = 65 / inningCount;
+        const inningColWidthPct = 65 / inningNumbers.length;
         const boxColGroup = `
             <colgroup>
                 <col style="width: 11%;">
@@ -2202,9 +2885,6 @@
         `;
 
         const inningHeaderCells = inningNumbers.map((inningNum) => `<th>${inningNum}</th>`).join('');
-        const gameStateLower = String(game?.state || '').toLowerCase();
-        const currentInning = Number(game?.current_inning || 0);
-        const inningHalf = String(game?.inning_half || '').toLowerCase();
 
         function hasInningSideStarted(side, inningNum) {
             if (gameStateLower === 'pre-game') {
@@ -2266,6 +2946,73 @@
         const homeRunsTotal = hideScores ? '-' : homeRuns;
         const homeHitsTotal = hideScores ? '-' : homeHits;
         const homeErrorsTotal = hideScores ? '-' : homeErrors;
+        const scoreContextText = stateLower === 'live'
+            ? (game?.detailed_state || '')
+            : (game?.live_context || game?.detailed_state || '');
+
+        // Bottom info section differs by game state
+        let pitcherInfoHtml = '';
+        if (stateLower === 'final') {
+            const winnerName = escapeHtml(game?.winning_pitcher || '\u2013');
+            const loserName  = escapeHtml(game?.losing_pitcher  || '\u2013');
+            const saveName   = game?.saving_pitcher ? escapeHtml(game.saving_pitcher) : null;
+            pitcherInfoHtml = `
+                <div class="decision-pitchers">
+                    <div class="decision-row"><span class="decision-label decision-win">W</span> ${winnerName}</div>
+                    <div class="decision-row"><span class="decision-label decision-loss">L</span> ${loserName}</div>
+                    ${saveName ? `<div class="decision-row"><span class="decision-label decision-save">SV</span> ${saveName}</div>` : ''}
+                </div>`;
+        } else if (stateLower === 'live') {
+            const pitcherName = escapeHtml(game?.current_pitcher || '\u2014');
+            const batterName  = escapeHtml(game?.current_batter  || '\u2014');
+            const r1 = game?.runner_on_first  ? 'has-runner' : '';
+            const r2 = game?.runner_on_second ? 'has-runner' : '';
+            const r3 = game?.runner_on_third  ? 'has-runner' : '';
+            const outCount = Number(game?.outs ?? 0);
+            const liveOuts = Number.isNaN(outCount) ? 0 : Math.max(0, Math.min(outCount, 2));
+            const outDot1 = liveOuts >= 1 ? 'is-on' : '';
+            const outDot2 = liveOuts >= 2 ? 'is-on' : '';
+            const inningHalfShort = inningHalf === 'top' ? 'T' : (inningHalf === 'bottom' ? 'B' : 'I');
+            const inningDisplay = `${inningHalfShort}${currentInning || ''}`;
+            pitcherInfoHtml = `
+                <div class="live-game-info">
+                    <div class="live-scorebug-row">
+                        <div class="live-basebug">
+                            <div class="runners-diamond" title="Runners on base">
+                                <div class="base-indicator base-second ${r2}"></div>
+                                <div class="base-indicator base-third ${r3}"></div>
+                                <div class="base-indicator base-first ${r1}"></div>
+                                <div class="diamond-inning" title="Inning">${escapeHtml(inningDisplay)}</div>
+                            </div>
+                            <div class="live-count-bug">
+                                <div class="live-outs-dots" title="Outs: ${liveOuts}">
+                                    <span class="outs-dot ${outDot1}"></span>
+                                    <span class="outs-dot ${outDot2}"></span>
+                                </div>
+                                <div class="live-batter-count" title="Balls-Strikes">${escapeHtml(liveBatterCount)}</div>
+                            </div>
+                        </div>
+                        <div class="live-names-stack">
+                            <div class="live-name-row">
+                                <span class="live-name-label">P</span>
+                                <span class="live-pitcher-name">${pitcherName}</span>
+                                <span class="live-pitch-count">${escapeHtml(livePitchCount)} P</span>
+                            </div>
+                            <div class="live-name-row">
+                                <span class="live-name-label">AB</span>
+                                <span class="live-batter-name">${batterName}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        } else {
+            // Pre-Game – probable starters
+            pitcherInfoHtml = `
+                <div class="probables">
+                    <div>Away SP: ${escapeHtml(game?.probable_pitchers?.away || 'TBD')}</div>
+                    <div>Home SP: ${escapeHtml(game?.probable_pitchers?.home || 'TBD')}</div>
+                </div>`;
+        }
 
         return `
             <a class="score-card ${redZoneClass}" href="${escapeHtml(game.mlb_url)}" target="_blank" rel="noopener noreferrer">
@@ -2277,7 +3024,7 @@
                     <div class="score-card-header-right">
                         <span class="score-time">${escapeHtml(game.start_time_et)}</span>
                         ${game.game_pk ? `<button class="atbat-btn" type="button" data-atbat-game-pk="${escapeHtml(game.game_pk)}" data-atbat-title="${escapeHtml(lineupTitle)} At-Bats" title="View live at-bats"><img class="atbat-btn-icon" src="{{ url_for('static', filename='images/1222716.png') }}" alt="At-Bat"></button>` : ''}
-                        ${game.game_pk ? `<button class="lineup-btn" type="button" data-lineup-game-pk="${escapeHtml(game.game_pk)}" data-lineup-title="${escapeHtml(lineupTitle)}" title="View lineups">📋</button>` : ''}
+                        ${game.game_pk ? `<button class="lineup-btn" type="button" data-lineup-game-pk="${escapeHtml(game.game_pk)}" data-lineup-title="${escapeHtml(lineupTitle)}" data-game-state="${escapeHtml(game.state)}" title="View lineups">📋</button>` : ''}
                         ${game.game_pk ? `<button class="tv-btn" type="button" data-tv-url="https://www.mlb.com/tv/g${game.game_pk}" title="Watch on MLB.TV">📺</button>` : ''}
                     </div>
                 </div>
@@ -2319,7 +3066,7 @@
                     </div>
                 </div>
 
-                <div class="score-context">${escapeHtml(game.live_context || game.detailed_state || '')}</div>
+                <div class="score-context">${escapeHtml(scoreContextText)}</div>
 
                 <div class="inning-box-wrap" aria-label="Inning-by-inning box score">
                     <table class="${inningBoxClass}">
@@ -2352,17 +3099,13 @@
                     </table>
                 </div>
 
-                <div class="probables">
-                    <div>Away SP: ${escapeHtml(game?.probable_pitchers?.away || 'TBD')}</div>
-                    <div>Home SP: ${escapeHtml(game?.probable_pitchers?.home || 'TBD')}</div>
-                </div>
+                ${pitcherInfoHtml}
             </a>
         `;
     }
 
     function renderGames(games) {
         lastGames = Array.isArray(games) ? games : [];
-        updateFavoritesInfo(lastGames);
 
         if (!Array.isArray(games) || !games.length) {
             gridEl.innerHTML = '<div class="empty-state">No games found for the selected day.</div>';
@@ -2395,25 +3138,34 @@
         lineupOverlay.classList.remove('is-open');
     }
 
-    function renderLineupTeam(team) {
+    function renderLineupTeam(team, gameState) {
         const teamName = team?.team_name || team?.team_abbr || 'Team';
         const probableStarter = team?.probable_starter || 'NA';
         const lineup = Array.isArray(team?.lineup) ? team.lineup : [];
+        const isPreGame = !gameState || String(gameState).toLowerCase() === 'pre-game';
 
         const rows = lineup.map((player) => {
             const name = player?.name || 'NA';
             const pos = player?.position || 'NA';
             const avg = player?.batting_avg || 'NA';
-            const brefUrl = player?.baseball_reference_url || '';
-            const nameHtml = brefUrl
-                ? `<a class="lineup-player-link" href="${escapeHtml(brefUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`
+            const savantUrl = player?.baseball_reference_url || '';
+            const nameHtml = savantUrl
+                ? `<a class="lineup-player-link" href="${escapeHtml(savantUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`
                 : `<span class="lineup-player-na">${escapeHtml(name)}</span>`;
+
+            const hasGameStats = !isPreGame && player?.game_at_bats !== null && player?.game_at_bats !== undefined;
+            const statsDisplay = hasGameStats
+                ? `${Number(player.game_hits ?? 0)}-${Number(player.game_at_bats)}`
+                : `AVG ${escapeHtml(avg)}`;
+            const isCurrent = !isPreGame && Boolean(player?.is_current_batter);
+            const rowClass = isCurrent ? 'lineup-row is-current-batter' : 'lineup-row';
+
             return `
-                <li class="lineup-row">
+                <li class="${rowClass}">
                     ${nameHtml}
                     <span class="lineup-meta">
                         <span class="lineup-position">${escapeHtml(pos)}</span>
-                        <span class="lineup-avg">AVG ${escapeHtml(avg)}</span>
+                        <span class="lineup-avg">${escapeHtml(statsDisplay)}</span>
                     </span>
                 </li>
             `;
@@ -2430,7 +3182,7 @@
         `;
     }
 
-    async function showGameLineups(gamePk, titleText) {
+    async function showGameLineups(gamePk, titleText, gameState) {
         openLineupModal(titleText);
         lineupBodyEl.innerHTML = '<div class="lineup-modal-loading">Loading lineups...</div>';
 
@@ -2446,13 +3198,18 @@
 
             lineupBodyEl.innerHTML = `
                 <div class="lineup-grid">
-                    ${renderLineupTeam(payload.away)}
-                    ${renderLineupTeam(payload.home)}
+                    ${renderLineupTeam(payload.away, gameState)}
+                    ${renderLineupTeam(payload.home, gameState)}
                 </div>
             `;
         } catch (error) {
             lineupBodyEl.innerHTML = `<div class="lineup-modal-error">${escapeHtml(error.message || 'Unable to load lineups.')}</div>`;
         }
+    }
+
+    function nextPollMs() {
+        const hasLive = (lastGames || []).some((g) => String(g?.state || '').toLowerCase() === 'live');
+        return hasLive ? POLL_LIVE_MS : POLL_IDLE_MS;
     }
 
     async function fetchScores() {
@@ -2482,14 +3239,27 @@
             lastFeedEntries = [];
             renderWarning(error.message || 'Unable to load score data right now.');
             updatedAt.textContent = 'Update failed';
+        } finally {
+            if (pollActive) {
+                timerId = setTimeout(fetchScores, nextPollMs());
+            }
         }
     }
 
     function startPolling() {
+        pollActive = true;
         if (timerId) {
-            clearInterval(timerId);
+            clearTimeout(timerId);
         }
-        timerId = setInterval(fetchScores, POLL_MS);
+        timerId = setTimeout(fetchScores, 0);
+    }
+
+    function stopPolling() {
+        pollActive = false;
+        if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
     }
 
     function toggleFavoriteTeam(teamId) {
@@ -2508,25 +3278,21 @@
         renderGames(lastGames);
     }
 
-    refreshBtn.addEventListener('click', fetchScores);
+    // Manual refresh: cancel pending timer, fetch immediately, then resume adaptive polling.
+    refreshBtn.addEventListener('click', () => startPolling());
     densityButtons.forEach((btn) => {
         btn.addEventListener('click', () => {
             const preset = btn.getAttribute('data-density') || 'default';
             applyDensityPreset(preset, true);
         });
     });
-    dateInput.addEventListener('change', fetchScores);
+    dateInput.addEventListener('change', () => startPolling());
     hideScoresToggle.addEventListener('change', () => setHideScores(hideScoresToggle.checked));
 
-    clearFavoritesBtn.addEventListener('click', () => {
-        writeFavoriteTeamIds([]);
-        renderGames(lastGames);
-    });
-
-    redZoneToggle.addEventListener('change', () => {
-        redZoneEnabled = redZoneToggle.checked;
-        persistWatchlistState();
-        renderGames(lastGames);
+    watchlistToggleBtn.addEventListener('click', () => {
+        const isOpen = watchlistDrawerEl.classList.toggle('is-open');
+        watchlistToggleBtn.classList.toggle('is-open', isOpen);
+        watchlistToggleBtn.setAttribute('aria-expanded', String(isOpen));
     });
 
     watchTeamAddBtn.addEventListener('click', () => addWatchTeam(watchTeamInput.value));
@@ -2572,7 +3338,16 @@
         event.preventDefault();
         event.stopPropagation();
         alertsPanelEl.classList.remove('is-open');
+        absAlertsPanelEl.classList.remove('is-open');
         watchAlertsPanelEl.classList.toggle('is-open');
+    });
+
+    absAlertsBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        alertsPanelEl.classList.remove('is-open');
+        watchAlertsPanelEl.classList.remove('is-open');
+        absAlertsPanelEl.classList.toggle('is-open');
     });
 
     alertsClearBtn.addEventListener('click', () => {
@@ -2596,12 +3371,22 @@
         renderWatchAlertsInbox();
     });
 
+    absAlertsClearBtn.addEventListener('click', () => {
+        absAlertsInbox = [];
+        absAlertKeysSeen = new Set();
+        persistAlertState();
+        renderAbsAlertsInbox();
+    });
+
     document.addEventListener('click', (event) => {
         if (!alertsPanelEl.contains(event.target) && !alertsBtn.contains(event.target)) {
             alertsPanelEl.classList.remove('is-open');
         }
         if (!watchAlertsPanelEl.contains(event.target) && !watchAlertsBtn.contains(event.target)) {
             watchAlertsPanelEl.classList.remove('is-open');
+        }
+        if (!absAlertsPanelEl.contains(event.target) && !absAlertsBtn.contains(event.target)) {
+            absAlertsPanelEl.classList.remove('is-open');
         }
     });
 
@@ -2624,8 +3409,9 @@
             event.stopPropagation();
             const gamePk = lineupBtn.getAttribute('data-lineup-game-pk');
             const titleText = lineupBtn.getAttribute('data-lineup-title') || 'Game Lineups';
+            const gameState = lineupBtn.getAttribute('data-game-state') || '';
             if (gamePk) {
-                showGameLineups(gamePk, titleText);
+                showGameLineups(gamePk, titleText, gameState);
             }
             return;
         }
@@ -2698,10 +3484,10 @@
     loadDensityState();
     renderAlertsInbox();
     renderWatchAlertsInbox();
+    renderAbsAlertsInbox();
     renderWatchlistChips();
 
-    fetchScores();
-    startPolling();
+    startPolling(); // triggers an immediate fetch then self-schedules adaptively
 })();
 
 // ---- Standings modal ----
@@ -2801,6 +3587,143 @@
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal(); });
     tabBtns.forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.getAttribute('data-league'))));
+})();
+
+// ---- League Leaders modal ----
+(() => {
+    const overlay      = document.getElementById('leadersOverlay');
+    const closeBtn     = document.getElementById('leadersCloseBtn');
+    const openBtn      = document.getElementById('leadersBtn');
+    const categoryBar  = document.getElementById('leadersCategoryBar');
+    const bodyEl       = document.getElementById('leadersBody');
+    const groupBtns    = document.querySelectorAll('.leaders-stat-group-btn');
+    const refreshBtn   = document.getElementById('leadersRefreshBtn');
+    const scoresDateInputEl = document.getElementById('scoresDateInput');
+
+    const HITTING_CATEGORIES  = ['HR', 'AVG', 'Hits', '2B', '3B', 'SB', 'OBP', 'OPS', 'RBI', 'Runs', 'BB'];
+    const PITCHING_CATEGORIES = ['Wins', 'ERA', 'Ks', 'Saves', 'IP', 'WHIP', 'K/9', 'BAA'];
+
+    let activeGroup    = 'hitting';
+    let activeCategory = 'HR';
+    let cache          = {};  // key: "group:category" -> payload
+
+    function escHtml(v) {
+        return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function categoriesForGroup(group) {
+        return group === 'pitching' ? PITCHING_CATEGORIES : HITTING_CATEGORIES;
+    }
+
+    function renderCategoryBar(group, selected) {
+        const cats = categoriesForGroup(group);
+        categoryBar.innerHTML = cats.map(cat => `
+            <button class="leaders-tab-btn ${cat === selected ? 'is-active' : ''}" type="button" data-cat="${escHtml(cat)}">${escHtml(cat)}</button>
+        `).join('');
+    }
+
+    function renderLeadersTable(leaders, statType) {
+        if (!leaders || !leaders.length) {
+            bodyEl.innerHTML = '<div class="leaders-error">No data available for this category.</div>';
+            return;
+        }
+        const rows = leaders.map(entry => {
+            const playerId = entry.player_id;
+            const playerName = entry.name || '';
+            const savantUrl = playerId && playerName && playerName !== 'N/A'
+                ? `https://baseballsavant.mlb.com/savant-player/${playerName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${playerId}`
+                : null;
+            const nameHtml = savantUrl
+                ? `<a class="leaders-player-link" href="${escHtml(savantUrl)}" target="_blank" rel="noopener noreferrer">${escHtml(entry.name || 'N/A')}</a>`
+                : escHtml(entry.name || 'N/A');
+            return `
+                <tr>
+                    <td class="leaders-rank">${escHtml(entry.rank ?? '')}</td>
+                    <td>${nameHtml}</td>
+                    <td class="leaders-team">${escHtml(entry.team || '')}</td>
+                    <td>${escHtml(entry.value ?? '')}</td>
+                </tr>
+            `;
+        }).join('');
+        bodyEl.innerHTML = `
+            <table class="leaders-table">
+                <thead><tr>
+                    <th>#</th><th>Player</th><th>Team</th><th>${escHtml(statType || '')}</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+    }
+
+    async function fetchLeaders(group, statType, forceRefresh = false) {
+        const selectedDate = (scoresDateInputEl?.value || '').trim();
+        const cacheKey = `${selectedDate}:${group}:${statType}`;
+        if (!forceRefresh && cache[cacheKey]) {
+            renderLeadersTable(cache[cacheKey], statType);
+            return;
+        }
+        bodyEl.innerHTML = '<div class="leaders-loading">Loading...</div>';
+        try {
+            const queryParams = { stat_group: group, stat_type: statType, limit: 15 };
+            if (selectedDate) {
+                queryParams.date = selectedDate;
+            }
+            if (forceRefresh) {
+                queryParams.refresh = 'true';
+            }
+            const qs = new URLSearchParams(queryParams);
+            const response = await fetch(`/api/scores/leaders?${qs}`, { headers: { 'Accept': 'application/json' } });
+            const payload = await response.json();
+            if (!payload.success) throw new Error(payload.error || 'Failed to load leaders.');
+            cache[cacheKey] = payload.leaders || [];
+            renderLeadersTable(cache[cacheKey], statType);
+        } catch (err) {
+            bodyEl.innerHTML = `<div class="leaders-error">\u26a0 ${escHtml(err.message)}</div>`;
+        }
+    }
+
+    function setGroup(group) {
+        activeGroup    = group;
+        activeCategory = categoriesForGroup(group)[0];
+        cache          = {};  // clear on group change
+        groupBtns.forEach(btn => btn.classList.toggle('is-active', btn.getAttribute('data-group') === group));
+        renderCategoryBar(group, activeCategory);
+        fetchLeaders(activeGroup, activeCategory);
+    }
+
+    function openModal() {
+        overlay.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+        renderCategoryBar(activeGroup, activeCategory);
+        fetchLeaders(activeGroup, activeCategory);
+    }
+
+    function closeModal() {
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    openBtn.addEventListener('click', openModal);
+    refreshBtn.addEventListener('click', async () => {
+        cache = {};
+        refreshBtn.disabled = true;
+        refreshBtn.classList.add('is-loading');
+        await fetchLeaders(activeGroup, activeCategory, true);
+        refreshBtn.classList.remove('is-loading');
+        refreshBtn.disabled = false;
+    });
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal(); });
+
+    groupBtns.forEach(btn => btn.addEventListener('click', () => setGroup(btn.getAttribute('data-group'))));
+
+    categoryBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.leaders-tab-btn');
+        if (!btn) return;
+        activeCategory = btn.getAttribute('data-cat') || activeCategory;
+        categoryBar.querySelectorAll('.leaders-tab-btn').forEach(b => b.classList.toggle('is-active', b === btn));
+        fetchLeaders(activeGroup, activeCategory);
+    });
 })();
 </script>
 {% endblock %}
